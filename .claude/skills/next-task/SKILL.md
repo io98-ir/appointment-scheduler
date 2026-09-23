@@ -13,10 +13,10 @@ Follow `docs/05-delivery/03-agent-workflow.md` §2:
 2. Read the task's "Done when" criteria in `01-roadmap.md` and the relevant design docs. Ask the user only about decisions that are genuinely theirs to make. Otherwise pick a sensible default and record it in the worklog.
 3. For work that touches more than about 5 files, make a short step plan first.
 4. Write the tests first for Domain and Application code.
-5. Implement following `docs/04-engineering/01-principles.md`. Re-check §0 (anti-overengineering) before adding any abstraction or dependency.
+5. Implement following `docs/04-engineering/01-principles.md` and `docs/04-engineering/03-implementation-notes.md`, which lists the known traps. Re-check principles §0 (anti-overengineering) before adding any abstraction or dependency. Use the relevant installed skills, such as `wp-rest-api` or `wp-plugin-development`. Where a skill conflicts with project docs, the project docs win (see `docs/05-delivery/05-agent-tooling.md` §4).
 6. Verify by running the tools and reading their output: `composer lint`, `composer stan`, `composer test`, plus the relevant JS or E2E tests. Never claim success without real output. If a tool is unavailable, say exactly what could not be verified.
 7. Run the `reviewer` subagent on the diff. Fix the findings that hold up.
 8. Update the tracker (✅ + commit hash), the worklog entry, and any ADR, CHANGELOG or module README the task affects.
-9. Commit with Conventional Commits and the task ID, for example `feat(booking): hold with row locks (T2.2)`. Do not push unless the user asks.
+9. Commit with Conventional Commits and the task ID, for example `feat(booking): hold with row locks (T2.2)`. Pushing happens in `/wrap`, or earlier if the user asks.
 
 Stop after one task and give the user a short Persian summary. Offer to continue with the next task.

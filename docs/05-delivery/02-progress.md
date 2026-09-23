@@ -9,9 +9,10 @@
 | **فاز فعلی** | برنامه‌ریزی تمام شد ← شروع **M0** |
 | **Task بعدی** | **T0.1** — اسکلت Repo (ر.ک. [01-roadmap.md](01-roadmap.md#m0--زیربنا)) |
 | **Task در حال انجام** | — |
-| **آخرین کار انجام‌شده** | بازنگری اسناد طبق نظر کارفرما + ساخت Tracker، Worklog و Workflow (2026-09-23) |
-| **Blockerها** | — |
-| **نکته برای سشن بعد** | محیط Windows است. پیش از T0.10 وجود Docker Desktop را برای wp-env بررسی کن. همچنین نسخه‌های PHP، Composer، Node و pnpm روی سیستم کاربر هنوز بررسی نشده‌اند (اول T0.1 چک شود). |
+| **آخرین کار انجام‌شده** | اتصال به GitHub، نصب 14 Skill، نصب باینری‌های LSP، و نوشتن اسناد محیط، ابزار Agent و تله‌های فنی (2026-09-23) |
+| **Blockerها** | ⛔ **PHP 8.3 و Composer نصب نیستند.** T0.1 را می‌شود نوشت، ولی قابل تأیید نیست. ⛔ **Docker نصب نیست.** بدون آن تست Integration، همزمانی و E2E ممکن نیست (از T0.7). دستورهای نصب در [../04-engineering/02-dev-environment.md](../04-engineering/02-dev-environment.md) آمده است |
+| **کار کاربر** | (1) نصب PHP، Composer و Docker، یا اجازه نصب با winget. (2) نصب pluginهای `php-lsp`، `typescript-lsp` و `security-guidance` از Manage plugins در VS Code با Project scope. (3) اختیاری: انتقال پروژه به مسیری بدون فاصله |
+| **نکته برای سشن بعد** | قبل از T0.1 دوباره `php -v`، `composer -V` و `docker -v` را چک کن. اول [../04-engineering/03-implementation-notes.md](../04-engineering/03-implementation-notes.md) §1 و §2 را بخوان: فایل اصلی بدون سینتکس PHP 8، و `config.platform.php = 8.1.0` |
 
 ## خلاصه Milestoneها
 | Milestone | وضعیت | پیشرفت |
@@ -32,6 +33,8 @@
 | P.2 | Stack، معماری، مدل داده، ADRها | ✅ | docs/03-architecture |
 | P.3 | اصول مهندسی + ضد Overengineering | ✅ | docs/04-engineering |
 | P.4 | Roadmap، Tracker، Worklog، Agent workflow | ✅ | `727973a` |
+| P.5 | GitHub remote، Skillها، محیط، ADR-017 و 018، تله‌های فنی | ✅ | این commit |
+| P.6 | نصب PHP، Composer و Docker (کار کاربر) | ⛔ | منتظر کاربر |
 | T0.1 | اسکلت Repo | ⬜ | |
 | T0.2 | ابزار کیفیت PHP | ⬜ | |
 | T0.3 | Kernel | ⬜ | |
@@ -83,4 +86,4 @@
 | # | موضوع | وضعیت |
 |---|---|---|
 | 1 | نام نهایی محصول | باز است. **مانع کار نیست** (ADR-000: قابل تعویض با `rename.php` تا پیش از انتشار) |
-| 2 | کانال فروش و سیستم لایسنس | باز است. قبل از M6 لازم است |
+| 2 | کانال فروش و سیستم لایسنس | باز است. قبل از M6 لازم است. لایسنس کد GPL است (ADR-017) |

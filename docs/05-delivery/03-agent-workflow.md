@@ -3,6 +3,7 @@
 > هدف: هر سشن، حتی بدون حافظه قبلی، **دقیقاً از جایی که کار مانده ادامه دهد**، کیفیت ثابت بماند و هیچ کاری ثبت‌نشده نماند.
 > Skillهای پروژه: `/resume` (شروع سشن)، `/next-task` (اجرای یک Task)، `/wrap` (پایان سشن). این‌ها در `.claude/skills/` هستند.
 > Subagent پروژه: `reviewer` (بازبینی قبل از commit)، در `.claude/agents/`.
+> Skillهای WordPress، TDD و debugging و قانون اولویت آن‌ها: [05-agent-tooling.md](05-agent-tooling.md). محیط: [../04-engineering/02-dev-environment.md](../04-engineering/02-dev-environment.md). تله‌های فنی: [../04-engineering/03-implementation-notes.md](../04-engineering/03-implementation-notes.md).
 
 ## 1. شروع سشن (`/resume`)
 1. `CLAUDE.md` خودکار بارگذاری می‌شود.
@@ -23,13 +24,13 @@
 8. **مستندسازی:** Tracker (✅ + hash commit)، Worklog، و در صورت نیاز ADR جدید، CHANGELOG و README ماژول.
 9. **Commit:** یک commit برای هر Task، با Conventional Commits، مثلاً `feat(scheduling): availability calculator (T1.4)`.
    - در صورت تغییر قابل توجه، commit میانی مجاز است.
-   - **Push فقط با اجازه کاربر** انجام می‌شود.
+   - **Push:** Remote `origin` (GitHub) وصل است. Push روی `main` در پایان هر `/wrap` انجام می‌شود، یا هر وقت کاربر بخواهد. `force-push` و بازنویسی تاریخچه **هرگز** بدون درخواست صریح کاربر انجام نمی‌شود.
 
 ## 3. پایان سشن (`/wrap`)
 1. اگر Task نیمه‌کاره است، وضعیت 🟨 می‌ماند. در ستون یادداشت بنویس دقیقاً کجا ماند و قدم بعدی چیست.
 2. بخش «از اینجا ادامه بده» در progress را به‌روز کن.
 3. یک ورودی Worklog بنویس (قالب در [04-worklog.md](04-worklog.md)).
-4. کارهای انجام‌شده را commit کن. کار نیمه‌کاره‌ای که تست‌ها را می‌شکند با پیشوند `wip:` روی شاخه جدا commit می‌شود.
+4. کارهای انجام‌شده را commit و روی `origin/main` push کن. کار نیمه‌کاره‌ای که تست‌ها را می‌شکند با پیشوند `wip:` روی شاخه جدا commit و push می‌شود. `main` همیشه باید سبز بماند.
 5. خلاصه کوتاه به کاربر: چه شد، چه ماند، و تصمیمی که از کاربر لازم است.
 
 ## 4. قوانین کلی Agent

@@ -16,6 +16,37 @@
 
 ---
 
+## 2026-09-23 — سشن 1 (بخش 3): GitHub، Skillها، محیط و یادداشت‌های پیش از کد
+**Taskها:** P.5 (و P.6 باز است)
+**انجام شد:**
+- Remote `origin` به https://github.com/io98-ir/appointment-scheduler وصل و `main` push شد. یک Remote تکراری با همان URL (`appointment-scheduler`) حذف شد.
+- **14 Skill** با `npx skills add --copy` در سطح پروژه نصب شد (ثبت در `skills-lock.json`):
+  - 9 مورد از WordPress/agent-skills
+  - `frontend-design` و `webapp-testing` از Anthropic
+  - `test-driven-development`، `systematic-debugging` و `verification-before-completion` از superpowers
+  - اسکریپت‌های Skillها از نظر امنیتی بررسی شدند: هیچ فراخوانی شبکه ندارند.
+- `intelephense`، `typescript` و `typescript-language-server` با npm global نصب شدند (پیش‌نیاز pluginهای LSP).
+- اسناد جدید:
+  - `04-engineering/02-dev-environment.md` (وضعیت ابزارها و نصب‌ها)
+  - `04-engineering/03-implementation-notes.md` (تله‌های فنی)
+  - `05-delivery/05-agent-tooling.md` (Skillها، اولویت، تعارض‌ها)
+- **ADR-017:** لایسنس GPL-2.0-or-later. مدل فروش بر پایه آپدیت و پشتیبانی است.
+- **ADR-018:** PHPUnit 9.6 + Polyfills، چون تست‌سوئیت WP نسخه PHPUnit 10 را پشتیبانی نمی‌کند و PHPUnit 11 به PHP 8.2 نیاز دارد.
+- سیاست push به‌روز شد: push در `/wrap` انجام می‌شود و force-push هرگز.
+
+**تصمیم‌ها و فرض‌ها:**
+- Skillهای superpowers که با روند ما تعارض داشتند (brainstorming، writing-plans، using-superpowers) عمداً نصب نشدند.
+- Pluginها از این محیط قابل نصب نیستند (CLI `claude` روی PATH نیست). کاربر باید از Manage plugins در VS Code نصبشان کند.
+
+**تأیید:**
+- `git push -u origin main` ← `* [new branch] main -> main`
+- `npx skills add` ← 14 مورد ✓
+- `Get-Command intelephense` و `typescript-language-server` ← OK
+
+**مشکلات و باقیمانده:** ⛔ PHP، Composer و Docker نصب نیستند (ر.ک. dev-environment §2).
+**قدم بعدی:** کاربر ابزارها را نصب کند، سپس T0.1.
+**Commitها:** `chore: connect GitHub, install agent skills, pre-coding notes`
+
 ## 2026-09-23 — سشن 1 (بخش 2) — بازنگری طبق نظر کارفرما + زیرساخت روند کار
 **Taskها:** P.3، P.4
 **انجام شد:**

@@ -12,6 +12,7 @@
 | | [05-delivery/02-progress.md](05-delivery/02-progress.md) | **Tracker** وضعیت همه Taskها + نقطه ادامه |
 | | [05-delivery/03-agent-workflow.md](05-delivery/03-agent-workflow.md) | روش کار با Agent: شروع، اجرا و پایان سشن |
 | | [05-delivery/04-worklog.md](05-delivery/04-worklog.md) | **Worklog** زمانی همه کارها |
+| | [05-delivery/05-agent-tooling.md](05-delivery/05-agent-tooling.md) | Skillها و Pluginهای نصب‌شده، اولویت، تعارض‌ها |
 | **تحقیق** | [01-research/01-competitors.md](01-research/01-competitors.md) | تحلیل محصولات مرجع و شکایات کاربران |
 | | [01-research/02-gap-analysis.md](01-research/02-gap-analysis.md) | ماتریس مقایسه، دردها، تمایزها |
 | | [01-research/03-iran-ecosystem.md](01-research/03-iran-ecosystem.md) | تقویم، پول، پیامک، درگاه، تحریم ← پیامد فنی |
@@ -21,10 +22,12 @@
 | | [03-architecture/02-architecture.md](03-architecture/02-architecture.md) | لایه‌ها، 7 ماژول، Kernel، تراکنش، API، امنیت |
 | | [03-architecture/03-booking-engine.md](03-architecture/03-booking-engine.md) | Availability، Hold/Lock، وضعیت‌ها، قیمت، Policy، پرداخت، اعلان |
 | | [03-architecture/04-data-model.md](03-architecture/04-data-model.md) | جداول و ایندکس‌ها |
-| | [03-architecture/05-decisions.md](03-architecture/05-decisions.md) | ADRها (000 تا 016) |
+| | [03-architecture/05-decisions.md](03-architecture/05-decisions.md) | ADRها (000 تا 018) |
 | **مهندسی** | [04-engineering/01-principles.md](04-engineering/01-principles.md) | ضد Overengineering، استاندارد کد، تست، امنیت، کارایی، DoD |
+| | [04-engineering/02-dev-environment.md](04-engineering/02-dev-environment.md) | وضعیت ابزارهای سیستم و نصب‌های لازم |
+| | [04-engineering/03-implementation-notes.md](04-engineering/03-implementation-notes.md) | **تله‌های فنی** Bootstrap، Composer، i18n، زمان، DB، REST |
 
 ## ابزارهای Agent در Repo
 - `CLAUDE.md`: قوانین پایه که خودکار بارگذاری می‌شوند.
-- `.claude/skills/`: Skillهای `/resume`، `/next-task` و `/wrap`.
+- `.claude/skills/`: Skillهای `/resume`، `/next-task` و `/wrap`، به‌علاوه 14 Skill نصب‌شده (WordPress، TDD، debugging، frontend). فهرست در `skills-lock.json`.
 - `.claude/agents/reviewer.md`: Subagent بازبینی قبل از commit.

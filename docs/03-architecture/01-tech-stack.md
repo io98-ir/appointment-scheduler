@@ -16,7 +16,7 @@
 ### وابستگی‌های Composer
 - **Production:** فقط `woocommerce/action-scheduler`. بقیه کد مال خودمان است.
 - **Dev:**
-  - PHPUnit 10، Brain Monkey، Mockery
+  - PHPUnit 9.6 + yoast/phpunit-polyfills (ADR-018)، Brain Monkey، Mockery
   - wp-phpunit (از طریق `@wordpress/env`)
   - PHPStan (level 9) + `szepeviktor/phpstan-wordpress`
   - PHP_CodeSniffer + WPCS 3 (security/i18n sniffs) + PHPCompatibilityWP + Slevomat
