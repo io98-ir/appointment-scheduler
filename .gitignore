@@ -1,0 +1,13 @@
+/vendor/
+node_modules/
+/build/
+/dist/
+*.zip
+.phpunit.cache/
+.phpunit.result.cache
+/coverage/
+.wp-env.override.json
+.env
+.DS_Store
+Thumbs.db
+.claude/settings.local.json

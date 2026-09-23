@@ -1,0 +1,220 @@
+# Architecture Decision Records (ADR)
+
+> قالب هر ADR: **وضعیت** · **زمینه** · **تصمیم** · **پیامدها** · **گزینه‌های ردشده**
+> تغییر تصمیمی که `Accepted` شده، یک ADR جدید می‌خواهد و ADR قبلی `Superseded` علامت می‌خورد، نه اینکه حذف شود.
+> بازنگری 1 (2026-09-23، طبق نظر کارفرما): نام قابل تعویض، سبک کد پیشنهادی تأیید شد، حوزه تخصصی حذف شد و موارد Overengineering کاهش یافت.
+
+---
+
+## ADR-000 — نام قابل تعویض: Identity واحد + اسکریپت Rename + White-label
+**وضعیت:** `Accepted`
+
+**زمینه:** نام محصول هنوز انتخاب نشده و قرار است محصول در پروژه‌های مختلف استفاده و فروخته شود.
+
+**تصمیم:** دو لایه نام داریم.
+1. **نام نمایشی (Brand)**
+   - از تنظیمات White-label خوانده می‌شود: نام، لوگو، رنگ‌ها. پیش‌فرض همان `name` در Identity است.
+   - **در هر زمان و بدون تغییر کد** عوض می‌شود، حتی بعد از انتشار یا برای هر مشتری.
+   - هیچ نام برندی در UI یا متن‌ها hard-code نمی‌شود.
+2. **شناسه فنی (Identity)**
+   - در فایل `identity.json` در ریشه تعریف می‌شود:
+     ```json
+     { "name": "Vaqtyar", "slug": "vaqtyar", "namespace": "Vaqtyar",
+       "const_prefix": "VAQTYAR", "prefix": "vqy", "hook_prefix": "vaqtyar",
+       "text_domain": "vaqtyar", "rest_namespace": "vaqtyar/v1" }
+     ```
+   - در Runtime، کلاس `Kernel\Identity` (ثابت‌ها) منبع واحد است. نام جدول، option، hook، capability و REST فقط از طریق Helperها ساخته می‌شوند: `Tables::name()`، `Options::key()`، `Hooks::name()`، `Caps::name()`.
+   - چیزهایی که **باید لیترال باشند** با اسکریپت عوض می‌شوند: namespace در PHP، text-domain (ابزارهای i18n فقط لیترال می‌فهمند)، نام فایل اصلی، header، نام بلوک، پیشوند CSS و نام پکیج‌های JS.
+   - اسکریپت: `php tools/rename.php --name="…" --slug=… --namespace=… --prefix=…`
+     - حالت `--dry-run` دارد.
+     - جایگزینی را با حفظ حالت حروف انجام می‌دهد (`Vaqtyar`، `vaqtyar`، `VAQTYAR`، `vqy`).
+     - نام فایل‌ها را عوض می‌کند و `composer dump-autoload` را اجرا می‌کند.
+     - در پایان بررسی می‌کند که **هیچ اثری از توکن قدیمی** نمانده باشد.
+   - توکن‌های فعلی عمداً **منحصربه‌فرد** انتخاب شده‌اند (`vaqtyar` و `vqy`) تا جایگزینی خودکار امن باشد.
+
+**قانون:** تغییر شناسه فنی تا **قبل از اولین انتشار عمومی** آزاد است. بعد از انتشار فقط Brand عوض می‌شود. تغییر شناسه بعد از انتشار یعنی افزونه جدید.
+
+**پیامد:** CI یک تست دارد که `rename.php` را روی یک کپی اجرا می‌کند و سپس lint و تست Unit را پاس می‌کند. بنابراین قابلیت rename همیشه سالم می‌ماند.
+
+---
+
+## ADR-001 — Modular Monolith + لایه‌بندی Hexagonal سبک
+**وضعیت:** `Accepted` (بازنگری‌شده)
+
+**تصمیم:**
+- 7 ماژول به‌علاوه Kernel/Shared (ر.ک. [02-architecture.md](02-architecture.md)).
+- Domain خالص است. Use Caseها **متدهای Application Service** هستند.
+- **Command Bus، Query Bus، Event Sourcing و Generic Repository نداریم.**
+- مرزها با Deptrac کنترل می‌شوند.
+
+**رد شده:**
+- MVC سنتی افزونه‌ها: جفت‌شدگی بالا.
+- DDD کامل با CQRS و Bus: Boilerplate بدون سود در این مقیاس.
+
+---
+
+## ADR-002 — حداقل نسخه‌ها: PHP 8.1، WP 6.6، MySQL 5.7 / MariaDB 10.4، InnoDB
+**وضعیت:** `Accepted`
+
+**پیامد:** در فعال‌سازی پیام واضح نمایش داده می‌شود و خطای Fatal رخ نمی‌دهد. CI روی PHP 8.1 و 8.4 و روی WP 6.6 و latest اجرا می‌شود.
+
+---
+
+## ADR-003 — جداول سفارشی (نه CPT)
+**وضعیت:** `Accepted`
+
+**دلیل:** کوئری بازه زمانی، ایندکس ترکیبی و قفل ردیف.
+
+---
+
+## ADR-004 — ضد Double-booking: جدول `occupancies` + قفل `resource_day_locks` + بررسی مجدد در تراکنش
+**وضعیت:** `Accepted`
+
+**تصمیم:**
+- قفل‌ها به ترتیب `lock_key` گرفته می‌شوند.
+- روی خطای 1213 (deadlock) یا 1205 (lock wait timeout) تا 3 بار Retry می‌شود.
+- مقدار `innodb_lock_wait_timeout` در سطح session برابر 5 گذاشته می‌شود.
+- تست همزمانی در CI: 30 درخواست موازی برای یک اسلات، که دقیقاً یکی (یا به اندازه ظرفیت) موفق شود.
+
+**رد شده:**
+- فقط چک در کد: race condition.
+- ایزولاسیون SERIALIZABLE: deadlock زیاد.
+
+---
+
+## ADR-005 — Action Scheduler، با ثبت Job داخل تراکنش (بدون جدول Outbox)
+**وضعیت:** `Accepted` (بازنگری‌شده، جایگزین طرح Outbox)
+
+**زمینه:** جداول Action Scheduler در دیتابیس WP و InnoDB هستند و روی همان connection نوشته می‌شوند.
+
+**تصمیم:**
+- Jobهای حیاتی (اعلان تأیید، یادآوری، انقضای پرداخت) **داخل همان تراکنش** رزرو ثبت می‌شوند. پس اتمی‌اند.
+- رویدادهای غیرحیاتی بعد از COMMIT منتشر می‌شوند.
+- Idempotency با `dedup_key` تضمین می‌شود.
+
+**رد شده:** جدول Outbox + Relay جداگانه. همان تضمین را با پیچیدگی بیشتر می‌دهد.
+
+---
+
+## ADR-006 — بدون Foreign Key فیزیکی
+**وضعیت:** `Accepted`
+
+**دلیل:** ابزارهای بکاپ و مهاجرت وردپرس با FK مشکل دارند. یکپارچگی در کد تأمین می‌شود و تست Integration دارد.
+
+---
+
+## ADR-007 — Admin با React هسته WP؛ Front با Preact
+**وضعیت:** `Accepted`
+
+**تصمیم:**
+- **Admin:** React + @wordpress/components + DataViews + TanStack Query.
+- **ویجت و پنل مشتری:** Preact + signals.
+- **کد مشترک** در `packages/shared` است و به هیچ فریم‌ورکی وابسته نیست.
+
+**رد شده:**
+- Vue: خارج از اکوسیستم WP.
+- Interactivity API برای ویجت: برای state پیچیده رزرو محدود است.
+- jQuery.
+
+---
+
+## ADR-008 — سبک کد PHP: PSR-12 + camelCase + Sniffهای امنیتی و i18n از WPCS
+**وضعیت:** `Accepted` (تأیید کارفرما)
+
+**تصمیم:**
+- پوشه `src/` از PSR-12 پیروی می‌کند: 4 فاصله و camelCase برای متدها و متغیرها.
+- ruleset شامل موارد زیر است:
+  - `WordPress.Security.*`
+  - `WordPress.DB.PreparedSQL*`
+  - `WordPress.WP.I18n`
+  - `WordPress.WP.EnqueuedResources`
+  - `PHPCompatibilityWP`
+  - Slevomat (type hints، unused uses، strict types)
+- فایل‌های `templates/*.php` از WPCS کامل پیروی می‌کنند.
+- پیکربندی در `tools/phpcs.xml` است.
+
+---
+
+## ADR-009 — تقویم Admin: کامپوننت اختصاصی سبک
+**وضعیت:** `Accepted`
+
+**تصمیم:**
+- نسخه 1.0 سه نما دارد: **روز با ستون هر پرسنل**، **هفته** و **لیست** (DataViews). نمای ماه بعداً اضافه می‌شود.
+- Drag & Drop با `@dnd-kit` انجام می‌شود و جلالی و RTL بومی است.
+- محدوده عمداً کوچک است و فقط همان چیزی ساخته می‌شود که منشی واقعاً لازم دارد.
+
+**رد شده:** FullCalendar Premium، به‌خاطر لایسنس پولی و جلالی ناقص.
+
+---
+
+## ADR-010 — پول: عدد صحیح ریال
+**وضعیت:** `Accepted`
+
+**تصمیم:** `Money { int amount; Currency currency }`. هیچ float در هیچ‌جا. تبدیل ریال و تومان فقط در Formatter و در Adapter درگاه انجام می‌شود.
+
+---
+
+## ADR-011 — DI: Container کوچک اختصاصی با Factory صریح
+**وضعیت:** `Accepted` (بازنگری‌شده، جایگزین league/container + Strauss)
+
+**تصمیم:**
+- Container حدود 100 خط است و API آن به سبک PSR-11 است (`get` و `has`)، ولی پکیج `psr/container` را نصب نمی‌کنیم تا با افزونه‌های دیگر تداخل نداشته باشد.
+- متدهای آن `set(id, factory)`، `singleton` و `get` هستند.
+- **Autowiring ندارد.** هر ماژول سرویس‌هایش را در `register()` صریحاً می‌سازد.
+- در نتیجه هیچ وابستگی Production نداریم (جز Action Scheduler) و به Strauss نیازی نیست.
+
+**پیامد:**
+- (+) خوانا، سریع و بدون تداخل با افزونه‌های دیگر.
+- (−) سیم‌کشی دستی لازم است، که در این مقیاس قابل قبول است.
+
+---
+
+## ADR-012 — ووکامرس = یک درگاه، نه منبع حقیقت
+**وضعیت:** `Accepted`
+
+**تصمیم:** جدول `payments` ما منبع حقیقت است. ووکامرس اختیاری است و با HPOS سازگار است.
+
+---
+
+## ADR-013 — شناسه عمومی ULID فقط برای Appointment و Customer
+**وضعیت:** `Accepted` (بازنگری‌شده)
+
+**تصمیم:** بقیه موجودیت‌ها فقط `id` عددی دارند و فقط در Admin استفاده می‌شوند. کد پیگیری کوتاه انسانی هم داریم.
+
+---
+
+## ADR-014 — رمزنگاری فقط برای Secretها (نسخه 1.0)
+**وضعیت:** `Accepted` (بازنگری‌شده)
+
+**تصمیم:**
+- کلیدهای API درگاه و پیامک با `sodium` رمزنگاری می‌شوند. کلید رمزنگاری از `AUTH_KEY` مشتق می‌شود.
+- رمزنگاری سطح فیلد برای داده حساس بالینی به Add-on تخصصی آینده موکول شده است.
+
+---
+
+## ADR-015 — Build: @wordpress/scripts + pnpm workspaces
+**وضعیت:** `Accepted`
+
+---
+
+## ADR-016 — بدون حوزه تخصصی؛ ضد Overengineering
+**وضعیت:** `Accepted` (تصمیم کارفرما)
+
+**تصمیم:**
+- هسته یک **افزونه نوبت‌دهی عمومی** است.
+- قابلیت‌های تخصصی (پرونده بالینی، چارت دندانی، انبار، اقساط) Add-on آینده‌اند.
+- قانون‌های پیچیدگی در [../04-engineering/01-principles.md §0](../04-engineering/01-principles.md) الزام‌آورند.
+
+**حذف‌شده از طرح اولیه:**
+- Ledger دوطرفه
+- جدول Outbox
+- جدول idempotency_keys
+- Command Bus
+- league/container و Strauss
+- تولید OpenAPI
+- Zustand و TanStack Router
+- Mutation testing (Infection)
+- کتابخانه Property-based (Eris)
+- رمزنگاری فیلدهای بالینی
+- Specialty Packها
+- Multisite ویژه
