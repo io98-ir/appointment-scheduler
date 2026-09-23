@@ -34,7 +34,7 @@
 
 **تأیید:** فقط اسناد تغییر کردند. کدی وجود ندارد.
 **قدم بعدی:** T0.1 (اسکلت Repo). اول بررسی نسخه‌های PHP، Composer، Node، pnpm و Docker روی سیستم.
-**Commitها:** `docs: planning, architecture and delivery workflow` (commit اولیه)
+**Commitها:** `727973a docs: research, architecture, principles and delivery workflow` (commit اولیه). `.gitattributes` با `eol=lf` هم اضافه شد.
 
 ## 2026-09-23 — سشن 1 (بخش 1) — تحقیق و معماری اولیه
 **Taskها:** P.1، P.2

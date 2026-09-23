@@ -31,7 +31,7 @@
 | P.1 | تحقیق رقبا و اکوسیستم | ✅ | docs/01-research |
 | P.2 | Stack، معماری، مدل داده، ADRها | ✅ | docs/03-architecture |
 | P.3 | اصول مهندسی + ضد Overengineering | ✅ | docs/04-engineering |
-| P.4 | Roadmap، Tracker، Worklog، Agent workflow | ✅ | docs/05-delivery، .claude/ |
+| P.4 | Roadmap، Tracker، Worklog، Agent workflow | ✅ | `727973a` |
 | T0.1 | اسکلت Repo | ⬜ | |
 | T0.2 | ابزار کیفیت PHP | ⬜ | |
 | T0.3 | Kernel | ⬜ | |
