@@ -13,6 +13,8 @@
   5. `require vendor/woocommerce/action-scheduler/action-scheduler.php`. **باید در فایل اصلی و قبل از `plugins_loaded` باشد.** Action Scheduler خودش نسخه‌ها را بین افزونه‌ها هماهنگ می‌کند.
   6. `register_activation_hook`، `register_deactivation_hook` و `register_uninstall_hook` یا `uninstall.php`، همه در scope سطح بالای فایل
   7. `add_action('plugins_loaded', [Plugin::class, 'boot'], 5)`
+- **ابزار کیفیت روی فایل‌های سازگار با PHP 7.0 (برای T0.2):** `vaqtyar.php`، `uninstall.php` و `src/Kernel/Requirements.php` نمی‌توانند visibility برای const یا نوع برگشتی `void` داشته باشند. در `tools/phpcs.xml` sniffهای `PSR12.Properties.ConstantVisibility` و return type hint اسلوومت را برای همین فایل‌ها exclude کن، و sniff `PHPCompatibility` با `testVersion 7.0-` را فقط روی همین سه فایل اجرا کن. **فایل را به سینتکس جدید «اصلاح» نکن.**
+- `uninstall.php` هم باید روی PHP قدیمی parse شود، چون WP آن را حتی وقتی Requirements رد شده اجرا می‌کند.
 - **نسخه در دو جا تعریف می‌شود:** `Version:` در header و ثابت `VERSION`. اسکریپت release برابری این دو را بررسی می‌کند.
 - **Header** شامل این موارد است:
   - `Requires at least: 6.6`
@@ -27,6 +29,7 @@
 - **`"config": {"platform": {"php": "8.1.0"}}`**: وابستگی‌ها با PHP 8.1 سازگار resolve می‌شوند، حتی اگر PHP محلی 8.3 باشد. **فراموش نشود.**
 - `allow-plugins` برای `dealerdirect/phpcodesniffer-composer-installer` تنظیم می‌شود.
 - اسکریپت‌ها: `lint`، `lint:fix`، `stan`، `deptrac`، `test:unit`، `test:integration`، `check`.
+- **مسیر Repo پرانتز دارد:** در فایل‌های `.neon` (PHPStan) مسیر مطلق را حتماً در quote بگذار، وگرنه Nette آن را Statement تفسیر می‌کند و خطای `expandIncludedFile()` می‌دهد. مسیر نسبی (`%currentWorkingDirectory%` یا نسبت به فایل neon) بهتر است.
 - Build تولیدی: `composer install --no-dev --optimize-autoloader --classmap-authoritative`.
 
 ## 3. i18n: تله‌های WP 6.7+

@@ -64,7 +64,8 @@ src/Modules/Booking/
 ## 5. Kernel و چرخه عمر
 ```
 vaqtyar.php
-  ├─ Requirements::check()        PHP، WP، InnoDB، mbstring. اگر رد شود: admin notice و توقف (بدون Fatal)
+  ├─ Requirements::met()          PHP، WP، نسخه MySQL/MariaDB، mbstring، وجود vendor. اگر رد شود: admin notice و توقف (بدون Fatal)
+  │                               (InnoDB نیاز به کوئری دارد، پس Migrator هنگام ساخت جدول بررسی‌اش می‌کند، نه هر درخواست)
   └─ روی plugins_loaded:
        Plugin::boot()
          ├─ Container + Identity

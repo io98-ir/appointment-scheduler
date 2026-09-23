@@ -38,6 +38,15 @@ winget install --id GitHub.cli -e            # اختیاری
 **بدون Docker چه چیزی ممکن نیست:** تست Integration با MySQL، **تست همزمانی** (قفل InnoDB) و E2E.
 WordPress Playground از SQLite استفاده می‌کند و **برای تست قفل ردیف مناسب نیست**.
 
+**Smoke محلی با WordPress Playground (بدون Docker):** برای دیدن فعال‌سازی واقعی افزونه روی نسخه‌های مختلف PHP و WP کافی است (T0.1 همین‌طور تأیید شد):
+```
+MSYS_NO_PATHCONV=1 npx -y @wp-playground/cli@latest run-blueprint --blueprint=./bp.json   --mount-dir "J:/New folder (2)/extention_php" /wordpress/wp-content/plugins/vaqtyar   --mount-dir "<scratch>/out" /out
+```
+- نسخه PHP و WP را با `preferredVersions` داخل Blueprint بده. `run-blueprint` پرچم `--php` را نادیده می‌گیرد.
+- گام `runPHP` فقط کد inline (string) می‌پذیرد. نتیجه را در فایلی زیر `/out` بنویس.
+- در Git Bash بدون `MSYS_NO_PATHCONV=1`، مسیر `/wordpress/...` به `C:/Program Files/Git/...` تبدیل می‌شود.
+- `wpdb::db_server_info()` در Playground مقدار `8.0.38-mysql-on-sqlite-…` برمی‌گرداند.
+
 ## 3. نکات Windows و این Repo
 - **مسیر پروژه فاصله و پرانتز دارد** (`J:\New folder (2)\extention_php`). همیشه مسیرها را در quote بگذار. اگر ابزاری با مسیر مشکل داشت (مثلاً mount در Docker یا اسکریپت‌های shell)، اول همین را بررسی کن. پیشنهاد به کاربر: انتقال به مسیری بدون فاصله، مثل `J:\dev\appointment-scheduler`.
 - **Shell:** ابزار PowerShell روی نسخه 5.1 است: `&&` کار نمی‌کند و here-string هنگام pipe به native command مشکل دارد. برای پیام commit از فایل استفاده کن (`git commit -F <file>`). Bash (Git Bash) هم در دسترس است.

@@ -1,0 +1,42 @@
+{
+    "name": "io98-ir/vaqtyar",
+    "description": "Appointment booking for WordPress.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1",
+        "woocommerce/action-scheduler": "^3.9"
+    },
+    "require-dev": {
+        "brain/monkey": "^2.6",
+        "deptrac/deptrac": "^2.0",
+        "mockery/mockery": "^1.6",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^9.6",
+        "slevomat/coding-standard": "^8.15",
+        "squizlabs/php_codesniffer": "^3.10",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "wp-coding-standards/wpcs": "^3.1",
+        "yoast/phpunit-polyfills": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Vaqtyar\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Vaqtyar\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.1.0"
+        },
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    }
+}

@@ -1,0 +1,10 @@
+{
+	"name": "Vaqtyar",
+	"slug": "vaqtyar",
+	"namespace": "Vaqtyar",
+	"const_prefix": "VAQTYAR",
+	"prefix": "vqy",
+	"hook_prefix": "vaqtyar",
+	"text_domain": "vaqtyar",
+	"rest_namespace": "vaqtyar/v1"
+}
