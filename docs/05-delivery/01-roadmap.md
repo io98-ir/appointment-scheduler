@@ -29,7 +29,7 @@
 | T0.7 | Persistence: `Db` (wrapper روی wpdb با prepare و insert/update typed)، `Transaction` (با Retry روی deadlock)، `Migrator` + `Migration` base | تست Integration: اجرای migration، idempotency و Rollback تراکنش |
 | T0.8 | REST base: `Controller` پایه، ثبت route با Identity، Error Envelope، تبدیل Exception به HTTP، `RateLimiter`، Pagination helper | تست Integration: endpoint نمونه، 403، 422 و 429 |
 | T0.9 | `Settings` (typed، گروه‌بندی، autoload=no برای موارد حجیم)، `SecretStore` (sodium)، `Logger` (جدول logs)، ثبت Capabilityها روی نقش‌ها | تست Unit و Integration |
-| T0.10 | محیط: `.wp-env.json`، bootstrap تست Integration، **GitHub Actions** (lint، stan، deptrac، test-php با ماتریس، build) | CI روی push سبز است |
+| T0.10 | محیط: `.wp-env.json` (✅ از قبل ساخته شده)، bootstrap تست Integration، **GitHub Actions** (lint، stan، deptrac، test-php با ماتریس، و **Integration و Concurrency روی wp-env داخل runner**، build) | CI روی push سبز است. **Docker محلی لازم نیست**: تست‌های وابسته به MySQL در CI اجرا می‌شوند |
 | T0.11 | JS workspace: `pnpm-workspace`، `packages/shared` (api client، types، jalali، money)، `packages/admin` (shell صفحه Admin + router ساده)، `packages/widget` (Preact + mount)، wp-scripts، ESLint، Prettier، Stylelint، Vitest، size-limit | `pnpm build` و `pnpm test` سبزند و صفحه خالی Admin رندر می‌شود |
 
 ## M1 — کاتالوگ و زمان‌بندی

@@ -10,7 +10,7 @@ A general-purpose WordPress booking plugin, Iranian market first, built to be so
 - Before writing code, read `docs/04-engineering/03-implementation-notes.md`, which lists known traps: the main file must not use PHP 8 syntax, composer `config.platform.php` is 8.1, no `__()` before `init`, and no SQL `NOW()`.
 - Installed skills cover WordPress, TDD, debugging, verification and frontend design. **Project docs and ADRs override skill advice.** Known conflicts are listed in `docs/05-delivery/05-agent-tooling.md` §4.
 - The remote is `origin` on GitHub (io98-ir/appointment-scheduler). Push happens at `/wrap`. Never force-push.
-- The environment is Windows and PowerShell 5.1: no `&&`, and commit messages go through a file with `git commit -F`. Tool status is in `docs/04-engineering/02-dev-environment.md`. PHP, Composer and Docker were missing as of 2026-09-23.
+- The environment is Windows and PowerShell 5.1: no `&&`, and commit messages go through a file with `git commit -F`. Tool status is in `docs/04-engineering/02-dev-environment.md`. PHP 8.3 and Composer are installed as of 2026-09-24. If they aren't found, refresh PATH first. Docker is not used locally by decision: MySQL, integration, concurrency and E2E tests run in GitHub Actions on wp-env.
 
 ## Non-negotiables
 - **No overengineering.** Principles §0 applies: add an abstraction only when there are 2 or more real implementations or an external boundary. No speculative code. No new production dependency without an ADR. The one area where we never cut corners is correctness: booking locks, money, security and migrations.

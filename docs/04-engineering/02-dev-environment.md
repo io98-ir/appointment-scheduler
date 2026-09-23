@@ -12,10 +12,11 @@
 | Python | ✅ | 3.13 | Skill `webapp-testing` (Playwright Python) |
 | intelephense | ✅ (نصب شد) | npm global | LSP برای PHP (plugin `php-lsp`) |
 | typescript + typescript-language-server | ✅ (نصب شد) | npm global | LSP برای TS (plugin `typescript-lsp`) |
-| **PHP** | ❌ **نصب نیست** | لازم: 8.3 (حداقل 8.1) | Composer، PHPUnit، PHPStan، PHPCS، `rename.php` ← **T0.1 به بعد** |
-| **Composer** | ❌ **نصب نیست** | 2.x | وابستگی‌ها و autoload ← **T0.1** |
-| **Docker Desktop** (WSL2) | ❌ **نصب نیست** | | `wp-env` ← تست Integration، Concurrency و E2E (**T0.7 به بعد، و T0.10**) |
-| GitHub CLI (`gh`) | ❌ | | اختیاری: مشاهده CI و PR |
+| **PHP** | ✅ (2026-09-24، winget) | 8.3.33 ZTS x64 | Composer، PHPUnit، PHPStan، PHPCS. مسیر: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\PHP.PHP.8.3_…\php.exe`، فایل `php.ini` از قالب development ساخته شد. extensionهای intl، sodium، mbstring، openssl، curl، mysqli، pdo_mysql، zip، fileinfo و gd فعال‌اند. `memory_limit=1G` |
+| **Composer** | ✅ (نصب رسمی با بررسی امضای SHA384) | 2.10.3 | `%LOCALAPPDATA%\Composer\bin\composer.bat` (در PATH کاربر) |
+| **Docker Desktop** | ⏭️ **به تصمیم کاربر روی این سیستم نصب نمی‌شود** | | بستر آماده است: `.wp-env.json`. تست Integration، Concurrency و E2E **در GitHub Actions** اجرا می‌شوند (runnerها Docker دارند). روی هر سیستمی که Docker دارد: `npx wp-env start` |
+| GitHub CLI (`gh`) | ✅ نصب شد، ⬜ **لاگین نشده** | 2.101.0 | کاربر باید `gh auth login` را اجرا کند تا وضعیت CI از اینجا دیده شود |
+| Coverage driver (pcov/xdebug) | ❌ | | Coverage فقط در CI اندازه‌گیری می‌شود |
 | WP-CLI | ❌ | | داخل wp-env موجود است (`npx wp-env run cli wp …`). نصب محلی لازم نیست |
 | winget | ✅ | | نصب ابزارها |
 
@@ -29,6 +30,9 @@ winget install --id GitHub.cli -e            # اختیاری
 **Extensionهای لازم PHP** در `php.ini`:
 - `mbstring`, `intl`, `sodium`, `openssl`, `curl`, `mysqli`, `pdo_mysql`, `zip`, `fileinfo`
 - `xdebug` یا `pcov` برای Coverage
+
+> وضعیت 2026-09-24: PHP و Composer و gh نصب شدند. Docker طبق تصمیم کاربر محلی نصب نمی‌شود.
+> **نکته شل:** بعد از نصب، PATH در سشن‌های ابزار قدیمی به‌روز نمی‌شود. اگر `php` یا `composer` پیدا نشد، اول این را اجرا کن: `$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')`. در غیر این صورت از مسیر کامل استفاده کن.
 
 **بدون Docker چه چیزی ممکن است:** تست Unit در Domain و Application، PHPStan، PHPCS، Deptrac و Build JS.
 **بدون Docker چه چیزی ممکن نیست:** تست Integration با MySQL، **تست همزمانی** (قفل InnoDB) و E2E.

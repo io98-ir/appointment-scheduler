@@ -10,9 +10,9 @@
 | **Task بعدی** | **T0.1** — اسکلت Repo (ر.ک. [01-roadmap.md](01-roadmap.md#m0--زیربنا)) |
 | **Task در حال انجام** | — |
 | **آخرین کار انجام‌شده** | اتصال به GitHub، نصب 14 Skill، نصب باینری‌های LSP، و نوشتن اسناد محیط، ابزار Agent و تله‌های فنی (2026-09-23) |
-| **Blockerها** | ⛔ **PHP 8.3 و Composer نصب نیستند.** T0.1 را می‌شود نوشت، ولی قابل تأیید نیست. ⛔ **Docker نصب نیست.** بدون آن تست Integration، همزمانی و E2E ممکن نیست (از T0.7). دستورهای نصب در [../04-engineering/02-dev-environment.md](../04-engineering/02-dev-environment.md) آمده است |
-| **کار کاربر** | (1) نصب PHP، Composer و Docker، یا اجازه نصب با winget. (2) نصب pluginهای `php-lsp`، `typescript-lsp` و `security-guidance` از Manage plugins در VS Code با Project scope. (3) اختیاری: انتقال پروژه به مسیری بدون فاصله |
-| **نکته برای سشن بعد** | قبل از T0.1 دوباره `php -v`، `composer -V` و `docker -v` را چک کن. اول [../04-engineering/03-implementation-notes.md](../04-engineering/03-implementation-notes.md) §1 و §2 را بخوان: فایل اصلی بدون سینتکس PHP 8، و `config.platform.php = 8.1.0` |
+| **Blockerها** | — (PHP 8.3 و Composer نصب شدند. Docker محلی لازم نیست و تست‌های MySQL در CI اجرا می‌شوند) |
+| **کار کاربر (اختیاری)** | (1) `gh auth login` تا وضعیت CI از اینجا دیده شود. (2) نصب pluginهای `php-lsp`، `typescript-lsp` و `security-guidance` از Manage plugins در VS Code. (3) انتقال پروژه به مسیری بدون فاصله |
+| **نکته برای سشن بعد** | اگر `php` یا `composer` پیدا نشد، PATH را refresh کن (dev-environment §2). اول [../04-engineering/03-implementation-notes.md](../04-engineering/03-implementation-notes.md) §1 و §2 را بخوان: فایل اصلی بدون سینتکس PHP 8، و `config.platform.php = 8.1.0` |
 
 ## خلاصه Milestoneها
 | Milestone | وضعیت | پیشرفت |
@@ -33,8 +33,8 @@
 | P.2 | Stack، معماری، مدل داده، ADRها | ✅ | docs/03-architecture |
 | P.3 | اصول مهندسی + ضد Overengineering | ✅ | docs/04-engineering |
 | P.4 | Roadmap، Tracker، Worklog، Agent workflow | ✅ | `727973a` |
-| P.5 | GitHub remote، Skillها، محیط، ADR-017 و 018، تله‌های فنی | ✅ | این commit |
-| P.6 | نصب PHP، Composer و Docker (کار کاربر) | ⛔ | منتظر کاربر |
+| P.5 | GitHub remote، Skillها، محیط، ADR-017 و 018، تله‌های فنی | ✅ | `8104685` |
+| P.6 | نصب PHP 8.3، Composer و gh + `.wp-env.json` (Docker فقط در CI) | ✅ | 2026-09-24 |
 | T0.1 | اسکلت Repo | ⬜ | |
 | T0.2 | ابزار کیفیت PHP | ⬜ | |
 | T0.3 | Kernel | ⬜ | |
