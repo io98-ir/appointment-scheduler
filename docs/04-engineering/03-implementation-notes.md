@@ -12,7 +12,15 @@
   4. `vendor/autoload.php`. اگر نبود: notice «composer install اجرا نشده» و `return`
   5. `require vendor/woocommerce/action-scheduler/action-scheduler.php`. **باید در فایل اصلی و قبل از `plugins_loaded` باشد.** Action Scheduler خودش نسخه‌ها را بین افزونه‌ها هماهنگ می‌کند.
   6. `register_activation_hook`، `register_deactivation_hook` و `register_uninstall_hook` یا `uninstall.php`، همه در scope سطح بالای فایل
-  7. `add_action('plugins_loaded', [Plugin::class, 'boot'], 5)`
+  7. `add_action('plugins_loaded', static function () { (new \Vaqtyar\Kernel\Plugin(VAQTYAR_FILE, VAQTYAR_VERSION))->boot(new XModule(), …); }, 5)`. فایل اصلی Composition root است (architecture §5). closure بدون `: void` نوشته می‌شود، چون `void` از PHP 7.1 است.
+- **تله Activation (برای T0.7):**
+  - در درخواستی که افزونه را فعال می‌کند، `plugins_loaded` قبل از include شدن فایل اصلی رخ داده است. پس closure بالا اجرا نمی‌شود: Container ساخته نمی‌شود و هیچ `boot()` ای اجرا نمی‌شود.
+  - در نتیجه `register_activation_hook` نباید داخل `boot()` ماژول باشد و باید در سطح بالای فایل اصلی بماند (مورد 6).
+  - لیست ماژول‌ها باید یک‌جا در سطح بالای فایل اصلی تعریف شود تا هم boot و هم activation (migration و capability) از آن استفاده کنند. مثال سازگار با PHP 7.0: `$vaqtyar_modules = static function () { return array(new XModule(), …); };`. این تغییر در T0.7 انجام می‌شود، چون اولین نیاز واقعی همان‌جاست.
+- **Container (T0.3):**
+  - شناسه همیشه نام کلاس یا interface است (`class-string`)، تا `get()` نوع درست برگرداند.
+  - PHPStan اتصال نادرست را تشخیص نمی‌دهد، چون T را از هر دو آرگومان استنتاج می‌کند (مثلاً `set(Foo::class, fn () => new Bar())`). بررسی `instanceof` در زمان اجرا تنها محافظ است.
+  - ثبت دوباره یک شناسه Exception می‌دهد. override سرویس نداریم.
 - **ابزار کیفیت روی فایل‌های سازگار با PHP 7.0 (برای T0.2):** `vaqtyar.php`، `uninstall.php` و `src/Kernel/Requirements.php` نمی‌توانند visibility برای const یا نوع برگشتی `void` داشته باشند. در `tools/phpcs.xml` sniffهای `PSR12.Properties.ConstantVisibility` و return type hint اسلوومت را برای همین فایل‌ها exclude کن، و sniff `PHPCompatibility` با `testVersion 7.0-` را فقط روی همین سه فایل اجرا کن. **فایل را به سینتکس جدید «اصلاح» نکن.**
 - `uninstall.php` هم باید روی PHP قدیمی parse شود، چون WP آن را حتی وقتی Requirements رد شده اجرا می‌کند.
 - **نسخه در دو جا تعریف می‌شود:** `Version:` در header و ثابت `VERSION`. اسکریپت release برابری این دو را بررسی می‌کند.
@@ -67,6 +75,13 @@
 - Routeها روی `rest_api_init` ثبت می‌شوند. Namespace از `Identity`.
 - `permission_callback` **همیشه** تعریف می‌شود. برای endpoint عمومی: callback ای که nonce یا توکن را بررسی کند، یا `__return_true` **فقط برای GET عمومی** (مثل availability)، همراه با rate limit.
 - `args` با `type`، `required`، `sanitize_callback` و `validate_callback`. Validation دامنه‌ای در Value Objectها انجام می‌شود.
+- **پیام Exception متن ساده است و هرگز بدون escape در HTML چاپ نمی‌شود.** sniff `EscapeOutput.ExceptionNotEscaped` در `tools/phpcs.xml` به همین دلیل exclude شده است:
+  - REST پیام را در JSON برمی‌گرداند.
+  - Exception غیرمنتظره به یک پیام عمومی تبدیل می‌شود و متن اصلی فقط در لاگ ثبت می‌شود.
+  - هر جایی از wp-admin که پیام نمایش داده می‌شود، هنگام render از `esc_html()` استفاده می‌کند.
+
+  **Plugin Check این sniff را گزارش می‌کند.** `Late_Escaping_Check` کل `WordPress.Security.EscapeOutput` را بدون استثنا اجرا می‌کند (از سورس plugin-check بررسی شد، 2026-09-24). پس هر `throw` که آرگومان متغیر دارد در Plugin Check خطا می‌گیرد. Domain نمی‌تواند `esc_html()` صدا بزند، پس راه‌حل همگانی نداریم. **اگر wp.org کانال فروش شد (تصمیم باز 2)، این سیاست قبل از T6.4 بازبینی می‌شود.** گزینه این است که پیام Exception در Domain متغیر نداشته باشد و جزئیات در property نگه داشته شود.
+- در پیام Exception ورودی کاربر گذاشته نشود. با `WP_DEBUG_DISPLAY`، PHP پیام Exception گرفته‌نشده را خام چاپ می‌کند.
 
 ## 7. Assets
 - Assetها فقط در صفحات لازم enqueue می‌شوند. در Admin با بررسی `$hook_suffix`. در Front با بررسی وجود block یا shortcode (`has_block()`، یا ثبت lazy در render callback).

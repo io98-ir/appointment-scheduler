@@ -35,3 +35,14 @@ require_once __DIR__ . '/vendor/autoload.php';
 // Must load from the main file, before plugins_loaded: Action Scheduler picks
 // the newest copy among all active plugins at that point.
 require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
+
+// Composition root: the modules are listed here, so the kernel depends on none.
+// On the activation request plugins_loaded has already fired when this file is
+// included, so activation must not rely on boot() (implementation-notes §1).
+add_action(
+    'plugins_loaded',
+    static function () {
+        (new \Vaqtyar\Kernel\Plugin(VAQTYAR_FILE, VAQTYAR_VERSION))->boot();
+    },
+    5
+);

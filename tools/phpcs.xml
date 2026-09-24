@@ -23,7 +23,15 @@
 
     <rule ref="PHPCompatibilityWP"/>
 
-    <rule ref="WordPress.Security"/>
+    <rule ref="WordPress.Security">
+        <!--
+            Exception messages are plain text for developers and logs, and Domain
+            code cannot call esc_html(). Messages we render are escaped where they
+            are rendered (implementation-notes §6). Plugin Check does report this
+            sniff, so the policy is revisited if wp.org becomes a channel.
+        -->
+        <exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
+    </rule>
     <rule ref="WordPress.DB.PreparedSQL"/>
     <rule ref="WordPress.DB.PreparedSQLPlaceholders"/>
     <rule ref="WordPress.WP.EnqueuedResources"/>
@@ -81,5 +89,6 @@
     </rule>
     <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingNativeTypeHint">
         <exclude-pattern>*/src/Kernel/Requirements\.php$</exclude-pattern>
+        <exclude-pattern>*/vaqtyar\.php$</exclude-pattern>
     </rule>
 </ruleset>

@@ -103,7 +103,8 @@ deptrac:
     Presentation: [Application, Domain, Contracts, SharedDomain, Shared, Kernel, WordPress, Superglobals]
     ModuleEntry: [Presentation, Infrastructure, Application, Domain, Contracts, SharedDomain, Shared, Kernel, WordPress]
     Shared: [SharedDomain, Kernel, WordPress, Superglobals]
-    # How the Kernel learns the module entry classes is decided in T0.3.
+    # The main plugin file is the composition root and passes the modules in,
+    # so the Kernel depends on no module (architecture §5).
     Kernel: [Shared, SharedDomain, WordPress, Superglobals]
     # Action Scheduler reads superglobals itself.
     WordPress: [Superglobals]

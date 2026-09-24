@@ -66,15 +66,27 @@ src/Modules/Booking/
 vaqtyar.php
   ├─ Requirements::met()          PHP، WP، نسخه MySQL/MariaDB، mbstring، وجود vendor. اگر رد شود: admin notice و توقف (بدون Fatal)
   │                               (InnoDB نیاز به کوئری دارد، پس Migrator هنگام ساخت جدول بررسی‌اش می‌کند، نه هر درخواست)
-  └─ روی plugins_loaded:
-       Plugin::boot()
-         ├─ Container + Identity
-         ├─ ModuleRegistry: فقط ماژول‌های فعال
-         ├─ module->register(container)     فقط binding، بدون Side effect
-         ├─ Migrator: اگر db_version عقب باشد (با GET_LOCK)
-         └─ module->boot(context)           hooks بر اساس Context: admin | rest | frontend | cron | cli
+  └─ روی plugins_loaded (اولویت 5):
+       Kernel\Plugin::boot(file, version, ...modules)   لیست ماژول‌ها از فایل اصلی می‌آید (Composition root)
+         ├─ ModuleRegistry: id یکتا (روشن و خاموش کردن ماژول در T6.2)
+         ├─ Container
+         ├─ module->register(container)     همه ماژول‌ها، فقط binding، بدون Side effect
+         ├─ Migrator: اگر db_version عقب باشد (با GET_LOCK)        ← T0.7
+         └─ module->boot(context)           همه ماژول‌ها. Context = container + مسیر فایل اصلی + نسخه
 ```
-- **Context-aware:** صفحه Front بدون ویجت یعنی صفر asset و صفر کوئری.
+- **Composition root = فایل اصلی افزونه** (T0.3). فایل اصلی نمونه ماژول‌ها را به `Plugin::boot()` پاس می‌دهد. در نتیجه Kernel به هیچ ماژولی وابسته نیست و deptrac همین را اجبار می‌کند. فایل اصلی سینتکس PHP 7.0 دارد، ولی `new XModule()` داخل closure مشکلی ایجاد نمی‌کند.
+- **Context نوع درخواست را حدس نمی‌زند.** در `plugins_loaded` هنوز `REST_REQUEST` تعریف نشده و تشخیص REST فقط حدسی است. ماژول کار هر نوع درخواست را با hook خود وردپرس محدود می‌کند:
+  - REST: `rest_api_init`
+  - Admin: `admin_menu` و `admin_enqueue_scripts`
+  - Front: `wp_enqueue_scripts` و render بلوک
+  - CLI: `cli_init`
+  - Cron: Action Scheduler
+
+  سرویس‌ها داخل callback از Container گرفته می‌شوند.
+- **Context-aware:** صفحه Front بدون ویجت یعنی صفر asset و صفر کوئری. این نتیجه طبیعی قاعده بالاست.
+- **Exception در boot** یعنی باگ. گرفته نمی‌شود و recovery mode وردپرس افزونه را متوقف می‌کند و به مدیر سایت خبر می‌دهد.
+- Hook ثبت ماژول برای Add-onها (`{prefix}/modules/register`، §10) وقتی ساخته می‌شود که اولین Add-on واقعی نوشته شود. آن hook نمونه Registry را به Add-on پاس می‌دهد.
+- **Activation به boot وابسته نیست:** در درخواست فعال‌سازی، `plugins_loaded` زودتر رخ داده است (implementation-notes §1).
 - Activation: Migration، Capabilityها و Jobهای تکراری. Deactivation: لغو Jobها. Uninstall: فقط با گزینه صریح «حذف داده».
 
 ## 6. تراکنش و رویدادها (ساده‌شده)

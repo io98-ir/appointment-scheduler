@@ -16,6 +16,60 @@
 
 ---
 
+## 2026-09-24 — سشن 3 — T0.3 Kernel
+**Taskها:** T0.3
+**انجام شد:**
+- `src/Kernel/`:
+  - `Identity`: ثابت‌های `NAME`، `SLUG`، `PREFIX`، `HOOK_PREFIX` و `REST_NAMESPACE`.
+  - `Container` (ADR-011): `set`، `singleton`، `has` و `get` با شناسه class-string. ثبت تکراری، نوع نادرست و وابستگی چرخه‌ای Exception می‌دهند.
+  - `Module` (interface) و `Context` (container، مسیر فایل اصلی، نسخه).
+  - `ModuleRegistry`: id یکتا و حفظ ترتیب.
+  - `Plugin`: ابتدا `register` همه ماژول‌ها، سپس `boot` همه.
+  - `KernelException`.
+- `vaqtyar.php`: روی `plugins_loaded` با اولویت 5، `(new Plugin(VAQTYAR_FILE, VAQTYAR_VERSION))->boot()` اجرا می‌شود. هنوز ماژولی وجود ندارد.
+- تست‌ها:
+  - `ContainerTest` (9)، `ModuleRegistryTest` (3)، `PluginTest` (3) با ماژول نمونه در `tests/Unit/Kernel/Fixtures`.
+  - `IdentityTest` (3): ثابت‌ها با `identity.json`، header و نام فایل اصلی، ثابت‌های `*_VERSION` و `*_FILE`، و namespace در composer.
+- اسناد: architecture §5 (Composition root، Context، Exception در boot، hook Add-on)، implementation-notes §1 (Container و تله Activation) و §6 (پیام Exception و Plugin Check)، roadmap T0.7.
+
+**تصمیم‌ها و فرض‌ها:**
+- **Composition root = فایل اصلی.** Kernel به هیچ ماژولی وابسته نیست و config فعلی deptrac بدون تغییر درست است.
+- **Context نوع درخواست (admin، rest، …) را حدس نمی‌زند** و با این تصمیم طرح اولیه architecture §5 عوض شد:
+  - در `plugins_loaded` هنوز `REST_REQUEST` تعریف نشده است.
+  - ماژول‌ها کار هر درخواست را با hook خود WP محدود می‌کنند.
+  - ADR لازم نبود، چون این مورد فقط در سند معماری بود و ADR نداشت. reviewer هم تأیید کرد.
+- Exception در boot گرفته نمی‌شود. recovery mode وردپرس افزونه را متوقف می‌کند.
+- hook ثبت ماژول برای Add-onها ساخته نشد، چون هنوز Add-on واقعی وجود ندارد (§0).
+- `Plugin::boot` از static به متد instance تغییر کرد (principles §3: static فقط برای named constructor).
+- **`EscapeOutput.ExceptionNotEscaped` در phpcs exclude شد.**
+  - Domain نمی‌تواند `esc_html()` صدا بزند و پیام Exception متن ساده است.
+  - **Plugin Check این sniff را گزارش می‌کند** (از سورس plugin-check بررسی شد).
+  - اگر wp.org کانال فروش شد (تصمیم باز 2)، این سیاست قبل از T6.4 بازبینی می‌شود.
+- **تله Activation:** در درخواست فعال‌سازی، `plugins_loaded` زودتر رخ داده است، پس boot اجرا نمی‌شود. لیست مشترک ماژول‌ها و activation hook در سطح بالای فایل اصلی به T0.7 سپرده شد، چون اولین نیاز واقعی همان‌جاست.
+
+**تأیید:**
+- ابتدا تست‌ها قرمز بودند (16 خطا، کلاس‌ها وجود نداشتند)، سپس سبز شدند.
+- `composer check` ← exit 0:
+  - phpcs: هر دو ruleset پاک
+  - PHPStan level 9: No errors
+  - deptrac: هر دو config با 0 violation
+  - PHPUnit: OK (36 tests, 88 assertions)
+- WordPress Playground ← افزونه فعال بود، `plugins_loaded=1` بود، `Kernel\Plugin` و `Container` بارگذاری شدند، Action Scheduler بارگذاری شد و `debug.log` خالی بود:
+  - PHP 8.1.34 + WP 6.6.9
+  - PHP 8.4.25 + WP 7.1.2 (دوباره بعد از اصلاحات reviewer)
+- Subagent `reviewer`: باگی در درستی یا امنیت پیدا نکرد. 5 یافته داشت:
+  - تله Activation
+  - Plugin Check و ExceptionNotEscaped
+  - دو جمله نادرست در architecture
+  - متد static
+  - نام دو تست
+
+  همه اصلاح یا مستند شدند.
+
+**مشکلات و باقیمانده:** `gh` لاگین نشده، پس سورس plugin-check از raw.githubusercontent خوانده شد.
+**قدم بعدی:** T0.4 (Helperهای نام + `rename.php`).
+**Commitها:** `feat(kernel): container, module registry and boot (T0.3)`
+
 ## 2026-09-24 — سشن 3 — T0.2 ابزار کیفیت PHP
 **Taskها:** T0.2
 **انجام شد:**
