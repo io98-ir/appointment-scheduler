@@ -50,6 +50,7 @@ MSYS_NO_PATHCONV=1 npx -y @wp-playground/cli@latest run-blueprint --blueprint=./
 ## 3. نکات Windows و این Repo
 - **مسیر پروژه فاصله و پرانتز دارد** (`J:\New folder (2)\extention_php`). همیشه مسیرها را در quote بگذار. اگر ابزاری با مسیر مشکل داشت (مثلاً mount در Docker یا اسکریپت‌های shell)، اول همین را بررسی کن. پیشنهاد به کاربر: انتقال به مسیری بدون فاصله، مثل `J:\dev\appointment-scheduler`.
 - **Shell:** ابزار PowerShell روی نسخه 5.1 است: `&&` کار نمی‌کند و here-string هنگام pipe به native command مشکل دارد. برای پیام commit از فایل استفاده کن (`git commit -F <file>`). Bash (Git Bash) هم در دسترس است.
+- **بک‌اسلش در ابزار Bash:** heredoc، `sed` و `printf` در ابزار Bash گاهی بک‌اسلش را حذف یا تفسیر می‌کنند (مثلاً `\\` به `\` و `\a` به کاراکتر bell). فایلی را که بک‌اسلش دارد، مثل namespaceهای PHP یا regex در YAML، با ابزار Write یا Edit بنویس و بعد با `od -c` بررسی کن.
 - **پایان خط:** `.gitattributes` با `eol=lf` تنظیم شده است. فایل‌ها را با LF بنویس.
 - **نام پوشه در برابر slug:** پوشه Repo `extention_php` است و Remote `appointment-scheduler`. slug فنی افزونه (`vaqtyar`) از Identity می‌آید. خروجی zip در Build همیشه در پوشه‌ای به نام slug قرار می‌گیرد (T6.6). در wp-env، پوشه افزونه با `"plugins": ["."]` mount می‌شود و نام پوشه در WP همان basename است. این در توسعه اشکالی ندارد.
 
@@ -58,14 +59,17 @@ MSYS_NO_PATHCONV=1 npx -y @wp-playground/cli@latest run-blueprint --blueprint=./
 - هویت commit: همان git config کاربر.
 - سیاست push: ر.ک. [../05-delivery/03-agent-workflow.md](../05-delivery/03-agent-workflow.md) §2.9.
 
-## 5. دستورهای استاندارد (از T0.2 به بعد تعریف می‌شوند)
+## 5. دستورهای استاندارد
 | دستور | کار |
 |---|---|
-| `composer lint` | PHPCS |
-| `composer stan` | PHPStan level 9 |
-| `composer deptrac` | قوانین لایه‌ها |
-| `composer test:unit` | PHPUnit بدون WP |
-| `composer test:integration` | PHPUnit روی wp-env |
-| `composer check` | همه موارد بالا |
-| `pnpm build` / `pnpm test` / `pnpm lint` | JS |
+| `composer lint` | PHPCS با دو ruleset: `tools/phpcs.xml` (PSR-12، WPCS امنیتی و i18n، Slevomat، PHPCompatibilityWP برای 8.1+) و `tools/phpcs-legacy.xml` (سازگاری PHP 7.0 فقط برای سه فایل bootstrap) |
+| `composer lint:fix` | PHPCBF |
+| `composer stan` | PHPStan level 9 (`tools/phpstan.neon`) روی `src/`، `tests/` و فایل‌های bootstrap |
+| `composer deptrac` | دو config: `tools/deptrac-layers.yaml` (لایه‌ها) و `tools/deptrac-modules.yaml` (ایزوله‌بودن ماژول‌ها) |
+| `composer test` / `composer test:unit` | PHPUnit بدون WP (`phpunit.xml.dist`، suite `unit`) |
+| `composer test:integration` | PHPUnit روی wp-env. در T0.10 اضافه می‌شود |
+| `composer check` | lint، stan، deptrac و test:unit. حدود 30 ثانیه (اجرای اول deptrac به‌خاطر stubهای WP کندتر است) |
+| `pnpm build` / `pnpm test` / `pnpm lint` | JS (از T0.11) |
 | `npx wp-env start` | محیط محلی WP (http://localhost:8888) |
+
+> **Cacheها:** `.phpstan.cache/` و `.deptrac.cache` در ریشه ساخته می‌شوند و در `.gitignore` هستند.

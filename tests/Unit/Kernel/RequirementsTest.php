@@ -54,7 +54,10 @@ final class RequirementsTest extends TestCase
     {
         // Same rule as core's is_wp_version_compatible(): the suffix after "-" is ignored.
         self::assertSame([], Requirements::failures('8.1.0', '6.6-RC1', self::OK_EXTENSIONS, self::MYSQL, true));
-        self::assertSame([], Requirements::failures('8.1.0', '6.6-alpha-58000-src', self::OK_EXTENSIONS, self::MYSQL, true));
+        self::assertSame(
+            [],
+            Requirements::failures('8.1.0', '6.6-alpha-58000-src', self::OK_EXTENSIONS, self::MYSQL, true)
+        );
     }
 
     public function testMissingExtensionFails(): void
@@ -107,7 +110,7 @@ final class RequirementsTest extends TestCase
 
     public function testAllFailuresAreReportedTogether(): void
     {
-        $types = array_column(Requirements::failures('7.4.33', '6.0', [], '5.6.51', false), 'type');
+        $types = \array_column(Requirements::failures('7.4.33', '6.0', [], '5.6.51', false), 'type');
 
         self::assertSame(['php', 'wp', 'extension', 'mysql', 'vendor'], $types);
     }
@@ -117,7 +120,7 @@ final class RequirementsTest extends TestCase
         $GLOBALS['wp_version'] = '6.6';
         Actions\expectAdded('admin_notices')->never();
 
-        self::assertTrue(Requirements::met(dirname(__DIR__, 3) . '/vaqtyar.php'));
+        self::assertTrue(Requirements::met(\dirname(__DIR__, 3) . '/vaqtyar.php'));
     }
 
     public function testMetReturnsFalseAndHooksNoticeWhenWordPressIsTooOld(): void
@@ -126,7 +129,7 @@ final class RequirementsTest extends TestCase
         Actions\expectAdded('admin_notices')->once();
         Actions\expectAdded('network_admin_notices')->once();
 
-        self::assertFalse(Requirements::met(dirname(__DIR__, 3) . '/vaqtyar.php'));
+        self::assertFalse(Requirements::met(\dirname(__DIR__, 3) . '/vaqtyar.php'));
     }
 
     public function testNoticeListsEachFailureEscaped(): void

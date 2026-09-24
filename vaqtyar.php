@@ -13,6 +13,8 @@
  * Update URI:        false
  */
 
+declare(strict_types=1);
+
 // This file must parse on old PHP so that an unsupported host gets a notice
 // instead of a fatal error: PHP 7.0 syntax only. See
 // docs/04-engineering/03-implementation-notes.md §1.

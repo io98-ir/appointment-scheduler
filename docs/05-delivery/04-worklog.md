@@ -16,6 +16,65 @@
 
 ---
 
+## 2026-09-24 — سشن 3 — T0.2 ابزار کیفیت PHP
+**Taskها:** T0.2
+**انجام شد:**
+- `tools/phpcs.xml`:
+  - PSR-12
+  - از WPCS: `Security`، `DB.PreparedSQL*`، `WP.I18n` (text domain `vaqtyar`)، `WP.EnqueuedResources` و `PrefixAllGlobals` (بدون `DynamicHooknameFound`، چون نام hook از `Hooks::name()` می‌آید)
+  - PHPCompatibilityWP برای 8.1+
+  - Slevomat: strict types، type hintها، unused uses و **FullyQualifiedGlobalFunctions**
+  - `Squiz.PHP.GlobalKeyword`
+- `tools/phpcs-legacy.xml`: PHPCompatibility 7.0+ فقط روی سه فایل bootstrap.
+- `tools/phpstan.neon`: level 9 + phpstan-wordpress روی `src/`، `tests/`، `vaqtyar.php` و `uninstall.php`.
+- `tools/deptrac-layers.yaml`:
+  - قوانین لایه‌های hexagonal
+  - layer `WordPress` از روی wordpress-stubs و Action Scheduler
+  - layer `Superglobals`
+  - layer `Unclassified` برای جلوگیری از دور زدن قوانین
+- `tools/deptrac-modules.yaml`: ایزوله‌سازی 7 ماژول (دسترسی فقط از طریق `Contracts`) + `Unclassified`.
+- `phpunit.xml.dist` با suite `unit`.
+- اسکریپت‌های composer: `lint`، `lint:fix`، `stan`، `deptrac`، `test`، `test:unit` و `check`.
+- phpcbf تابع‌های سراسری `Requirements.php` و تستش را به شکل `\fn()` درآورد. `declare(strict_types=1)` به `vaqtyar.php` و `uninstall.php` اضافه شد (از PHP 7.0 مجاز است).
+- اسناد: implementation-notes §2 (تله‌های ابزار)، dev-environment §5 (دستورها و مشکل بک‌اسلش در ابزار Bash)، roadmap (T0.2، T0.3، T0.7 و T0.10).
+
+**تصمیم‌ها و فرض‌ها:**
+- **تابع‌های سراسری همیشه fully-qualified نوشته می‌شوند.** Deptrac فراخوانی بی‌پیشوند داخل namespace را تشخیص نمی‌دهد (با fixture آزموده شد).
+- **deptrac دو config دارد**، چون کلاسی که در دو layer باشد با قوانین «ماژول × لایه» درست بررسی نمی‌شود.
+- **config و bootstrap تست Integration به T0.10 منتقل شد**، چون به WP test library و MySQL نیاز دارد. پیامد: **T0.10 قبل از T0.7 انجام می‌شود** (ردیف T0.10 در tracker جابه‌جا شد و T0.7 در roadmap پیش‌نیاز گرفت).
+- **شکاف:** PHPCompatibility 9.3 سینتکس PHP 8 (`?->`، `match`، named args) را نمی‌شناسد. `php -l` روی PHP 7.0 واقعی به CI در T0.10 اضافه شد.
+- Kernel فعلاً به هیچ ماژولی دسترسی ندارد. محل composition root در T0.3 تصمیم‌گیری می‌شود.
+- جهت گراف وابستگی ماژول‌ها (architecture §3) هنوز اجبار نمی‌شود و در M1 اضافه می‌شود.
+- `tools/rename.php` (T0.4) باید `tools/*.xml|yaml|neon` را هم بازنویسی کند (namespace و text domain در configها لیترال هستند).
+
+**تأیید:**
+- `composer check` (Bash و PowerShell) ← exit 0:
+  - phpcs: هر دو ruleset پاک
+  - PHPStan: No errors
+  - deptrac: هر دو config با 0 violation
+  - PHPUnit: OK (18 tests, 20 assertions)
+- fixtureهای موقت (بعد از بررسی حذف شدند):
+  - deptrac این موارد را گرفت: Domain ← `\add_action`، `\get_option`، `use function wp_die`، `WP_Error`، `$GLOBALS`، `as_enqueue_async_action`، `ActionScheduler`، کلاس Application و کلاس Unclassified. همچنین Booking ← `Catalog\Domain`، Contracts ← Domain، و ماژول فهرست‌نشده (Coupons) ← `Booking\Domain`.
+  - Booking ← `Catalog\Contracts` مجاز شناخته شد.
+  - violation در `composer deptrac` باعث exit 1 شد.
+  - phpcs این موارد را گرفت: `echo $_GET`، SQL بدون prepare، text domain اشتباه، `global $wpdb`، تابع سراسری بدون prefix. نام hook پویا پذیرفته شد.
+  - phpcs-legacy این موارد را گرفت: const visibility، nullable، `void` و `object`. `?->` و `match` را نگرفت (شکاف بالا).
+- Subagent `reviewer`: 6 یافته. 1 تا 5 اصلاح شدند:
+  - PrefixAllGlobals روی hook پویا
+  - Unclassified
+  - `global $wpdb`
+  - Action Scheduler
+  - ترتیب roadmap
+
+  یافته 6 (گراف ماژول‌ها) به M1 موکول و در implementation-notes ثبت شد.
+
+**مشکلات و باقیمانده:**
+- ابزار Bash این محیط بک‌اسلش را در heredoc، `sed` و `printf` خراب می‌کند. در dev-environment ثبت شد.
+- اجرای کامل `composer check` حدود 30 ثانیه طول می‌کشد (تحلیل stubهای WP در deptrac).
+
+**قدم بعدی:** T0.3 (Kernel).
+**Commitها:** `chore(tooling): phpcs, phpstan, deptrac, phpunit configs (T0.2)`
+
 ## 2026-09-24 — سشن 2 — T0.1 اسکلت Repo
 **Taskها:** T0.1
 **انجام شد:**

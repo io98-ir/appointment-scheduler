@@ -7,18 +7,18 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M0** زیربنا |
-| **Task بعدی** | **T0.2** — ابزار کیفیت PHP (ر.ک. [01-roadmap.md](01-roadmap.md#m0--زیربنا)) |
+| **Task بعدی** | **T0.3** — Kernel (ر.ک. [01-roadmap.md](01-roadmap.md#m0--زیربنا)) |
 | **Task در حال انجام** | — |
-| **آخرین کار انجام‌شده** | T0.1: اسکلت Repo. فایل اصلی و `Requirements` سازگار با PHP 7.0، `composer.json` با ابزارهای dev، و تأیید با WordPress Playground روی PHP 7.4 تا 8.4 (2026-09-24) |
+| **آخرین کار انجام‌شده** | T0.2: ابزار کیفیت PHP. دو ruleset برای phpcs، PHPStan level 9، deptrac با دو config (لایه‌ها و ماژول‌ها) و layer وردپرس از روی stubها، `phpunit.xml.dist`، و `composer check` سبز (2026-09-24) |
 | **Blockerها** | — (PHP 8.3 و Composer نصب شدند. Docker محلی لازم نیست و تست‌های MySQL در CI اجرا می‌شوند) |
 | **کار کاربر (اختیاری)** | (1) `gh auth login` تا وضعیت CI از اینجا دیده شود. (2) نصب pluginهای `php-lsp`، `typescript-lsp` و `security-guidance` از Manage plugins در VS Code. (3) انتقال پروژه به مسیری بدون فاصله |
-| **نکته برای سشن بعد** | اگر `php` یا `composer` پیدا نشد، PATH را refresh کن (dev-environment §2). برای T0.2، implementation-notes §1 (exclude کردن sniffها برای فایل‌های سازگار با PHP 7.0) و §2 (quote کردن مسیر در neon) را بخوان. تا T0.2، تست‌ها با `php vendor/bin/phpunit --bootstrap vendor/autoload.php tests/Unit` اجرا می‌شوند |
+| **نکته برای سشن بعد** | اگر `php` یا `composer` پیدا نشد، PATH را refresh کن (dev-environment §2). قبل و بعد از کار `composer check` را اجرا کن. در T0.3 تصمیم بگیر لیست ماژول‌ها (composition root) کجا باشد: الان deptrac به Kernel اجازه دسترسی به ماژول‌ها را نمی‌دهد (implementation-notes §2). تابع‌های سراسری همیشه fully-qualified نوشته می‌شوند (`\add_action()`). **ترتیب: T0.10 قبل از T0.7 انجام می‌شود** |
 
 ## خلاصه Milestoneها
 | Milestone | وضعیت | پیشرفت |
 |---|---|---|
 | M(-1) تحقیق، معماری و اصول | ✅ | 100% |
-| M0 زیربنا | 🟨 | 1/11 |
+| M0 زیربنا | 🟨 | 2/11 |
 | M1 کاتالوگ و زمان‌بندی | ⬜ | 0/5 |
 | M2 هسته رزرو | ⬜ | 0/8 |
 | M3 Admin | ⬜ | 0/6 |
@@ -36,15 +36,15 @@
 | P.5 | GitHub remote، Skillها، محیط، ADR-017 و 018، تله‌های فنی | ✅ | `8104685` |
 | P.6 | نصب PHP 8.3، Composer و gh + `.wp-env.json` (Docker فقط در CI) | ✅ | 2026-09-24 |
 | T0.1 | اسکلت Repo | ✅ | `feat(kernel): repo skeleton with requirements check (T0.1)`. بررسی InnoDB به T0.7 منتقل شد |
-| T0.2 | ابزار کیفیت PHP | ⬜ | |
+| T0.2 | ابزار کیفیت PHP | ✅ | `chore(tooling): phpcs, phpstan, deptrac, phpunit configs (T0.2)`. Integration config به T0.10 منتقل شد |
 | T0.3 | Kernel | ⬜ | |
 | T0.4 | Helperهای نام + rename.php | ⬜ | |
 | T0.5 | Shared Value Objects + IntervalSet | ⬜ | |
 | T0.6 | Jalali + DateFormatter | ⬜ | |
+| T0.10 | wp-env + CI | ⬜ | |
 | T0.7 | Db، Transaction، Migrator | ⬜ | |
 | T0.8 | REST base | ⬜ | |
 | T0.9 | Settings، SecretStore، Logger، Caps | ⬜ | |
-| T0.10 | wp-env + CI | ⬜ | |
 | T0.11 | JS workspace | ⬜ | |
 | T1.1 | Catalog Domain | ⬜ | |
 | T1.2 | Catalog REST CRUD | ⬜ | |

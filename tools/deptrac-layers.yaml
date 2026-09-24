@@ -1,0 +1,110 @@
+# Hexagonal layer rules (docs/03-architecture/02-architecture.md §2).
+# Module isolation is a separate file (deptrac-modules.yaml): deptrac cannot
+# check both in one file because a class would sit in two layers.
+# Paths are relative to this file.
+deptrac:
+  paths:
+    - ../src
+    # Functions and classes are only detected when their definitions are
+    # analysed too, so the host APIs are in paths and form the WordPress layer.
+    - ../vendor/php-stubs/wordpress-stubs
+    - ../vendor/woocommerce/action-scheduler
+  analyser:
+    types: [class, class_superglobal, use, file, function, function_call, function_superglobal]
+  layers:
+    - name: WordPress
+      collectors:
+        - type: directory
+          value: vendor/php-stubs/wordpress-stubs/.*
+        - type: directory
+          value: vendor/woocommerce/action-scheduler/.*
+    - name: Superglobals
+      collectors:
+        - type: superglobal
+          value: [GLOBALS, _GET, _POST, _REQUEST, _COOKIE, _SERVER, _FILES, _ENV, _SESSION]
+    - name: Kernel
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Kernel\\#'
+    - name: SharedDomain
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Shared\\Domain\\#'
+    - name: Shared
+      collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^Vaqtyar\\Shared\\#'
+          must_not:
+            - type: layer
+              value: SharedDomain
+    # src/Modules/<Name>/<Name>Module.php: wires the module, may see all its layers.
+    - name: ModuleEntry
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Modules\\\w+\\\w+Module$#'
+    - name: Contracts
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Modules\\\w+\\Contracts\\#'
+    - name: Domain
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Modules\\\w+\\Domain\\#'
+    - name: Application
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Modules\\\w+\\Application\\#'
+    - name: Infrastructure
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Modules\\\w+\\Infrastructure\\#'
+    - name: Presentation
+      collectors:
+        - type: classNameRegex
+          value: '#^Vaqtyar\\Modules\\\w+\\Presentation\\#'
+    # Anything of ours outside the layers above. A dependency on a class in no
+    # layer is only "uncovered" (not a failure), which would let Domain reach
+    # WordPress through it; this layer makes it a violation instead.
+    - name: Unclassified
+      collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^Vaqtyar\\#'
+          must_not:
+            - type: layer
+              value: Kernel
+            - type: layer
+              value: SharedDomain
+            - type: layer
+              value: Shared
+            - type: layer
+              value: ModuleEntry
+            - type: layer
+              value: Contracts
+            - type: layer
+              value: Domain
+            - type: layer
+              value: Application
+            - type: layer
+              value: Infrastructure
+            - type: layer
+              value: Presentation
+  ruleset:
+    # Pure PHP: no WordPress, no superglobals.
+    SharedDomain: ~
+    Domain: [SharedDomain]
+    Contracts: [SharedDomain]
+    Application: [Domain, Contracts, SharedDomain]
+    # WordPress is allowed only from here down.
+    Infrastructure: [Application, Domain, Contracts, SharedDomain, Shared, Kernel, WordPress, Superglobals]
+    Presentation: [Application, Domain, Contracts, SharedDomain, Shared, Kernel, WordPress, Superglobals]
+    ModuleEntry: [Presentation, Infrastructure, Application, Domain, Contracts, SharedDomain, Shared, Kernel, WordPress]
+    Shared: [SharedDomain, Kernel, WordPress, Superglobals]
+    # How the Kernel learns the module entry classes is decided in T0.3.
+    Kernel: [Shared, SharedDomain, WordPress, Superglobals]
+    # Action Scheduler reads superglobals itself.
+    WordPress: [Superglobals]
+    Unclassified: ~

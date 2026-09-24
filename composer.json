@@ -30,6 +30,34 @@
             "Vaqtyar\\Tests\\": "tests/"
         }
     },
+    "scripts": {
+        "lint": [
+            "phpcs --standard=tools/phpcs.xml",
+            "phpcs --standard=tools/phpcs-legacy.xml"
+        ],
+        "lint:fix": "phpcbf --standard=tools/phpcs.xml",
+        "stan": "phpstan analyse -c tools/phpstan.neon --memory-limit=1G --no-progress",
+        "deptrac": [
+            "deptrac analyse --config-file=tools/deptrac-layers.yaml --no-progress",
+            "deptrac analyse --config-file=tools/deptrac-modules.yaml --no-progress"
+        ],
+        "test": "@test:unit",
+        "test:unit": "phpunit --testsuite unit",
+        "check": [
+            "@lint",
+            "@stan",
+            "@deptrac",
+            "@test:unit"
+        ]
+    },
+    "scripts-descriptions": {
+        "lint": "PHPCS: PSR-12 + WPCS security/i18n (ADR-008), and PHP 7.0 syntax for the bootstrap files.",
+        "lint:fix": "Fix what PHPCBF can fix automatically.",
+        "stan": "PHPStan level 9 with WordPress stubs.",
+        "deptrac": "Layer and module boundaries.",
+        "test:unit": "PHPUnit unit suite (no WordPress).",
+        "check": "Everything CI runs locally: lint, stan, deptrac, unit tests."
+    },
     "config": {
         "platform": {
             "php": "8.1.0"

@@ -29,6 +29,17 @@
 - **`"config": {"platform": {"php": "8.1.0"}}`**: وابستگی‌ها با PHP 8.1 سازگار resolve می‌شوند، حتی اگر PHP محلی 8.3 باشد. **فراموش نشود.**
 - `allow-plugins` برای `dealerdirect/phpcodesniffer-composer-installer` تنظیم می‌شود.
 - اسکریپت‌ها: `lint`، `lint:fix`، `stan`، `deptrac`، `test:unit`، `test:integration`، `check`.
+- **ابزار کیفیت (T0.2):**
+  - **تابع‌های سراسری همیشه fully-qualified نوشته می‌شوند** (`\add_action()`، `\strlen()`). Deptrac فراخوانی بی‌پیشوند داخل namespace را به `Vaqtyar\...\add_action` تفسیر می‌کند و در نتیجه تابع WP داخل Domain دیده نمی‌شود. sniff `SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions` این قاعده را اجباری می‌کند و `composer lint:fix` خودکار اصلاحش می‌کند.
+  - Deptrac تابع‌ها و کلاس‌های WP را فقط وقتی می‌شناسد که تعریفشان تحلیل شود. به همین دلیل `vendor/php-stubs/wordpress-stubs` در paths قرار دارد و layer `WordPress` همان stubها است.
+  - قوانین لایه و قوانین ماژول در **دو فایل جدا** هستند (`deptrac-layers.yaml` و `deptrac-modules.yaml`). اگر کلاسی در دو layer باشد، کافی است یکی از آن layerها مجاز نباشد تا violation ثبت شود. به همین دلیل ترکیب «ماژول × لایه» در یک فایل درست کار نمی‌کند.
+  - هر دو فایل deptrac یک layer به نام `Unclassified` دارند که هر کلاس `Vaqtyar\` خارج از بقیه layerها را می‌گیرد و وابستگی به آن را ممنوع می‌کند. بدون آن، کلاس بیرون از همه layerها فقط «uncovered» حساب می‌شود و راه دور زدن قوانین است. **ماژول یا پوشه جدید (غیر از Domain، Application، Infrastructure، Presentation، Contracts و `<Name>Module`) یعنی باید config deptrac به‌روز شود.**
+  - Action Scheduler (`as_*` و `ActionScheduler*`) جزو layer `WordPress` است، پس Domain و Application نمی‌توانند مستقیم Job ثبت کنند (ADR-005: از طریق Port).
+  - `global $wpdb` با `Squiz.PHP.GlobalKeyword` ممنوع است. شکل `$GLOBALS['wpdb']` را deptrac می‌بیند.
+  - **هنوز اجبار نمی‌شود:** جهت گراف وابستگی ماژول‌ها (architecture §3). الان همه Contracts یک layer هستند و هر ماژولی می‌تواند Contracts هر ماژول دیگری را ببیند. با اولین ماژول‌ها در M1، Contracts هر ماژول جدا شود و ruleset از جدول §3 نوشته شود.
+  - در regex داخل YAML تک‌کوتیشن، `\\` یعنی یک بک‌اسلش واقعی در namespace و `\w` همان کلاس کاراکتر است. مثال: `'#^Vaqtyar\\Modules\\\w+\\Domain\\#'`.
+  - **شکاف:** PHPCompatibility 9.3 سینتکس PHP 8 (`?->`، `match`، named args، `enum`) را نمی‌شناسد. تضمین قطعی سازگاری PHP 7.0 سه فایل bootstrap با `php -l` روی PHP 7.0 واقعی در CI است (T0.10).
+  - `phpunit.xml.dist` فعلاً فقط suite `unit` دارد. config و bootstrap Integration به WP test library و MySQL نیاز دارند و در T0.10 ساخته می‌شوند.
 - **مسیر Repo پرانتز دارد:** در فایل‌های `.neon` (PHPStan) مسیر مطلق را حتماً در quote بگذار، وگرنه Nette آن را Statement تفسیر می‌کند و خطای `expandIncludedFile()` می‌دهد. مسیر نسبی (`%currentWorkingDirectory%` یا نسبت به فایل neon) بهتر است.
 - Build تولیدی: `composer install --no-dev --optimize-autoloader --classmap-authoritative`.
 

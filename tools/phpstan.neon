@@ -1,0 +1,13 @@
+# Paths are relative to this file. Never write the repo's absolute path here
+# unquoted: it contains parentheses (implementation-notes §2).
+includes:
+    - ../vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 9
+    paths:
+        - ../src
+        - ../tests
+        - ../vaqtyar.php
+        - ../uninstall.php
+    tmpDir: ../.phpstan.cache

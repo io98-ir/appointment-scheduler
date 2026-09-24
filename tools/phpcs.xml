@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<ruleset name="Plugin">
+    <description>PSR-12 plus the WPCS security, SQL and i18n sniffs (ADR-008).</description>
+
+    <!-- Relative paths are resolved against this file's directory. -->
+    <file>../src</file>
+    <file>../tests</file>
+    <file>../vaqtyar.php</file>
+    <file>../uninstall.php</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
+    <arg name="basepath" value=".."/>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <!-- PHP 7.0 compatibility of the bootstrap files is checked by phpcs-legacy.xml. -->
+    <config name="testVersion" value="8.1-"/>
+    <config name="minimum_wp_version" value="6.6"/>
+
+    <rule ref="PSR12"/>
+
+    <rule ref="PHPCompatibilityWP"/>
+
+    <rule ref="WordPress.Security"/>
+    <rule ref="WordPress.DB.PreparedSQL"/>
+    <rule ref="WordPress.DB.PreparedSQLPlaceholders"/>
+    <rule ref="WordPress.WP.EnqueuedResources"/>
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="vaqtyar"/>
+            </property>
+        </properties>
+    </rule>
+    <!-- Hook names come from Hooks::name() (ADR-000), so they are never literals. -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="vaqtyar"/>
+            </property>
+        </properties>
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound"/>
+    </rule>
+
+    <!-- `global $wpdb` is invisible to deptrac; $GLOBALS['wpdb'] is caught by its Superglobals layer. -->
+    <rule ref="Squiz.PHP.GlobalKeyword"/>
+
+    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
+        <properties>
+            <property name="linesCountBeforeDeclare" value="1"/>
+            <property name="spacesCountAroundEqualsSign" value="0"/>
+        </properties>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
+    <rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint"/>
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint"/>
+    <!--
+        Deptrac resolves an unqualified call inside a namespace to the namespaced
+        name, so `add_action()` in Domain would slip past the layer rules.
+        `\add_action()` or `use function add_action;` is detected.
+    -->
+    <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions"/>
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
+        <properties>
+            <property name="searchAnnotations" value="true"/>
+        </properties>
+    </rule>
+
+    <!--
+        The bootstrap files must parse on PHP 7.0 (implementation-notes §1):
+        no const visibility, no void or nullable types. Never "fix" them.
+    -->
+    <!-- The main plugin file defines its constants and loads the plugin by design. -->
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>*/vaqtyar.php$</exclude-pattern>
+    </rule>
+    <rule ref="PSR12.Properties.ConstantVisibility">
+        <exclude-pattern>*/src/Kernel/Requirements\.php$</exclude-pattern>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingNativeTypeHint">
+        <exclude-pattern>*/src/Kernel/Requirements\.php$</exclude-pattern>
+    </rule>
+</ruleset>
