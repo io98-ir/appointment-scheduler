@@ -16,6 +16,62 @@
 
 ---
 
+## 2026-09-24 — سشن 3 — T0.4 Helperهای نام + rename.php
+**Taskها:** T0.4
+**انجام شد:**
+- `src/Kernel/`:
+  - `Tables::name()`: پیشوند سایت در هر فراخوانی از `$wpdb` خوانده می‌شود (multisite). سقف 64 کاراکتر.
+  - `Options::key()`: سقف 191 کاراکتر.
+  - `Hooks::name()`: `{hook_prefix}/{module}/{event}`.
+  - `Caps::name()`.
+  - هر ورودی با `[a-z][a-z0-9_]*` (و modifier `D`) اعتبارسنجی می‌شود و در غیر این صورت `KernelException` می‌دهد.
+- `tools/Rename/` (namespace `Vaqtyar\Tools\Rename` در autoload-dev):
+  - `RenameSpec`: اعتبارسنجی و مشتق‌کردن شناسه‌ها از slug.
+  - `Renamer`: plan و apply.
+  - `RenamePlan`، `RenameCommand`، `Shell` (git و composer بدون shell)، `RenameException`.
+- CLI: `tools/rename.php` با `--dry-run`.
+- `tools/test-rename.php` و `composer test:rename`: کپی، `git init` و commit، `composer install`، rename، و `composer check` روی کپی.
+- phpcs و PHPStan حالا `tools/` را هم پوشش می‌دهند. EscapeOutput برای `tools/` exclude شد، چون CLI است و در بسته نهایی قرار نمی‌گیرد.
+- تست‌ها:
+  - `NamesTest`: 43 مورد با dataProvider.
+  - `RenameSpecTest`.
+  - `RenamerTest`: روی یک افزونه جعلی با توکن‌های ساختگی `AcmeBook` و `ZetaTool`، تا بعد از rename واقعی repo هم معنی‌دار بماند.
+- اسناد: implementation-notes §2.1 (جدید)، جزئیات اجرا در ADR-000، dev-environment §5، roadmap (T0.10: `test:rename` در CI؛ T0.11: lock file در JS).
+
+**تصمیم‌ها و فرض‌ها:**
+- **`const_prefix`، `hook_prefix`، `text_domain` و `rest_namespace` از slug مشتق می‌شوند** و slug فقط `a-z0-9` است. این تصمیم ADR-000 را عوض نمی‌کند، فقط قید به آن اضافه می‌کند، و در ADR-000 به‌عنوان «جزئیات اجرا» ثبت شد.
+- جایگزینی فقط توکن کامل را عوض می‌کند. هر اثری از توکن قدیمی که عوض نشود، rename را **قبل از نوشتن** رد می‌کند.
+- اجرای واقعی فقط روی working tree تمیز مجاز است. lock fileها، `docs/`، `.claude/` و `CLAUDE.md` دست نمی‌خورند.
+- Helperها static هستند، چون ADR-000 همین شکل را تعیین کرده است. state ندارند.
+
+**تأیید:**
+- `composer check` ← exit 0:
+  - phpcs: پاک
+  - PHPStan level 9 (حالا با `tools/`): No errors
+  - deptrac: هر دو config با 0 violation
+  - PHPUnit: OK (116 tests, 219 assertions)
+- `composer test:rename` ← OK. کپی به `renamecheck` rename شد (38 ویرایش و یک جابه‌جایی)، اثری از توکن قدیمی نماند و `composer check` روی کپی سبز شد (116 tests).
+- CLI روی repo واقعی:
+  - dry-run با نام جدید ← 38 ویرایش، بدون هیچ تغییری روی دیسک.
+  - اجرا روی tree کثیف ← رد شد.
+  - بدون `--name` ← رد شد، با فهرست باقیمانده‌ها.
+  - slug نادرست (`nobat-yar`) ← رد شد.
+- Subagent `reviewer`: 7 یافته، همه بازتولید و اصلاح شدند:
+  - بدون `--name`، rename بعد از نوشتن شکست می‌خورد.
+  - شکست وسط `apply()` به «class not found» می‌رسید و tree ناسازگار می‌ماند.
+  - `$1` در نام نمایشی خروجی را خراب می‌کرد.
+  - hash در lock file با پیشوند کوتاه برخورد می‌کرد.
+  - بررسی تداخل، نام قدیمی را در کل فایل‌ها پاک می‌کرد.
+  - regex اعتبارسنجی newline انتهایی را می‌پذیرفت (`$` بدون `D`).
+  - نام سه تست رفتار را توصیف نمی‌کرد.
+
+**مشکلات و باقیمانده:**
+- در اولین اجرای ناموفق `test:rename`، پیام خطای rename در خروجی دیده نشد. نه من توانستم بازتولیدش کنم و نه reviewer. آزمایش مستقیم نشان می‌دهد stdout و stderr زیرفرایند منتقل می‌شوند.
+- معیار «lint و test سبز می‌مانند» برآورده شد. deptrac و PHPStan هم روی کپی سبز بودند.
+
+**قدم بعدی:** T0.5 (Shared Value Objects + IntervalSet).
+**Commitها:** `feat(kernel): naming helpers and rename tool (T0.4)`
+
 ## 2026-09-24 — سشن 3 — T0.3 Kernel
 **Taskها:** T0.3
 **انجام شد:**

@@ -51,6 +51,27 @@
 - **مسیر Repo پرانتز دارد:** در فایل‌های `.neon` (PHPStan) مسیر مطلق را حتماً در quote بگذار، وگرنه Nette آن را Statement تفسیر می‌کند و خطای `expandIncludedFile()` می‌دهد. مسیر نسبی (`%currentWorkingDirectory%` یا نسبت به فایل neon) بهتر است.
 - Build تولیدی: `composer install --no-dev --optimize-autoloader --classmap-authoritative`.
 
+## 2.1 نام‌ها و Rename (T0.4)
+- **Helperهای نام** در `src/Kernel`:
+  - `Tables::name('appointments')` ← `{$wpdb->prefix}vqy_appointments`
+  - `Options::key('db_versions')`
+  - `Hooks::name('booking/appointment_confirmed')` ← `vaqtyar/booking/appointment_confirmed`
+  - `Caps::name('manage_bookings')`
+  - REST namespace مستقیم از `Identity::REST_NAMESPACE` خوانده می‌شود.
+- هر ورودی اعتبارسنجی می‌شود (`[a-z][a-z0-9_]*`) و ورودی نادرست `KernelException` می‌دهد، چون نام جدول بدون prepare وارد SQL می‌شود. سقف طول: 64 برای نام کامل جدول و 191 برای option.
+- `Tables::name()` پیشوند سایت را در **هر فراخوانی** از `$wpdb` می‌خواند، چون `switch_to_blog()` در multisite آن را عوض می‌کند. در ثابت یا property نگهش ندار.
+- **Rename:** `php tools/rename.php --name="…" --slug=… --namespace=… --prefix=… [--dry-run]`. گزینه‌ای که داده نشود مقدار فعلی را نگه می‌دارد.
+  - **`const_prefix`، `hook_prefix`، `text_domain` و `rest_namespace` از slug مشتق می‌شوند** (`SLUG`، `slug`، `slug`، `slug/v1`). با این کار هر توکن در rename بعدی بی‌ابهام به عقب نگاشت می‌شود. در slug فقط `a-z0-9` مجاز است و `-` یا `_` نه، چون slug در شناسه‌های PHP (ثابت‌ها و prefix سراسری) هم استفاده می‌شود.
+  - جایگزینی حساس به حالت حروف است (`Namespace`، `SLUG`، `slug`، `PREFIX`، `prefix`).
+  - جایگزینی **فقط توکن کامل** را عوض می‌کند، یعنی جایی که حرف یا رقمی به آن نچسبیده باشد. `_` و `\` و `/` مرز حساب می‌شوند، پس `VAQTYAR_VERSION` و `wp_vqy_x` عوض می‌شوند. ولی `VaqtyarModule` یا `vqy` داخل یک hash عوض نمی‌شود و در بررسی باقیمانده، **قبل از هر نوشتنی**، باعث رد rename می‌شود. پس توکن را هرگز چسبیده به حرف ننویس.
+  - پیشوند باید 3 تا 6 کاراکتر باشد.
+  - نام نمایشی فقط در سه جای مشخص عوض می‌شود: `identity.json`، `Identity::NAME` و `Plugin Name` در header. اگر نام قدیمی شامل slug باشد (مثل «Vaqtyar») و `--name` داده نشود، rename رد می‌شود.
+  - لیست فایل‌ها از `git ls-files` می‌آید. `docs/`، `.claude/`، `CLAUDE.md`، lock fileها (`composer.lock`، `pnpm-lock.yaml`، …) و فایل‌های باینری دست نمی‌خورند. hash داخل lock fileها ممکن است تصادفاً شامل پیشوند باشد.
+  - **اجرای واقعی فقط روی working tree تمیز مجاز است** تا با `git checkout . && git clean -fd` بشود برگشت. dry-run این شرط را ندارد.
+  - **توکن جدید نباید از قبل در کد وجود داشته باشد.** در غیر این صورت rename بعدی نمی‌تواند آن را از توکن ما تشخیص دهد و ابزار rename را رد می‌کند. به همین دلیل **هیچ‌جای کد توکن تستی را لیترال ننویس.** `tools/test-rename.php` آن را از چند تکه می‌سازد.
+  - بعد از rename، `composer update --lock` (نام پکیج در content-hash قفل است) و `dump-autoload` اجرا می‌شوند. در پایان هیچ توکن قدیمی (با هر حالت حروف) نباید مانده باشد.
+- **`composer test:rename`** یک کپی موقت می‌سازد، rename می‌کند و روی کپی `composer check` می‌گیرد (ADR-000). حدود 40 ثانیه طول می‌کشد و در CI اجرا می‌شود (T0.10).
+
 ## 3. i18n: تله‌های WP 6.7+
 - **هیچ `__()` قبل از هوک `init` صدا زده نشود.** از WP 6.7 به بعد، این کار notice «_load_textdomain_just_in_time was called incorrectly» می‌دهد. پیام‌های Requirements هم از این قاعده مستثنی نیستند: ترجمه را داخل callback `admin_notices` انجام بده.
 - ترجمه‌های داخل پوشه `languages/` با `load_plugin_textdomain()` روی `init` بارگذاری می‌شوند.

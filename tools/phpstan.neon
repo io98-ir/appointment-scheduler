@@ -8,6 +8,7 @@ parameters:
     paths:
         - ../src
         - ../tests
+        - ../tools
         - ../vaqtyar.php
         - ../uninstall.php
     tmpDir: ../.phpstan.cache

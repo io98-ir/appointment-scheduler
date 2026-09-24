@@ -36,6 +36,12 @@
 
 **پیامد:** CI یک تست دارد که `rename.php` را روی یک کپی اجرا می‌کند و سپس lint و تست Unit را پاس می‌کند. بنابراین قابلیت rename همیشه سالم می‌ماند.
 
+**جزئیات اجرا (T0.4، بدون تغییر در تصمیم):**
+- `const_prefix`، `hook_prefix`، `text_domain` و `rest_namespace` از slug مشتق می‌شوند و slug فقط `a-z0-9` است.
+- توکن جدیدی که از قبل در کد وجود داشته باشد رد می‌شود.
+- `docs/` بازنویسی نمی‌شود.
+- جزئیات کامل: [implementation-notes §2.1](../04-engineering/03-implementation-notes.md) و `composer test:rename`.
+
 ---
 
 ## ADR-001 — Modular Monolith + لایه‌بندی Hexagonal سبک

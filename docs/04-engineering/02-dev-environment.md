@@ -69,6 +69,8 @@ MSYS_NO_PATHCONV=1 npx -y @wp-playground/cli@latest run-blueprint --blueprint=./
 | `composer test` / `composer test:unit` | PHPUnit بدون WP (`phpunit.xml.dist`، suite `unit`) |
 | `composer test:integration` | PHPUnit روی wp-env. در T0.10 اضافه می‌شود |
 | `composer check` | lint، stan، deptrac و test:unit. حدود 30 ثانیه (اجرای اول deptrac به‌خاطر stubهای WP کندتر است) |
+| `composer test:rename` | rename یک کپی موقت و `composer check` روی آن (ADR-000)، حدود 40 ثانیه |
+| `php tools/rename.php --dry-run …` | تغییر شناسه فنی (implementation-notes §2.1) |
 | `pnpm build` / `pnpm test` / `pnpm lint` | JS (از T0.11) |
 | `npx wp-env start` | محیط محلی WP (http://localhost:8888) |
 

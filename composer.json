@@ -27,7 +27,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Vaqtyar\\Tests\\": "tests/"
+            "Vaqtyar\\Tests\\": "tests/",
+            "Vaqtyar\\Tools\\": "tools/"
         }
     },
     "scripts": {
@@ -48,6 +49,10 @@
             "@stan",
             "@deptrac",
             "@test:unit"
+        ],
+        "test:rename": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php tools/test-rename.php"
         ]
     },
     "scripts-descriptions": {
@@ -56,7 +61,8 @@
         "stan": "PHPStan level 9 with WordPress stubs.",
         "deptrac": "Layer and module boundaries.",
         "test:unit": "PHPUnit unit suite (no WordPress).",
-        "check": "Everything CI runs locally: lint, stan, deptrac, unit tests."
+        "check": "Everything CI runs locally: lint, stan, deptrac, unit tests.",
+        "test:rename": "Rename a copy of the plugin and run composer check on it (ADR-000)."
     },
     "config": {
         "platform": {

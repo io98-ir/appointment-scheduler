@@ -32,6 +32,21 @@ final class KernelException extends \LogicException
         return new self(\sprintf('Circular dependency: %s.', \implode(' -> ', $chain)));
     }
 
+    public static function invalidName(string $kind, string $name, string $rule): self
+    {
+        return new self(\sprintf('Invalid %s name "%s": %s.', $kind, $name, $rule));
+    }
+
+    public static function nameTooLong(string $kind, string $name, int $max): self
+    {
+        return new self(\sprintf('The %s name "%s" is longer than %d characters.', $kind, $name, $max));
+    }
+
+    public static function wpdbUnavailable(): self
+    {
+        return new self('$wpdb is not available; table names can only be built once WordPress has loaded.');
+    }
+
     public static function moduleAlreadyRegistered(string $id): self
     {
         return new self(\sprintf('A module with the id "%s" is already registered.', $id));
