@@ -7,23 +7,18 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M0** زیربنا |
-| **Task بعدی** | **T0.5** — Shared Value Objects + IntervalSet (ر.ک. [01-roadmap.md](01-roadmap.md#m0--زیربنا)) |
+| **Task بعدی** | **T0.6** — Jalali + DateFormatter (ر.ک. [01-roadmap.md](01-roadmap.md#m0--زیربنا)) |
 | **Task در حال انجام** | — |
-| **آخرین کار انجام‌شده** | T0.4: Helperهای نام (`Tables`، `Options`، `Hooks`، `Caps`) و `tools/rename.php`. `composer test:rename` یک کپی را rename می‌کند و `composer check` روی آن سبز است (2026-09-24) |
+| **آخرین کار انجام‌شده** | T0.5: Value Objectهای Shared (`Money`، `PhoneNumber`، `Email`، `LocalDate`، `LocalTime`، `TimeRange`، `IntervalSet`، `Ulid`) و `Clock`. پوشش `Shared\Domain` برابر 99.5% (با phpdbg) (2026-09-24) |
 | **Blockerها** | — (PHP 8.3 و Composer نصب شدند. Docker محلی لازم نیست و تست‌های MySQL در CI اجرا می‌شوند) |
 | **کار کاربر (اختیاری)** | (1) `gh auth login` تا وضعیت CI از اینجا دیده شود. (2) نصب pluginهای `php-lsp`، `typescript-lsp` و `security-guidance` از Manage plugins در VS Code. (3) انتقال پروژه به مسیری بدون فاصله |
-| **نکته برای سشن بعد** | اگر `php` یا `composer` پیدا نشد، PATH را refresh کن (dev-environment §2). قبل و بعد از کار `composer check` را اجرا کن. برای T0.5:
-- کد در `src/Shared/Domain` قرار می‌گیرد، که layer `SharedDomain` در deptrac است: PHP خالص، بدون WP و بدون superglobal.
-- معیار پوشش ≥ 95% محلی قابل اندازه‌گیری نیست، چون pcov و xdebug نصب نیستند (dev-environment §1). یا در CI اندازه‌گیری شود، یا از کاربر برای نصب pcov اجازه گرفته شود.
-- توکن‌های Identity را در کد و تست به‌صورت لیترال و چسبیده به حرف ننویس (implementation-notes §2.1).
-
-قبل از هر commit، `composer test:rename` را هم اجرا کن. تابع‌های سراسری همیشه fully-qualified نوشته می‌شوند (`\add_action()`). **ترتیب: T0.10 قبل از T0.7 انجام می‌شود** |
+| **نکته برای سشن بعد** | اگر `php` یا `composer` پیدا نشد، PATH را refresh کن (dev-environment §2). قبل و بعد از کار `composer check` را اجرا کن. برای T0.6: `Jalali` و `DateFormatter` در `src/Shared` قرار می‌گیرند (architecture §3). Jalali Value Object ندارد، فقط سرویس است (principles §4). مقایسه با `intl` در `IntlDateFormatter` با تقویم `persian` انجام می‌شود (intl روی PHP محلی فعال است). پوشش را با `phpdbg` اندازه بگیر (dev-environment §1). توکن‌های Identity را لیترال و چسبیده به حرف ننویس (implementation-notes §2.1). قبل از هر commit، `composer test:rename` را هم اجرا کن. تابع‌های سراسری همیشه fully-qualified نوشته می‌شوند (`\add_action()`). **ترتیب: T0.10 قبل از T0.7 انجام می‌شود** |
 
 ## خلاصه Milestoneها
 | Milestone | وضعیت | پیشرفت |
 |---|---|---|
 | M(-1) تحقیق، معماری و اصول | ✅ | 100% |
-| M0 زیربنا | 🟨 | 4/11 |
+| M0 زیربنا | 🟨 | 5/11 |
 | M1 کاتالوگ و زمان‌بندی | ⬜ | 0/5 |
 | M2 هسته رزرو | ⬜ | 0/8 |
 | M3 Admin | ⬜ | 0/6 |
@@ -44,7 +39,7 @@
 | T0.2 | ابزار کیفیت PHP | ✅ | `chore(tooling): phpcs, phpstan, deptrac, phpunit configs (T0.2)`. Integration config به T0.10 منتقل شد |
 | T0.3 | Kernel | ✅ | `feat(kernel): container, module registry and boot (T0.3)`. Context نوع درخواست را حدس نمی‌زند (architecture §5) |
 | T0.4 | Helperهای نام + rename.php | ✅ | `feat(kernel): naming helpers and rename tool (T0.4)` |
-| T0.5 | Shared Value Objects + IntervalSet | ⬜ | |
+| T0.5 | Shared Value Objects + IntervalSet | ✅ | `feat(shared): value objects, interval set and clock (T0.5)` |
 | T0.6 | Jalali + DateFormatter | ⬜ | |
 | T0.10 | wp-env + CI | ⬜ | |
 | T0.7 | Db، Transaction، Migrator | ⬜ | |

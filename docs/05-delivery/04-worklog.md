@@ -16,6 +16,50 @@
 
 ---
 
+## 2026-09-24 — سشن 3 — T0.5 Value Objectهای Shared
+**Taskها:** T0.5
+**انجام شد:**
+- `src/Shared/Domain/` شامل این موارد است:
+  - `InvalidValue` (با `errorCode`)
+  - `Money` + `Currency` (فقط IRR) + `Rounding` (`Down`، `Up`، `HalfUp`)
+  - `PhoneNumber` (E.164)
+  - `Email`
+  - `LocalDate`، `LocalTime` (با `24:00`) و `TimeRange` (نیمه‌باز، UTC، ثانیه کامل)
+  - `IntervalSet` (union، subtract، intersect و covers با ادغام خطی)
+  - `Ulid` (ساخت خالص با `fromParts`)
+  - `Clock` (interface)
+- `src/Shared/SystemClock.php`.
+- `tools/Rename/Shell::run()` حالا خروجی زیرفرایند را از pipe می‌خواند و relay می‌کند. این همان مشکل «پیام گم‌شده» در T0.4 بود.
+- اسناد:
+  - implementation-notes §4.1 (جدید)
+  - dev-environment: پوشش با `phpdbg`، تله `python -`، تله خروجی زیرفرایند
+
+**تصمیم‌ها و فرض‌ها:**
+- **پوشش با `phpdbg` محلی اندازه‌گیری می‌شود.** نصب pcov یا xdebug لازم نیست.
+- `Currency` فقط IRR دارد (ADR-010). بررسی ارز با `@phpstan-ignore` حفظ شد. reviewer تأیید کرد که با اضافه‌شدن ارز دوم، این ignoreها خطای «unmatched» می‌دهند.
+- شماره بدون کد کشور ایرانی فرض می‌شود و کشور دیگر فقط با `+` یا `00` پذیرفته می‌شود. فرم «+98 (0) 912…» پذیرفته می‌شود.
+- `IdGenerator` Port با اولین مصرف‌کننده (Appointment، M2) ساخته می‌شود (§0). `Ulid::milliseconds()` به‌خاطر نداشتن مصرف‌کننده حذف شد.
+- بنچمارک Availability (بودجه 50ms) مربوط به T1.4 است و از تست IntervalSet حذف شد، چون تست نباید به زمان واقعی وابسته باشد.
+
+**تأیید:**
+- ابتدا تست‌ها قرمز بودند، سپس سبز شدند.
+- `composer check` ← exit 0:
+  - phpcs: پاک
+  - PHPStan: No errors
+  - deptrac: 0 violation
+  - PHPUnit: OK (227 tests, 1904 assertions)
+- تست تصادفی IntervalSet: 300 seed در مقایسه با مدل bitmap. reviewer هم 20,000 seed با اعداد منفی را بدون هیچ اختلافی اجرا کرد.
+- پوشش با `phpdbg`: `Shared\Domain` برابر 184 از 185 خط (99.5%). خط باقیمانده بررسی ارز است که با یک ارز قابل اجرا نیست.
+- ULID با نمونه رسمی spec (`01ARZ3NDEKTSV4RRFFQ69G5FAV`) مقایسه شد، که بخش‌هایش جداگانه با Python decode شده بودند.
+- `composer test:rename` ← OK. rename کپی سالم ماند (227 tests) و خروجی حالا کامل و مرتب است.
+- Subagent `reviewer`:
+  - **1 باگ واقعی:** شماره‌های `+980…` که یک رقم کم داشتند پذیرفته می‌شدند و ممکن بود شماره‌ای نامعتبر در `customers.phone` (UNIQUE) ذخیره شود. اصلاح شد و 4 تست اضافه شد.
+  - 4 مورد جزئی: بنچمارک وابسته به زمان، نام تست‌ها، متد بدون مصرف‌کننده، و یادداشت کهنه در tracker. همه اصلاح شدند.
+
+**مشکلات و باقیمانده:** —
+**قدم بعدی:** T0.6 (Jalali + DateFormatter).
+**Commitها:** `feat(shared): value objects, interval set and clock (T0.5)`
+
 ## 2026-09-24 — سشن 3 — T0.4 Helperهای نام + rename.php
 **Taskها:** T0.4
 **انجام شد:**

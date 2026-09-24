@@ -16,7 +16,7 @@
 | **Composer** | ✅ (نصب رسمی با بررسی امضای SHA384) | 2.10.3 | `%LOCALAPPDATA%\Composer\bin\composer.bat` (در PATH کاربر) |
 | **Docker Desktop** | ⏭️ **به تصمیم کاربر روی این سیستم نصب نمی‌شود** | | بستر آماده است: `.wp-env.json`. تست Integration، Concurrency و E2E **در GitHub Actions** اجرا می‌شوند (runnerها Docker دارند). روی هر سیستمی که Docker دارد: `npx wp-env start` |
 | GitHub CLI (`gh`) | ✅ نصب شد، ⬜ **لاگین نشده** | 2.101.0 | کاربر باید `gh auth login` را اجرا کند تا وضعیت CI از اینجا دیده شود |
-| Coverage driver (pcov/xdebug) | ❌ | | Coverage فقط در CI اندازه‌گیری می‌شود |
+| Coverage driver | ✅ `phpdbg` (همراه PHP) | | pcov و xdebug نصب نیستند. پوشش محلی: `phpdbg -qrr vendor/bin/phpunit --testsuite unit --coverage-text` (phpdbg کنار `php.exe` است) |
 | WP-CLI | ❌ | | داخل wp-env موجود است (`npx wp-env run cli wp …`). نصب محلی لازم نیست |
 | winget | ✅ | | نصب ابزارها |
 
@@ -51,6 +51,8 @@ MSYS_NO_PATHCONV=1 npx -y @wp-playground/cli@latest run-blueprint --blueprint=./
 - **مسیر پروژه فاصله و پرانتز دارد** (`J:\New folder (2)\extention_php`). همیشه مسیرها را در quote بگذار. اگر ابزاری با مسیر مشکل داشت (مثلاً mount در Docker یا اسکریپت‌های shell)، اول همین را بررسی کن. پیشنهاد به کاربر: انتقال به مسیری بدون فاصله، مثل `J:\dev\appointment-scheduler`.
 - **Shell:** ابزار PowerShell روی نسخه 5.1 است: `&&` کار نمی‌کند و here-string هنگام pipe به native command مشکل دارد. برای پیام commit از فایل استفاده کن (`git commit -F <file>`). Bash (Git Bash) هم در دسترس است.
 - **بک‌اسلش در ابزار Bash:** heredoc، `sed` و `printf` در ابزار Bash گاهی بک‌اسلش را حذف یا تفسیر می‌کنند (مثلاً `\\` به `\` و `\a` به کاراکتر bell). فایلی را که بک‌اسلش دارد، مثل namespaceهای PHP یا regex در YAML، با ابزار Write یا Edit بنویس و بعد با `od -c` بررسی کن.
+- **`python -` یا `python` بدون فایل در ابزار Bash** تا timeout منتظر می‌ماند و گیر می‌کند. از `python -c "…"` استفاده کن، یا اسکریپت را در فایل بنویس.
+- **خروجی زیرفرایند:** وقتی خروجی به فایل redirect شده، زیرفرایندی که stdout و stderr را به ارث برده ممکن است خروجی والد را بازنویسی کند. `tools/Rename/Shell::run()` به همین دلیل خروجی را از pipe می‌خواند و relay می‌کند.
 - **پایان خط:** `.gitattributes` با `eol=lf` تنظیم شده است. فایل‌ها را با LF بنویس.
 - **نام پوشه در برابر slug:** پوشه Repo `extention_php` است و Remote `appointment-scheduler`. slug فنی افزونه (`vaqtyar`) از Identity می‌آید. خروجی zip در Build همیشه در پوشه‌ای به نام slug قرار می‌گیرد (T6.6). در wp-env، پوشه افزونه با `"plugins": ["."]` mount می‌شود و نام پوشه در WP همان basename است. این در توسعه اشکالی ندارد.
 

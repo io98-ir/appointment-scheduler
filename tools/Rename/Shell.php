@@ -14,14 +14,29 @@ final class Shell
     }
 
     /**
-     * @param list<string> $command
+     * Runs a command and relays its output (stderr merged into stdout) in order.
+     *
+     * The child does not inherit our stdout/stderr: when they are a redirected
+     * file, two processes writing to it overwrite each other's output.
+     *
+     * @param list<string>|string $command A string runs through the shell.
      */
-    public function run(array $command): int
+    public function run(array|string $command): int
     {
-        $process = \proc_open($command, [\STDIN, \STDOUT, \STDERR], $pipes, $this->cwd);
+        // ['redirect', 1] (PHP 7.4+) is missing from PHPStan's proc_open stub.
+        $spec = [1 => ['pipe', 'w'], 2 => ['redirect', 1]];
+        $process = \proc_open($command, $spec, $pipes, $this->cwd); // @phpstan-ignore argument.type
         if (!\is_resource($process)) {
-            throw new RenameException('Cannot run ' . \implode(' ', $command) . '.');
+            throw new RenameException('Cannot run ' . (\is_array($command) ? \implode(' ', $command) : $command) . '.');
         }
+        while (!\feof($pipes[1])) {
+            $chunk = \fread($pipes[1], 8192);
+            if (false === $chunk) {
+                break;
+            }
+            \fwrite(\STDOUT, $chunk);
+        }
+        \fclose($pipes[1]);
 
         return \proc_close($process);
     }
@@ -37,18 +52,9 @@ final class Shell
         if (\is_string($binary) && '' !== $binary) {
             return $this->run([\PHP_BINARY, $binary, ...$args]);
         }
-        // Through the shell: on Windows `composer` is a .bat file.
-        $process = \proc_open(
-            'composer ' . \implode(' ', \array_map('escapeshellarg', $args)),
-            [\STDIN, \STDOUT, \STDERR],
-            $pipes,
-            $this->cwd
-        );
-        if (!\is_resource($process)) {
-            throw new RenameException('Cannot run composer.');
-        }
 
-        return \proc_close($process);
+        // Through the shell: on Windows `composer` is a .bat file.
+        return $this->run('composer ' . \implode(' ', \array_map('escapeshellarg', $args)));
     }
 
     public function isClean(): bool

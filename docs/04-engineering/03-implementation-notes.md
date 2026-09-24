@@ -84,6 +84,23 @@
 - `wp_timezone()` فقط در Infrastructure (برای timezone پیش‌فرض سایت) استفاده شود. Timezone هر Location صریح است.
 - ستون `DATETIME` در UTC ذخیره می‌شود و مقدار با فرمت `Y-m-d H:i:s` نوشته و خوانده می‌شود. timezone ضمنی MySQL نداریم، پس `NOW()` در SQL ممنوع است و زمان همیشه از PHP پاس داده می‌شود.
 
+## 4.1 Value Objectهای Shared (T0.5)
+- همه در `src/Shared/Domain` هستند (PHP خالص). خطای ورودی `InvalidValue` است با `errorCode` (مثل `invalid_phone`). Presentation این کد را به پیام ترجمه‌شده و 422 تبدیل می‌کند. پیام Exception هیچ‌وقت ورودی کاربر را ندارد.
+- **Money:** عدد صحیح در کوچک‌ترین واحد ارز (ریال).
+  - سرریز int در PHP بی‌صدا به float تبدیل می‌شود. پس `add`، `subtract`، `multiply` و `percent` در این حالت Exception می‌دهند.
+  - `percent()` همیشه یک `Rounding` صریح می‌گیرد: `Down` (به سمت صفر)، `Up` (دور از صفر) یا `HalfUp`.
+  - فعلاً فقط `Currency::IRR` وجود دارد. بررسی یکسان‌بودن ارز با `@phpstan-ignore` نگه داشته شده و با اضافه‌شدن ارز دوم، PHPStan خودش یادآوری می‌کند.
+- **PhoneNumber:** خروجی E.164 است. ورودی ارقام فارسی و عربی، فاصله، `-`، پرانتز و علامت‌های bidi را می‌پذیرد. شماره بدون کد کشور ایرانی فرض می‌شود و کشور دیگر فقط با `+` یا `00` پذیرفته می‌شود.
+- **Email:** trim می‌شود و domain به حروف کوچک تبدیل می‌شود. مقایسه case-insensitive است.
+- **LocalDate و LocalTime:** بدون منطقه زمانی.
+  - `LocalTime` مقدار `24:00` را به‌عنوان پایان روز می‌پذیرد.
+  - `dayOfWeek()` طبق ISO است (1 = دوشنبه تا 7 = یکشنبه). شنبه‌اول بودن هفته ایرانی فقط مسئله نمایش است.
+- **TimeRange:** بازه نیمه‌باز `[start, end)`، در UTC و با ثانیه کامل. نوبت‌های پشت‌سرهم تداخل ندارند.
+- **IntervalSet:** بازه‌های نیمه‌باز روی اعداد صحیح (timestamp یا دقیقه) که همیشه مرتب، جدا از هم و ادغام‌شده نگه داشته می‌شوند. `covers(s, e)` همان بررسی «Fit» در Availability است.
+- **Ulid:** ساختنش خالص است: `Ulid::fromParts($time, random_bytes(10))`. Port تولید شناسه (`IdGenerator`، principles §3) با اولین مصرف‌کننده، یعنی Appointment در M2، ساخته می‌شود.
+- **Clock:** interface در Domain است و `Vaqtyar\Shared\SystemClock` پیاده‌سازی آن است. در Domain و Application از `new DateTimeImmutable()` یا `time()` برای «الان» استفاده نکن.
+- **پوشش:** با `phpdbg` محلی اندازه‌گیری می‌شود (dev-environment §1). مقدار T0.5 برای `Shared\Domain`: 184 از 185 خط (99.5%). تنها خط پوشش‌نیافته بررسی ارز است که با یک ارز قابل اجرا نیست.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود.
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).
