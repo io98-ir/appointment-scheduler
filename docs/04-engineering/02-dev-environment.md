@@ -16,7 +16,7 @@
 | **Composer** | ✅ (نصب رسمی با بررسی امضای SHA384) | 2.10.3 | `%LOCALAPPDATA%\Composer\bin\composer.bat` (در PATH کاربر) |
 | **Docker Desktop** | ⏭️ **به تصمیم کاربر روی این سیستم نصب نمی‌شود** | | بستر آماده است: `.wp-env.json`. تست Integration، Concurrency و E2E **در GitHub Actions** اجرا می‌شوند (runnerها Docker دارند). روی هر سیستمی که Docker دارد: `npx wp-env start` |
 | GitHub CLI (`gh`) | ✅ نصب شد، ⬜ **لاگین نشده** | 2.101.0 | کاربر باید `gh auth login` را اجرا کند تا وضعیت CI از اینجا دیده شود |
-| Coverage driver | ✅ `phpdbg` (همراه PHP) | | pcov و xdebug نصب نیستند. پوشش محلی: `phpdbg -qrr vendor/bin/phpunit --testsuite unit --coverage-text` (phpdbg کنار `php.exe` است) |
+| Coverage driver | ✅ `phpdbg` (همراه PHP) | | pcov و xdebug نصب نیستند. پوشش محلی: `phpdbg -qrr -d memory_limit=-1 vendor/bin/phpunit --testsuite unit --coverage-text` (phpdbg کنار `php.exe` است؛ آزمون 73 هزار روزه Jalali با سقف 1G حافظه کم می‌آورد) |
 | WP-CLI | ❌ | | داخل wp-env موجود است (`npx wp-env run cli wp …`). نصب محلی لازم نیست |
 | winget | ✅ | | نصب ابزارها |
 

@@ -16,6 +16,45 @@
 
 ---
 
+## 2026-09-24 — سشن 3 — T0.6 Jalali + DateFormatter
+**Taskها:** T0.6
+**انجام شد:**
+- `src/Shared/Domain/Jalali.php` (خالص): `fromGregorian`، `toGregorian`، `isLeapYear`، `daysInMonth`. الگوریتم port شده Borkowski/jalaali-js است و از سال 1 تا 3176 پشتیبانی می‌کند.
+- `src/Shared/DateFormatter.php`: `date`، `longDate`، `time`، `dateTime` و `digits`. تقویم با enum `Calendar` و ارقام با enum `Digits` انتخاب می‌شوند.
+  - نام ماه‌های شمسی با `_x(…, 'Jalali month', …)` ترجمه‌پذیرند.
+  - تاریخ بلند میلادی از `wp_date('j F Y')` می‌آید.
+- `ext-intl` به require-dev اضافه شد (lock: فقط hash و `platform-dev` تغییر کرد).
+- اسناد: implementation-notes §4.2 (جدید)، دستور phpdbg با `memory_limit=-1`.
+
+**تصمیم‌ها و فرض‌ها:**
+- Jalali در `Shared\Domain` است (PHP خالص)، چون Domain، مثلاً نمای ماه Availability، ممکن است به مرز ماه شمسی نیاز داشته باشد. نام ماه و قالب‌بندی در `Shared` است، چون i18n و `wp_date` لازم دارد.
+- **تا وقتی فایل fa_IR ساخته نشده (T6.3)، نام ماه شمسی به‌صورت انگلیسی آوانگاری‌شده (Mehr) نمایش داده می‌شود.**
+- تاریخ عددی با ارقام فارسی همیشه `/` دارد، به خاطر bidi. کنار هم آمدن تاریخ و زمان در صفحه LTR کار UI است و در متن کاراکتر نامرئی نمی‌گذاریم.
+- ICU از سال 1634 به بعد با الگوریتم ما متفاوت است. ICU مرجع درستی در آن سال‌ها نیست.
+
+**تأیید:**
+- ابتدا تست‌ها قرمز بودند. آزمون ICU اشتباه port را گرفت: در شاخه قبل از نوروز، leap سال قبل به‌جای سال اولیه استفاده شده بود. بعد از اصلاح سبز شدند.
+- `composer check` ← exit 0:
+  - phpcs: پاک
+  - PHPStan: No errors
+  - deptrac: 0 violation
+  - PHPUnit: OK (256 tests, 11686 assertions)
+- آزمون ICU 72: همه روزهای 1300 تا 1500 در هر دو جهت و وضعیت کبیسه همه سال‌ها، بدون اختلاف.
+- آزمون پیوستگی سال‌های 1 تا 3176: شروع هر سال، طول 365 یا 366، و round trip.
+- پوشش با phpdbg: `Jalali` برابر 71 از 71 خط، `DateFormatter` برابر 28 از 29 خط. خط باقیمانده شاخه `false` در `wp_date` است.
+- `composer test:rename` ← OK.
+- Subagent `reviewer`: در سال‌های واقعی باگ درستی پیدا نکرد و کل بازه 1 تا 3177 را مستقل بررسی کرد. 6 مورد دیگر هم اصلاح شد:
+  - قرارداد مرز سال 3177
+  - آزمون شاخه‌های اصلاحی
+  - bidi در تاریخ میلادی با ارقام فارسی
+  - ارجاع §7 که باید §9 باشد
+  - ادعای بیش از حد دقت در docblock
+  - skip بی‌صدای آزمون ICU (با `ext-intl` حل شد)
+
+**مشکلات و باقیمانده:** reviewer لیست رسمی سال‌های کبیسه ایران را از حافظه با خروجی ما مطابقت داد. منبع رسمی در repo نیست.
+**قدم بعدی:** T0.10 (wp-env + CI)، قبل از T0.7.
+**Commitها:** `feat(shared): jalali calendar and date formatter (T0.6)`
+
 ## 2026-09-24 — سشن 3 — T0.5 Value Objectهای Shared
 **Taskها:** T0.5
 **انجام شد:**
