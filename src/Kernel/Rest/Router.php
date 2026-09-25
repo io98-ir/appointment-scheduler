@@ -8,7 +8,9 @@ use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\KernelException;
 use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\RequestId;
+use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\NotFound;
 
 /**
  * Registers REST routes under the plugin's namespace and is the error
@@ -46,8 +48,9 @@ final class Router
      * @param string $methods One of the WP_REST_Server constants, e.g. WP_REST_Server::READABLE.
      * @param callable(\WP_REST_Request<array<string, mixed>>): mixed $callback Returns the
      *     response data or a WP_REST_Response. Fails by throwing: ApiError,
-     *     InvalidValue, or anything else for a 500. A returned WP_Error is
-     *     wrapped in the envelope too.
+     *     InvalidValue (422), NotFound (404), Forbidden (401 or 403), or
+     *     anything else for a 500. A returned WP_Error is wrapped in the
+     *     envelope too.
      * @param callable(\WP_REST_Request<array<string, mixed>>): bool $permission Runs before
      *     the callback; only true lets the request through. Authorization is
      *     checked again in the Application layer (architecture §12).
@@ -156,6 +159,17 @@ final class Router
             // The code tells the client which rule failed; the Domain has no
             // translated text (principles §3).
             return $this->error(422, $e->errorCode, \__('A value in the request is not valid.', 'vaqtyar'));
+        }
+        if ($e instanceof NotFound) {
+            return $this->error(404, $e->errorCode, \__('The requested item does not exist.', 'vaqtyar'));
+        }
+        if ($e instanceof Forbidden) {
+            // The same answer as a refused permission callback.
+            return $this->error(
+                \rest_authorization_required_code(),
+                'rest_forbidden',
+                \__('Sorry, you are not allowed to do that.', 'vaqtyar')
+            );
         }
 
         // A bug or a server condition. The client gets a generic message; the

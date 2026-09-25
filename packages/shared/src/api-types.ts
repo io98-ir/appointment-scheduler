@@ -23,3 +23,116 @@ export interface ErrorEnvelope {
 		request_id?: string;
 	};
 }
+
+/** Whether customers can book a catalog item. */
+export type CatalogStatus = 'active' | 'inactive';
+
+/**
+ * The admin catalog API (docs/api.md). Each resource is read and written in
+ * the same shape; `id` is ignored on writes, where the URL names the item. A
+ * PUT replaces every field, so a field left out takes its default.
+ */
+export interface Location {
+	id: number;
+	name: string;
+	/** An IANA region name such as "Asia/Tehran". */
+	timezone: string;
+	address: string;
+	/** E.164, e.g. "+982112345678". */
+	phone: string | null;
+	/** The slug of a holiday calendar, e.g. "ir". */
+	holiday_calendar: string | null;
+	status: CatalogStatus;
+	sort: number;
+}
+
+export interface Staff {
+	id: number;
+	name: string;
+	/** "#rrggbb", lowercase. */
+	color: string;
+	wp_user_id: number | null;
+	/** Null serves every location. */
+	location_id: number | null;
+	title: string;
+	email: string | null;
+	phone: string | null;
+	/** A media library image. */
+	avatar_id: number | null;
+	bio: string;
+	status: CatalogStatus;
+	sort: number;
+}
+
+export interface Resource {
+	id: number;
+	name: string;
+	/** Services ask for one of a group, e.g. "room". */
+	group_key: string;
+	location_id: number | null;
+	capacity: number;
+	status: CatalogStatus;
+}
+
+export interface ServiceCategory {
+	id: number;
+	name: string;
+	color: string;
+	sort: number;
+}
+
+export interface ServiceVariant {
+	/** Null for a new variant; a stored variant left out of a PUT is deleted. */
+	id: number | null;
+	label: string;
+	duration_min: number;
+	price: Money;
+	/** Exactly one per service. */
+	is_default: boolean;
+	buffer_before_min: number;
+	buffer_after_min: number;
+	/** Null uses the site setting. */
+	slot_step_min: number | null;
+	sort: number;
+}
+
+/** A staff member's assignment, with their own price or duration. */
+export interface ServiceStaff {
+	staff_id: number;
+	/** Null covers every variant; then price and duration only with a single variant. */
+	variant_id: number | null;
+	price: Money | null;
+	duration_min: number | null;
+}
+
+export interface ServiceResource {
+	group_key: string;
+	quantity: number;
+}
+
+export interface Service {
+	id: number;
+	name: string;
+	category_id: number | null;
+	description: string;
+	image_id: number | null;
+	/** Customers booked at the same time with one staff member. */
+	capacity: number;
+	status: CatalogStatus;
+	sort: number;
+	variants: ServiceVariant[];
+	staff: ServiceStaff[];
+	resources: ServiceResource[];
+}
+
+export interface Extra {
+	id: number;
+	name: string;
+	price: Money;
+	/** Minutes each unit adds. */
+	duration_min: number;
+	/** Null for an extra every service offers. */
+	service_id: number | null;
+	max_qty: number;
+	status: CatalogStatus;
+}

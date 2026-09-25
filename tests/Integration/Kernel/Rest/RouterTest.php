@@ -14,7 +14,9 @@ use Vaqtyar\Kernel\Rest\RateLimit;
 use Vaqtyar\Kernel\Rest\RateLimiter;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Tables;
+use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\NotFound;
 use Vaqtyar\Tests\Fixtures\FixedClock;
 
 /**
@@ -123,6 +125,27 @@ final class RouterTest extends \WP_UnitTestCase
         $data = $this->assertEnvelope($response, 'service_not_found', 404);
         self::assertSame('No such service.', $data['message']);
         self::assertSame(['id' => 5], $data['data']['details']);
+    }
+
+    public function testNotFoundBecomes404WithItsErrorCode(): void
+    {
+        $this->throwingRoute(new NotFound('location_not_found', 'No such location.'));
+
+        $response = $this->get('/throws');
+
+        self::assertSame(404, $response->get_status());
+        $this->assertEnvelope($response, 'location_not_found', 404);
+    }
+
+    public function testForbiddenFromTheApplicationLayerAnswersLikeARefusedPermission(): void
+    {
+        $this->logInAs('subscriber');
+        $this->throwingRoute(new Forbidden('manage_catalog'));
+
+        $response = $this->get('/throws');
+
+        self::assertSame(403, $response->get_status());
+        $this->assertEnvelope($response, 'rest_forbidden', 403);
     }
 
     public function testAnErrorInThePermissionCheckIsMappedToo(): void

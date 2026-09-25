@@ -55,6 +55,33 @@ final class DbTest extends TestCase
         self::assertNull($this->db->getVar('SELECT 1 FROM t WHERE a = %s', 'no'));
     }
 
+    public function testGetResultsReturnsTheRowsAsColumnMaps(): void
+    {
+        $this->wpdb->shouldReceive('get_results')->once()->with("SELECT a, b FROM t WHERE c = 'x'", 'ARRAY_A')
+            ->andReturnUsing(fn (string $sql): array => (array) $this->respond($sql));
+        $this->respondWith(static fn (): array => [['a' => '1', 'b' => null], ['a' => '2', 'b' => 'y']]);
+
+        self::assertSame(
+            [['a' => '1', 'b' => null], ['a' => '2', 'b' => 'y']],
+            $this->db->getResults('SELECT a, b FROM t WHERE c = %s', 'x')
+        );
+    }
+
+    public function testGetResultsWithNoRowsIsAnEmptyList(): void
+    {
+        $this->respondWith(static fn (): array => []);
+
+        self::assertSame([], $this->db->getResults('SELECT a FROM t'));
+    }
+
+    public function testGetResultsThrowsWhenTheQueryFails(): void
+    {
+        $this->respondWith(fn (): bool => $this->failWith('Unknown column'));
+
+        $this->expectException(DbException::class);
+        $this->db->getResults('SELECT nope FROM t');
+    }
+
     public function testAFailedQueryThrowsWithoutTheServerTextInTheMessage(): void
     {
         $this->respondWith(fn (): bool => $this->failWith("Duplicate entry '09121234567' for key 'phone'"));

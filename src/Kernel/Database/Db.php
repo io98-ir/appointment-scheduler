@@ -77,6 +77,24 @@ final class Db
     }
 
     /**
+     * Every row, each a map of column name to value. MySQL values come back
+     * as strings (NULL as null), so the caller converts the types.
+     *
+     * @param literal-string $sql As for execute().
+     * @return list<array<string, string|null>>
+     */
+    public function getResults(string $sql, int|string ...$args): array
+    {
+        $sql = $this->prepare($sql, $args);
+        // 'ARRAY_A' is the value of WordPress's constant, which the unit suite does not define.
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- prepared just above when it has values.
+        $rows = $this->call(fn (): ?array => $this->wpdb->get_results($sql, 'ARRAY_A'));
+
+        /** @var list<array<string, string|null>> Rows of columns, as ARRAY_A gives them. */
+        return $rows ?? [];
+    }
+
+    /**
      * @param array<string, int|string|null> $data Column => value; null is stored as NULL.
      * @return int The AUTO_INCREMENT id of the new row.
      */

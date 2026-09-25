@@ -142,6 +142,23 @@
 - سقف‌ها: مدت، Buffer و گام اسلات تا 1440 دقیقه. ظرفیت خدمت و منبع تا 1000. تعداد Extra و منبع لازم تا 100. متن‌های TEXT تا 65535 بایت (نه کاراکتر). قیمت منفی در Variant، Extra و قیمت اختصاصی پذیرفته نمی‌شود، چون تخفیف کار Price rule و کوپن است.
 - `search_name` پرسنل را Repository در T1.2 پر می‌کند. نرمال‌سازی فارسی با Customers (T2.7) مشترک است و وقتی دومین مصرف‌کننده آمد جدا می‌شود.
 
+## 4.4 Catalog: Repository، Application و REST (T1.2)
+- **لایه‌ها:** هر Aggregate یک interface Repository در Domain دارد (`find`، `page`، `count`، `save`، `delete`، که حذف نرم است). `Application\CatalogService` همه Use Caseهای Admin را دارد و `Application\CatalogReader` پیاده‌سازی `Contracts\CatalogApi` است. پیاده‌سازی‌های Wpdb در `Infrastructure/Persistence` هستند و `CatalogTable` کار مشترک پنج جدول ساده را انجام می‌دهد (حذف نرم، `created_at` و `updated_at`، Pagination).
+- **Authorization در Application:** port `Shared\Domain\Authorizer` (پیاده‌سازی `Shared\WpAuthorizer`)، چون Application نمی‌تواند تابع WP صدا بزند. Use Case در صورت نبود مجوز `Shared\Domain\Forbidden` پرتاب می‌کند و Router آن را مثل رد شدن permission جواب می‌دهد (401 یا 403). `Shared\Domain\NotFound` با `errorCode` به 404 تبدیل می‌شود. Booking و بقیه ماژول‌ها هم از همین‌ها استفاده می‌کنند.
+- **`Db::getResults()`** ردیف‌ها را به‌صورت آرایه ستون ← رشته برمی‌گرداند (NULL به‌صورت null). `Row` آن‌ها را typed می‌خواند و ستون ناموجود را باگ می‌داند.
+- **فهرست `IN`:** یک `%d` برای هر id (`implode(',', array_fill(0, n, '%d'))`). PHPStan این را `literal-string` می‌شناسد، ولی `str_replace` روی SQL را نه. فهرست خالی قبل از کوئری بررسی می‌شود.
+- **ذخیره `Service`:** داخل `Transaction::run`. در update، اول ردیف خدمت با `FOR UPDATE` قفل می‌شود (اگر حذف شده باشد: `service_not_found`) و idهای Variant **زیر قفل** دوباره با Variantهای ذخیره‌شده مقایسه می‌شوند. Variant حذف‌شده حذف نرم می‌شود و `service_staff` و `service_resources` کامل جایگزین می‌شوند. خواندن قطعه‌ها برای یک صفحه از خدمت‌ها با یک کوئری برای هر جدول انجام می‌شود (بدون N+1).
+- **ارجاع به آیتم حذف‌شده:** حذف آبشاری نیست، ولی خواندن آن را کنار می‌گذارد. خدمت بدون دسته حذف‌شده و بدون پرسنل حذف‌شده خوانده می‌شود، تا Admin بتواند همان چیزی را که خوانده دوباره ذخیره کند. **استثنا:** حذف خدمت Extraهای آن را هم حذف می‌کند، و شعبه‌ای که پرسنل یا منبع حذف‌نشده دارد حذف نمی‌شود (`location_in_use`).
+- **`CatalogApi`:** فقط آیتم فعال و حذف‌نشده. پرسنل و منبعِ شعبه غیرفعال هم کنار گذاشته می‌شوند. Capability بررسی نمی‌شود، چون فراخواننده‌ها Use Caseهایی هستند که خودشان Authorization دارند.
+- **REST:** `CrudRoutes` پنج route هر منبع را ثبت می‌کند و `*Json` برای هر منبع schema، تبدیل ورودی به Entity و تبدیل Entity به JSON را دارد. PUT **جایگزینی کامل** است.
+  - **تله `get_param()`:** در PUT، JSON body قبل از URL خوانده می‌شود. پس `"id"` داخل body آیتم دیگری را انتخاب می‌کرد. id فقط از `get_url_params()` خوانده می‌شود.
+  - **تله default:** وردپرس در `sanitize_params` مقدار **پیش‌فرض** را هم validate می‌کند. `default: []` روی فهرستی با `minItems: 1` هر درخواست را 400 می‌کرد (CI run 36188584486). فهرست الزامی default ندارد.
+  - وردپرس default را فقط برای پارامترهای سطح اول می‌گذارد، نه برای فیلدهای object تودرتو. `Input` پیش‌فرض آن‌ها را می‌دهد.
+  - وردپرس پارامترها را **قبل از** permission بررسی می‌کند، پس کاربر بدون مجوز با body نامعتبر 400 می‌گیرد، نه 403. تست 403 باید body معتبر بفرستد.
+  - حساب وردپرس (`get_userdata`) و تصویر (`wp_attachment_is_image`) در Presentation بررسی می‌شوند، چون فقط وردپرس آن‌ها را می‌شناسد.
+- **تست Integration کاتالوگ** از `TestCase` و `RealDatabase` استفاده می‌کند، نه `WP_UnitTestCase`، چون ذخیره خدمت تراکنش خودش را باز می‌کند (§5). trait `CatalogTables` در `tearDown` جدول‌ها را TRUNCATE می‌کند و کاربرهای ساخته‌شده حذف می‌شوند.
+- **هنوز ساخته نشد:** نقش‌های خود افزونه (Manager و مانند آن؛ یک capability به‌تنهایی نقش جدا را توجیه نمی‌کند)، یکتا بودن `wp_user_id` پرسنل (با پنل پرسنل)، فیلتر و جستجو در لیست‌ها (با UI در T3.2)، و Extraها در `CatalogApi` (با ورودی AvailabilityCalculator در T1.4).
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

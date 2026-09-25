@@ -16,6 +16,53 @@
 
 ---
 
+## 2026-09-26 — سشن 9 — T1.2 Catalog REST CRUD + CatalogApi
+**Taskها:** T1.2 (و رفع CI قرمز T1.1)
+**انجام شد:**
+- **رفع CI T1.1:** push `3ec41cd` در Integration قرمز شد (run 36186077348). علت در تست بود، نه migration: helper `column()` همه مقدارها را lowercase می‌کند، پس `IS_NULLABLE` باید `yes` باشد (`9f967c0`).
+- **Kernel و Shared:** `Db::getResults()`. `Shared\Domain\NotFound` (404) و `Forbidden` (401/403) در Router. port `Shared\Domain\Authorizer` با پیاده‌سازی `Shared\WpAuthorizer`.
+- **Catalog:**
+  - Domain: 6 interface Repository.
+  - Application: `CatalogService` (24 Use Case)، `CatalogReader implements CatalogApi` و `Page`.
+  - Contracts: `CatalogApi`، `Offer`، `StaffOffer`، `ResourceNeed`، `ResourceUnit` و `LocationInfo`.
+  - Infrastructure: `CatalogTable`، `Row` و 6 Repository از نوع Wpdb.
+  - Presentation: `CrudRoutes`، `CatalogRoutes`، `Input`، `Fields` و 6 کلاس `*Json`.
+  - capability `manage_catalog` برای administrator.
+- **تست‌ها:**
+  - Unit: `CatalogServiceTest` (هر Use Case بدون capability، NotFound، ارجاع‌ها، Variant خدمت دیگر)، `CatalogReaderTest`، `PersistenceTest` (`searchName` و `Row`) و `getResults` در `DbTest`.
+  - Integration: `CatalogRestTest` (401، 403 روی هر 30 route، چرخه کامل شعبه، Pagination و هدرها، 400 در برابر 422، پرسنل و `search_name`، `location_in_use`، ذخیره کامل خدمت با حفظ id Variantها، ذخیره دوباره بعد از حذف دسته و پرسنل، حذف Extraها با خدمت)، `CatalogApiTest`، و NotFound و Forbidden در `RouterTest`.
+- **اسناد:**
+  - `docs/api.md` (جدید)، نوع‌های TS در `api-types.ts` و README ماژول.
+  - implementation-notes §4.4.
+
+**تصمیم‌ها و فرض‌ها:**
+- **PUT جایگزینی کامل است.** PATCH نداریم. فیلدی که فرستاده نشود مقدار پیش‌فرضش را می‌گیرد.
+- **حذف آبشاری نیست، ولی خواندن ارجاع به آیتم حذف‌شده را کنار می‌گذارد.** خدمت بدون دسته حذف‌شده و بدون پرسنل حذف‌شده خوانده می‌شود. دو استثنا:
+  - حذف خدمت Extraهایش را هم حذف می‌کند.
+  - شعبه‌ای که پرسنل یا منبع حذف‌نشده دارد حذف نمی‌شود (`location_in_use`، 422).
+- **`CatalogApi` فقط آیتم فعال برمی‌گرداند.** پرسنل و منبعِ شعبه غیرفعال هم کنار گذاشته می‌شوند. Capability بررسی نمی‌شود.
+- **فقط یک capability** (`manage_catalog`)، و **نقش Manager ساخته نشد:** یک capability به‌تنهایی نقش جدا را توجیه نمی‌کند. نقش‌ها با capabilityهای رزرو در M2 و M3 ساخته می‌شوند.
+- **در `CatalogApi` هنوز Extra نیامده.** با ورودی AvailabilityCalculator در T1.4 اضافه می‌شود.
+- **کار روی `main` بعد از تأیید CI:** Integration محلی اجرا نمی‌شود. پس کار اول روی شاخه `wip/t1-2-catalog-rest` push شد و CI با `workflow_dispatch` روی آن اجرا شد. بعد در یک commit روی `main` squash شد.
+
+**Review:** subagent `reviewer` چهار مورد واقعی پیدا کرد و هر چهار رفع شد:
+1. بعد از حذف دسته یا پرسنل، خدمت با همان body خوانده‌شده ذخیره نمی‌شد (422). حالا خواندن ارجاع حذف‌شده را کنار می‌گذارد.
+2. Extraهای خدمت حذف‌شده به همین شکل گیر می‌کردند. حالا با خدمت حذف می‌شوند.
+3. شعبه غیرفعال در `CatalogApi` نادیده گرفته می‌شد. حالا خودش، پرسنلش و منابعش کنار گذاشته می‌شوند.
+4. ذخیره همزمان یک خدمت می‌توانست به Variant حذف‌شده تخصیص بنویسد، یا خدمت حذف‌شده را نیمه‌کاره ذخیره کند و 500 بدهد. حالا ردیف خدمت `FOR UPDATE` قفل می‌شود و بررسی‌ها زیر قفل تکرار می‌شوند.
+
+یک مورد را خودم پیدا کردم: در PUT، `id` داخل body بر `id` در URL مقدم بود. حالا id فقط از URL خوانده می‌شود.
+
+**تأیید:**
+- `composer check` ← lint و PHPStan بدون خطا، deptrac با 0 violation، `OK (516 tests, 12079 assertions)`. `pnpm lint` سبز.
+- CI run 36188584486 روی شاخه wip ← Integration قرمز (6 شکست، همه از یک علت: `default: []` روی `variants` که وردپرس آن را هم validate می‌کند و با `minItems` رد می‌شد).
+- CI run 36189399823 روی شاخه wip، بعد از رفع خطا و یافته‌های Review ← هر 11 job سبز، Integration `108 tests, 337 assertions` در 4 ترکیب.
+
+**مشکلات و باقیمانده:** `test:rename` جدا اجرا نشد، ولی job `rename` در CI سبز است.
+**قدم بعدی:** T1.3 (Scheduling Domain و Migration، تعطیلات 1405).
+**Commitها:** `9f967c0` test(catalog): compare IS_NULLABLE lowercased like the other columns؛ `feat(catalog): repositories, admin rest crud and catalog api (T1.2)`
+---
+
 ## 2026-09-25 — سشن 8 — T1.1 Catalog Domain + Migration
 **Taskها:** T1.1
 **انجام شد:**

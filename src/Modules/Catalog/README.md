@@ -8,8 +8,20 @@ price or duration) and resource requirements, and extras.
   `ServiceStaff`, `ResourceRequirement`). `Service::terms()` resolves a staff
   member's duration and price for a variant. The other entities only guard
   their own fields. Invalid input throws `InvalidValue` with an error code.
+  One repository interface per aggregate; deletes are soft.
+- **Application:** `CatalogService` holds the admin use cases. Each checks
+  the `manage_catalog` capability again (through `Shared\Domain\Authorizer`)
+  and the references between aggregates. `CatalogReader` implements the
+  contract.
+- **Contracts:** `CatalogApi` for the other modules: `offer($variantId)` (a
+  bookable variant with its active staff and their terms, and the active
+  resources of each group it needs) and `location($id)`. Only active,
+  non-deleted items come back. No capability check: the callers authorize.
+- **REST (admin):** `/locations`, `/staff`, `/resources`,
+  `/service-categories`, `/services`, `/extras`, each with list, create, read,
+  replace (PUT) and delete (docs/api.md).
+- **Capabilities:** `manage_catalog` (administrator).
+- **Events:** none yet.
 - **Tables:** `locations`, `staff`, `resources`, `service_categories`,
   `services`, `service_variants`, `service_staff`, `service_resources`,
   `extras` (data-model §2, migration `CreateCatalogTables`).
-- **Contracts, events, capabilities:** none yet. The repositories, the admin
-  REST API, its capabilities and the `CatalogApi` contract come with T1.2.

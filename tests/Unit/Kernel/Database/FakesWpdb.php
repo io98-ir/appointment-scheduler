@@ -19,7 +19,7 @@ trait FakesWpdb
     /** @var list<string> */
     private array $queries = [];
 
-    /** @var (\Closure(string): (int|bool|string|null))|null */
+    /** @var (\Closure(string): (int|bool|string|array<mixed>|null))|null */
     private ?\Closure $responder = null;
 
     private \wpdb&MockInterface $wpdb;
@@ -52,6 +52,11 @@ trait FakesWpdb
 
             return \is_string($result) ? $result : null;
         })->byDefault();
+        $wpdb->shouldReceive('get_results')->andReturnUsing(function (string $sql): ?array {
+            $result = $this->respond($sql);
+
+            return \is_array($result) ? $result : null;
+        })->byDefault();
 
         $this->wpdb = $wpdb;
         $GLOBALS['wpdb'] = $wpdb;
@@ -60,7 +65,7 @@ trait FakesWpdb
     }
 
     /**
-     * @param \Closure(string): (int|bool|string|null) $responder
+     * @param \Closure(string): (int|bool|string|array<mixed>|null) $responder
      */
     private function respondWith(\Closure $responder): void
     {
@@ -77,7 +82,10 @@ trait FakesWpdb
         return false;
     }
 
-    private function respond(string $sql): int|bool|string|null
+    /**
+     * @return int|bool|string|array<mixed>|null
+     */
+    private function respond(string $sql): int|bool|string|array|null
     {
         $this->queries[] = $sql;
         // wpdb clears the error at the start of every query.
