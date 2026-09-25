@@ -16,6 +16,18 @@
 
 ---
 
+## 2026-09-25 — سشن 5 (ادامه) — اولین CI واقعی و رفع آن
+**Taskها:** T0.10، T0.7
+**انجام شد:** کاربر `gh auth login` زد. اولین اجرای CI (run 36144097562) در سه job قرمز بود و هر سه رفع شد:
+- **PHPStan، و به همین دلیل rename:** `str_replace(\range('0', '9'), …)` در `DateFormatter` (از T0.6). `range` عدد int برمی‌گرداند و با یک لیست لیترال جایگزین شد. PHPStan محلی روی PHP 8.3 این را نمی‌گیرد، حتی با `phpVersion: 80100` و بدون cache (امتحان شد). CI روی 8.1 آن را گرفت.
+- **Integration PHP 8.4 + WP 6.6:** هر 19 تست پاس شدند، ولی `mysqli_ping()` در مسیر reconnect خود core، روی PHP 8.4 deprecation چاپ کرد. تست risky شد و `failOnRisky` job را شکست داد. در همان یک تست `E_DEPRECATED` خاموش شد.
+
+**تأیید:** run 36145578720 روی `0888e32` ← هر 9 job سبز: quality، unit روی 8.1 و 8.4، legacy-syntax روی 7.0، rename، integration روی {8.1، 8.4} × {6.6، latest}. پس تست‌های Integration مربوط به T0.7 (lock wait واقعی، KILL، MyISAM، GET_LOCK و cache) روی MySQL واقعی پاس شدند. `composer check` محلی ← OK (300 tests).
+**مشکلات و باقیمانده:** GitHub اعلام کرده برچسب `ubuntu-latest` از 2026-10-19 به Ubuntu 26 منتقل می‌شود. فعلاً اقدامی لازم نیست.
+**قدم بعدی:** T0.8.
+**Commitها:** `0888e32 fix(ci): string digits in DateFormatter, core deprecation in reconnect test`
+---
+
 ## 2026-09-25 — سشن 5 (ادامه) — push و بستن T0.10 و T0.7
 **Taskها:** T0.10، T0.7
 **انجام شد:** commitهای `9ddb825` (T0.10) و `0ce43dc` (T0.7) به `origin/main` push شدند (`4c93fc7..0ce43dc`).
