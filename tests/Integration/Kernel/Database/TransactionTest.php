@@ -109,6 +109,9 @@ final class TransactionTest extends TestCase
     public function testALostConnectionEndsTheTransactionInsteadOfGoingOnWithoutIt(): void
     {
         $this->other = $this->otherConnection();
+        // wpdb's reconnect calls mysqli_ping(), deprecated on PHP 8.4 (WP 6.6
+        // core, not our code); its notice would fail the run as output.
+        $reporting = \error_reporting(\error_reporting() & ~\E_DEPRECATED);
 
         try {
             $this->transaction->run(function (): void {
@@ -123,6 +126,8 @@ final class TransactionTest extends TestCase
             self::assertNotSame(0, $e->errno);
 
             return;
+        } finally {
+            \error_reporting($reporting);
         }
         self::fail('The transaction went on over a new connection.');
     }

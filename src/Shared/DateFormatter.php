@@ -21,6 +21,8 @@ use Vaqtyar\Shared\Domain\LocalDate;
  */
 final class DateFormatter
 {
+    // Literal: range('0', '9') returns ints.
+    private const LATIN_DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     private const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 
     public function __construct(
@@ -83,7 +85,9 @@ final class DateFormatter
      */
     public function digits(string $text): string
     {
-        return Digits::Persian === $this->digits ? \str_replace(\range('0', '9'), self::PERSIAN_DIGITS, $text) : $text;
+        return Digits::Persian === $this->digits
+            ? \str_replace(self::LATIN_DIGITS, self::PERSIAN_DIGITS, $text)
+            : $text;
     }
 
     private static function jalaliMonthName(int $month): string
