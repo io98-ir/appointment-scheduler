@@ -16,6 +16,14 @@
 
 ---
 
+## 2026-09-25 — سشن 7 (ادامه) — CI برای T0.9 و تست flaky
+**Taskها:** T0.9، T0.7
+**انجام شد:** push `84764c3` به درخواست کاربر. run قبلی (36149811656، commit `f54f8c8` که فقط سند بود) در Integration (PHP 8.4، WP 6.6) قرمز شده بود: `MigratorTest::testDoesNotRunWhileAnotherConnectionHoldsTheLock`. علت یک race در خود تست است: `mysqli::close()` قبل از پایان session در سرور برمی‌گردد و `GET_LOCK(…, 0)` قفل را هنوز گرفته می‌بیند. تست حالا قفل را قبل از close با `RELEASE_LOCK` آزاد می‌کند. تله در implementation-notes §5 ثبت شد.
+**تأیید:** run 36152711861 روی `84764c3` ← هر 9 job سبز. Integration روی {8.1، 8.4} × {6.6، latest} ← `OK (52 tests, 164 assertions)`، یعنی هر 9 تست جدید T0.9 از اولین اجرا پاس شدند. Unit روی 8.1 و 8.4 ← 383 تست OK. رفع تست flaky با push بعدی در CI دیده می‌شود.
+**قدم بعدی:** T0.11.
+**Commitها:** `test(kernel): release the migration lock explicitly in the lock test`
+---
+
 ## 2026-09-25 — سشن 7 — T0.9 Settings، SecretStore، Logger، Caps
 **Taskها:** T0.9
 **انجام شد:**

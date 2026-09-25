@@ -100,10 +100,14 @@ final class MigratorTest extends TestCase
             self::assertFalse($this->migrator->migrate(['test' => [$this->createItems()]]));
             self::assertSame([], $this->ran->getArrayCopy());
         } finally {
+            // Released explicitly: close() returns before the server has ended
+            // the session, so a GET_LOCK with timeout 0 right after may still
+            // find the lock held (flaky on CI, run 36149811656).
+            $other->query("SELECT RELEASE_LOCK(SHA1(CONCAT(DATABASE(), '{$name}')))");
             $other->close();
         }
 
-        // The lock went with the other connection.
+        // The other request has finished.
         self::assertTrue($this->migrator->migrate(['test' => [$this->createItems()]]));
         self::assertSame(['create items'], $this->ran->getArrayCopy());
     }

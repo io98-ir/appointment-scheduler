@@ -152,6 +152,7 @@
   - در multisite و فعال‌سازی شبکه‌ای، فقط سایت جاری در activation migrate می‌شود. بقیه سایت‌ها در اولین درخواستشان (مسیر boot) migrate می‌شوند.
   - ALTER باید idempotent باشد: قبلش وجود ستون یا ایندکس را از `information_schema` بررسی کن.
 - **تله تست Integration:** `WP_UnitTestCase` در `set_up` دستور `SET autocommit = 0` را اجرا می‌کند و هیچ‌وقت برش نمی‌گرداند. همچنین با فیلتر `query`، `CREATE TABLE` را به `CREATE TEMPORARY TABLE` تبدیل می‌کند و جدول موقت در `information_schema.TABLES` دیده نمی‌شود. پس تست‌های Db، Transaction و Migrator از `PHPUnit\Framework\TestCase` ارث می‌برند، از trait `RealDatabase` استفاده می‌کنند (که `autocommit = 1` می‌گذارد) و خودشان جدول‌ها و option را پاک می‌کنند.
+- **تله تست قفل با connection دوم:** `mysqli::close()` قبل از پایان session در سرور برمی‌گردد. پس `GET_LOCK(…, 0)` بلافاصله بعد از آن گاهی قفل را هنوز گرفته می‌بیند (flaky در CI، run 36149811656). قفل را قبل از close با `RELEASE_LOCK` صریحاً آزاد کن.
 - **تله Bash tool:** heredoc با ترکیب `'` و `"` و backtick در Bash tool گاهی خطای parse می‌دهد. برای ویرایش‌های چندخطی از Edit یا اسکریپت PHP در scratchpad استفاده کن.
 - تراکنش: `START TRANSACTION`، `COMMIT` و `ROLLBACK` از طریق `$wpdb->query`. بعد از هر query باید `$wpdb->last_error` بررسی شود و در صورت خطا Exception پرتاب شود.
 - **شماره خطاهای MySQL برای Retry:** 1213 (deadlock) و 1205 (lock wait timeout). با `mysqli_errno($wpdb->dbh)` خوانده می‌شوند.
