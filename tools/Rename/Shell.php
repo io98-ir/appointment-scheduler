@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Tools\Rename;
 
 /**
- * Runs git and Composer for the rename scripts, without a shell where possible.
+ * Runs git, Composer and pnpm for the rename scripts, without a shell where possible.
  */
 final class Shell
 {
@@ -55,6 +55,16 @@ final class Shell
 
         // Through the shell: on Windows `composer` is a .bat file.
         return $this->run('composer ' . \implode(' ', \array_map('escapeshellarg', $args)));
+    }
+
+    /**
+     * Through the shell: on Windows `pnpm` is a .cmd file.
+     *
+     * @param list<string> $args
+     */
+    public function pnpm(array $args): int
+    {
+        return $this->run('pnpm ' . \implode(' ', \array_map('escapeshellarg', $args)));
     }
 
     public function isClean(): bool

@@ -1,0 +1,37 @@
+{
+	"name": "vaqtyar",
+	"private": true,
+	"description": "JS workspace of the plugin: shared, admin and widget packages (ADR-015).",
+	"license": "GPL-2.0-or-later",
+	"packageManager": "pnpm@9.15.9",
+	"engines": {
+		"node": ">=22.13"
+	},
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"lint": "pnpm lint:js && pnpm lint:style && pnpm typecheck",
+		"lint:js": "wp-scripts lint-js packages",
+		"lint:style": "wp-scripts lint-style \"packages/**/*.css\"",
+		"format": "wp-scripts format packages",
+		"typecheck": "tsc -p packages/shared && tsc -p packages/admin && tsc -p packages/widget",
+		"test": "vitest run",
+		"size": "size-limit"
+	},
+	"devDependencies": {
+		"@babel/plugin-transform-react-jsx": "^7",
+		"@size-limit/file": "^14.0.1",
+		"@types/react": "^18",
+		"@types/react-dom": "^18",
+		"@wordpress/babel-preset-default": "^8",
+		"@wordpress/scripts": "^35.0.0",
+		"@wordpress/stylelint-config": "^26.0.0",
+		"jsdom": "^30.1.1",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"size-limit": "^14.0.1",
+		"stylelint-use-logical": "^2.1.3",
+		"typescript": "~5.9.0",
+		"vitest": "^5"
+	}
+}

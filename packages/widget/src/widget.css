@@ -1,0 +1,19 @@
+/*
+ * The widget's design tokens. A theme can override any of them; the defaults
+ * follow the theme's own colors (theme.json presets) where it has them.
+ * Logical properties only, so RTL and LTR need no separate rules.
+ */
+.vqy-widget {
+	--vqy-color-text: var(--wp--preset--color--contrast, currentcolor);
+	--vqy-color-background: var(--wp--preset--color--base, transparent);
+	--vqy-space: 1rem;
+
+	color: var(--vqy-color-text);
+	background: var(--vqy-color-background);
+	padding-block: var(--vqy-space);
+	padding-inline: var(--vqy-space);
+}
+
+.vqy-widget__title {
+	margin-block: 0;
+}

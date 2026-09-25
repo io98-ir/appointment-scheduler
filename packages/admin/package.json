@@ -1,0 +1,13 @@
+{
+	"name": "@vaqtyar/admin",
+	"private": true,
+	"description": "The wp-admin app: React from WordPress core, loaded as an external.",
+	"license": "GPL-2.0-or-later",
+	"type": "module",
+	"main": "src/index.tsx",
+	"dependencies": {
+		"@vaqtyar/shared": "workspace:^",
+		"@wordpress/element": "^8",
+		"@wordpress/i18n": "^6"
+	}
+}

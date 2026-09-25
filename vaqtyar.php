@@ -39,7 +39,9 @@ require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.ph
 // Composition root: the modules are listed once, here, so the kernel depends
 // on none and boot and activation see the same list.
 $vaqtyar_modules = static function () {
-    return array();
+    return array(
+        new \Vaqtyar\Modules\Admin\AdminModule(),
+    );
 };
 
 // On the activation request plugins_loaded has already fired when this file is

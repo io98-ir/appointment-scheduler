@@ -78,8 +78,43 @@ jobs:
           php-version: '8.1'
           extensions: intl, mbstring
           coverage: none
+      # The renamed copy installs, lints, tests and builds the JS too.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
       - run: composer install --no-interaction --no-progress
       - run: composer test:rename
+
+  test-js:
+    name: JS lint, types and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # The pnpm version comes from packageManager in package.json.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test
+
+  build:
+    name: Build and size budget
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # The widget stays under 40 KB gzipped (ADR-007).
+      - run: pnpm size
 
   integration:
     name: Integration (PHP ${{ matrix.php }}, WP ${{ matrix.wp }})

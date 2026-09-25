@@ -1,0 +1,12 @@
+/*
+ * Logical properties only (principles §5): the same rules serve RTL and LTR.
+ * wp-admin's own colors come from its stylesheet; nothing is hard-coded here.
+ */
+.vqy-admin {
+	margin-inline-end: 20px;
+	padding-block-start: 10px;
+}
+
+.vqy-admin__title {
+	margin-block-end: 1em;
+}

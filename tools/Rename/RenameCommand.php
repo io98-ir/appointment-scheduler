@@ -114,6 +114,17 @@ final class RenameCommand
 
             return 1;
         }
+        // The JS package names are in pnpm's lock file, which the rename skips,
+        // and a token of another length changes where Prettier breaks lines.
+        // In CI pnpm freezes the lock file by default; here it must change.
+        if (\is_file($this->root . '/pnpm-lock.yaml')) {
+            \fwrite($this->out, "Updating pnpm's lock file and formatting the JS…\n");
+            if (0 !== $shell->pnpm(['install', '--no-frozen-lockfile']) || 0 !== $shell->pnpm(['format'])) {
+                \fwrite($this->err, "pnpm install or pnpm format failed; run them yourself.\n");
+
+                return 1;
+            }
+        }
 
         $leftovers = $renamer->leftovers($from, $to, $shell->gitFiles());
         if ([] !== $leftovers) {

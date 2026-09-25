@@ -1,0 +1,14 @@
+[
+	{
+		"name": "widget (front end, ADR-007)",
+		"path": [ "build/widget.js", "build/widget.css" ],
+		"limit": "40 KB",
+		"gzip": true
+	},
+	{
+		"name": "admin",
+		"path": [ "build/admin.js", "build/admin.css" ],
+		"limit": "150 KB",
+		"gzip": true
+	}
+]

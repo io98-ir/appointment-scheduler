@@ -1,0 +1,13 @@
+{
+	"name": "@vaqtyar/widget",
+	"private": true,
+	"description": "The booking widget for the front end: Preact, no React on the page (ADR-007).",
+	"license": "GPL-2.0-or-later",
+	"type": "module",
+	"main": "src/index.tsx",
+	"dependencies": {
+		"@vaqtyar/shared": "workspace:^",
+		"@wordpress/i18n": "^6",
+		"preact": "^10"
+	}
+}

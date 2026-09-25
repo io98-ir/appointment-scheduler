@@ -16,6 +16,52 @@
 
 ---
 
+## 2026-09-25 — سشن 7 (ادامه) — T0.11 JS workspace
+**Taskها:** T0.11
+**انجام شد:**
+- **Workspace و ابزارها:** `package.json` و `pnpm-workspace.yaml`، `webpack.config.js` (entryهای admin و widget)، `babel.config.js` (JSX ویجت برای Preact)، `eslint.config.cjs`، `stylelint.config.cjs`، tsconfig برای هر پکیج، `vitest.config.mjs` (یک project برای هر پکیج)، `.size-limit.json`.
+- **`packages/shared`:** `ApiClient` و `ApiError`، `api-types`، `jalali` (با jalaali-js)، `money`، `digits`، `identity`.
+- **`packages/admin`:** `App` و hash router.
+- **`packages/widget`:** `Widget`، `mount` و `readConfig`، و mount خودکار.
+- **PHP:** `Modules\Admin\AdminModule` و `Presentation\AdminPage` (اولین ماژول)، ثبت‌شده در `vaqtyar.php`.
+- **Rename:** `Shell::pnpm()`، و `rename.php` حالا `pnpm install` و `pnpm format` را اجرا می‌کند. `test-rename.php` بررسی‌های JS را روی کپی rename‌شده هم اجرا می‌کند.
+- **CI:** jobهای `test-js` و `build`، و Node و pnpm در job `rename`.
+- **تست‌ها:** Vitest برای api-client، jalali، money و digits، shell Admin با React واقعی در jsdom، و mount ویجت با Preact (38 تست). Integration: `AdminPageTest` (4 تست).
+- **اسناد:** implementation-notes §7.1.
+
+**تصمیم‌ها و فرض‌ها:**
+- **wp-scripts 35، نه 36:** نسخه 36 به Node 24.15 یا بالاتر نیاز دارد.
+- **TypeScript 5.9، نه 7.**
+- **React 18 در تست‌ها:** WP 6.6 هم React 18 دارد.
+- **`ApiClient` خودمان به‌جای `@wordpress/api-fetch`:** یک کلاینت مشترک برای Admin و ویجت، که ویجت در Front بارگذاری‌اش نمی‌کند.
+- **هنوز ساخته نشدند:** TanStack Query، کانتکست API در Admin، و config از PHP به JS، چون هنوز مصرف‌کننده‌ای ندارند (principles §0). با اولین صفحه داده‌دار (T1.2 و T3.x) می‌آیند.
+- **capability جدید:** `access_admin` برای منوی Admin، به administrator داده می‌شود.
+- **job `build`:** فقط build و size. zip و Plugin Check به Task انتشار موکول شدند.
+- **`--no-frozen-lockfile`:** rename به‌جای `--lockfile-only` که roadmap گفته بود، `pnpm install --no-frozen-lockfile` و `pnpm format` را اجرا می‌کند (implementation-notes §7.1).
+- **`Widget` پارامتر `config` را هنوز نمی‌خواند:** API `mount(el, config)` طبق principles §5 است. یک `eslint-disable` با دلیل دارد.
+
+**Review:**
+- اجرای اول subagent `reviewer` با محدودیت API قطع شد و دوباره اجرا شد.
+- رفع شد: job `rename` در CI شکست می‌خورد، چون pnpm با `CI=true` قفل را frozen می‌کند. بازتولید شد و با `CI=true` تأیید شد که حالا پاس می‌شود.
+- رفع شد: `navigate()` بی‌مصرف حذف شد.
+- مستند شد: `wp-i18n` و `wp-hooks` در بودجه ویجت حساب نمی‌شوند.
+- مستند شد: nonce مهمان در `ApiClient`.
+- پیشگیرانه اضافه شد: `require` فایل `wp-admin/includes/plugin.php` در `AdminPageTest`.
+
+**تأیید:**
+- `pnpm lint` ← ESLint، Stylelint و tsc پاک. قوانین Stylelint با فایل عمداً خراب امتحان شدند و هر چهار را گرفتند.
+- `pnpm test` ← 38 passed.
+- `pnpm build` ← widget.js 11.9KB (4.99KB gz)، admin.js 1.67KB.
+- `pnpm size` ← زیر بودجه.
+- `composer check` ← OK (383 unit).
+- `composer test:rename` ← OK، با بررسی‌های JS، و با `CI=true`.
+- actionlint ← OK.
+- **Integration و jobهای جدید CI هنوز اجرا نشده‌اند.**
+
+**قدم بعدی:** push و بررسی CI. سپس T1.1.
+**Commitها:** `feat(admin): js workspace with admin shell and widget mount (T0.11)`
+---
+
 ## 2026-09-25 — سشن 7 (ادامه) — CI برای T0.9 و تست flaky
 **Taskها:** T0.9، T0.7
 **انجام شد:** push `84764c3` به درخواست کاربر. run قبلی (36149811656، commit `f54f8c8` که فقط سند بود) در Integration (PHP 8.4، WP 6.6) قرمز شده بود: `MigratorTest::testDoesNotRunWhileAnotherConnectionHoldsTheLock`. علت یک race در خود تست است: `mysqli::close()` قبل از پایان session در سرور برمی‌گردد و `GET_LOCK(…, 0)` قفل را هنوز گرفته می‌بیند. تست حالا قفل را قبل از close با `RELEASE_LOCK` آزاد می‌کند. تله در implementation-notes §5 ثبت شد.

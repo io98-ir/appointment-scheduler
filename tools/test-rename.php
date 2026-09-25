@@ -3,8 +3,9 @@
 /**
  * Proves that the plugin can still be renamed (ADR-000): copies the working
  * tree to a temporary directory, renames it there, and runs `composer check`
- * on the result. Run it with `composer test:rename`; pass --keep to leave the
- * copy in place for inspection.
+ * and the JS lint, tests and build on the result. Run it with
+ * `composer test:rename`; pass --keep to leave the copy in place for
+ * inspection.
  */
 
 declare(strict_types=1);
@@ -53,6 +54,10 @@ exit((static function (array $args): int {
             '--prefix=' . 'rn' . 'c',
         ]),
         'composer check on the renamed copy' => static fn (): int => $shell->composer(['check']),
+        // rename.php installed the JS packages under their new names.
+        'pnpm lint, test and build on the renamed copy' => static fn (): int => $shell->pnpm(['lint'])
+            ?: $shell->pnpm(['test'])
+            ?: $shell->pnpm(['build']),
     ];
 
     $exit = 0;
@@ -83,7 +88,7 @@ exit((static function (array $args): int {
         }
     }
     \rmdir($copy);
-    \fwrite(\STDOUT, "\nOK. The renamed copy passed composer check.\n");
+    \fwrite(\STDOUT, "\nOK. The renamed copy passed composer check and the JS checks.\n");
 
     return 0;
 })(\array_slice($argv, 1)));

@@ -1,0 +1,11 @@
+{
+	"name": "@vaqtyar/shared",
+	"private": true,
+	"description": "Framework-free code for the admin and the widget: API client, API types, Jalali dates, money.",
+	"license": "GPL-2.0-or-later",
+	"type": "module",
+	"main": "src/index.ts",
+	"dependencies": {
+		"jalaali-js": "^2"
+	}
+}
