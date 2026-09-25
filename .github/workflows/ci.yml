@@ -138,6 +138,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+          # Only npx wp-env here: no pnpm, so no automatic pnpm cache (packageManager).
+          package-manager-cache: false
       # vendor/ is installed on the host and mounted into the containers.
       - run: composer install --no-interaction --no-progress
       - run: npx --yes @wordpress/env@11 start

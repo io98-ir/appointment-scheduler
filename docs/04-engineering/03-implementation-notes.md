@@ -230,6 +230,7 @@
 - **صفحه Admin:** `Modules\Admin\Presentation\AdminPage` یک menu با capability `access_admin` (به administrator) ثبت می‌کند و `build/admin.js` را فقط روی hook suffix خودش enqueue می‌کند (dependency و version از `admin.asset.php`). بدون build، به‌جای صفحه خالی notice «pnpm build» نشان می‌دهد. تست Integration با fixture `tests/Integration/Fixtures/built-plugin` کار می‌کند، پس suite به `pnpm build` نیاز ندارد.
 - **Rename و JS:** `rename.php` بعد از rename، `pnpm install --no-frozen-lockfile` و `pnpm format` را اجرا می‌کند. install لازم است، چون نام پکیج‌ها در `pnpm-lock.yaml` هست (که rename به آن دست نمی‌زند). format لازم است، چون طول توکن جدید جای شکست خط Prettier را عوض می‌کند (`test:rename` این را گرفت). در CI، pnpm قفل را پیش‌فرض frozen می‌کند، پس `--no-frozen-lockfile` صریح است. `test:rename` روی کپی `pnpm lint`، `pnpm test` و `pnpm build` را هم اجرا می‌کند.
 - **CI:** jobهای `test-js` (lint و test) و `build` (build و size) اضافه شدند. job `rename` حالا Node و pnpm دارد. zip و Plugin Check در job `build` به Task انتشار (M6) موکول شدند.
+- **تله CI:** `actions/setup-node@v5` با دیدن `packageManager` در `package.json` خودکار cache pnpm را روشن می‌کند و در jobی که pnpm نصب نکرده (integration) با «Unable to locate executable file: pnpm» می‌شکند (run 36176335757). در چنین jobی `package-manager-cache: false` بگذار.
 
 ## 8. Git و انتشار
 - یک commit برای هر Task، روی `main`. پیام Conventional Commits به انگلیسی با ID تسک، و خط `Co-Authored-By` طبق سیاست جاری.
