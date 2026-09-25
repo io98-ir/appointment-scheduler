@@ -7,8 +7,8 @@ namespace Vaqtyar\Kernel;
 /**
  * Builds table names (ADR-000, data-model §1): {$wpdb->prefix}{PREFIX}_{table}.
  *
- * A table name cannot be a prepared-statement placeholder, so it goes into SQL
- * as-is; only lowercase identifiers are accepted.
+ * Queries pass the result as a %i placeholder (Db), but DDL cannot be
+ * prepared and takes it as-is, so only lowercase identifiers are accepted.
  */
 final class Tables
 {

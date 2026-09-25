@@ -16,6 +16,62 @@
 
 ---
 
+## 2026-09-25 — سشن 5 — T0.7 Db، Transaction، Migrator
+**Taskها:** T0.7
+**انجام شد:**
+- `src/Kernel/Database/`:
+  - `Db`: wrapper نهایی روی `wpdb`. شامل `execute`، `getVar`، `insert`، `update`، `createTable`، و `begin`/`commit`/`rollBack`.
+  - `DbException`: همراه با `errno`، `detail` و `isRetryable()`.
+  - `Transaction::run()`: Retry روی 1213 و 1205، حداکثر 3 بار.
+  - interface `Migration`.
+  - `Migrator`: شامل `isCurrent` و `migrate`.
+- `Module::migrations()`.
+- `Plugin::activate()`. `Plugin::boot()` قبل از boot ماژول‌ها migrate می‌کند و `Db` و `Transaction` را به‌صورت singleton در Container ثبت می‌کند.
+- `vaqtyar.php`: لیست مشترک ماژول‌ها (`$vaqtyar_modules`) و `register_activation_hook` در سطح بالای فایل. هر دو سازگار با PHP 7.0 هستند.
+- تست‌ها:
+  - Unit: `FakesWpdb` (Mockery روی `wpdb`)، `DbTest`، `TransactionTest`، `MigratorTest`، و گسترش `PluginTest`.
+  - Integration: `RealDatabase`، `DbTest`، `TransactionTest` (lock wait واقعی با connection دوم، و KILL connection)، `MigratorTest` (DDL واقعی، InnoDB، MyISAM، GET_LOCK، cache)، و `ActivationTest`.
+- اسناد: implementation-notes §1 و §5 (بخش‌های جدید Db، Transaction، Migrator و تله‌ها)، data-model §3، architecture §5 (استثنای Migration در boot)، و docblock `Tables`.
+
+**تصمیم‌ها و فرض‌ها:**
+- **`literal-string` + `%i`:** PHPStan برای `wpdb::prepare()` رشته literal می‌خواهد. به‌جای ignore، همین قید به `Db::execute/getVar` منتقل شد و نام جدول با `%i` (WP 6.2+) وارد می‌شود. DDL قابل prepare نیست، پس `CREATE TABLE` و بررسی InnoDB داخل `Db::createTable()` است. در نتیجه `Migration` یک interface ساده شد، نه کلاس پایه.
+- نسخه هر ماژول = تعداد migrationهای اجراشده (لیست فقط اضافه‌شدنی).
+- ADR-004 «تا 3 بار Retry» به معنای 4 تلاش پیاده شد.
+- `GET_LOCK` بدون انتظار (timeout 0). درخواستی که قفل را نگرفت با schema فعلی ادامه می‌دهد.
+- در فعال‌سازی شبکه‌ای، فقط سایت جاری migrate می‌شود. بقیه سایت‌ها در اولین درخواست خودشان migrate می‌شوند.
+- `getRow`/`getResults` ساخته نشدند، چون مصرف‌کننده‌ای ندارند (principles §0). با اولین Repository اضافه می‌شوند.
+- migration Kernel (`logs`، `rate_limits`) با T0.8 و T0.9 می‌آید. الان هیچ migration واقعی وجود ندارد و `$vaqtyar_modules` خالی است.
+
+**تأیید:**
+- `composer check` ← exit 0:
+  - phpcs: پاک
+  - PHPStan: No errors
+  - deptrac: 0 violation (uncovered جدید `Db` ← `wpdb`، هم‌نوع مورد `Requirements`)
+  - PHPUnit: OK (300 tests, 11775 assertions)
+- `composer test:rename` ← OK.
+- Mutation دستی:
+  - `MAX_RETRIES = 2` ← `TransactionTest` شکست خورد.
+  - حذف خواندن دوباره زیر قفل و حذف پاک‌کردن cache ← `MigratorTest` شکست خورد.
+- **Integration محلی اجرا نشد** (Docker یا MySQL نداریم) و CI هنوز دیده نشده.
+- Subagent `reviewer` سه مورد واقعی پیدا کرد و هر سه رفع شد:
+  1. خواندن دوباره نسخه زیر قفل از cache `alloptions` می‌آمد و عملاً بی‌اثر بود. حالا قبل از خواندن، cache پاک می‌شود. تست Unit با cache شبیه‌سازی‌شده و تست Integration اضافه شد.
+  2. Migration ناموفق در boot کل سایت را از کار می‌انداخت. حالا گرفته می‌شود و این کارها انجام می‌شود: `error_log`، admin notice، و boot نشدن ماژول‌ها. در activation همچنان Exception پرتاب می‌شود.
+  3. reconnect بی‌صدای wpdb روی 2006 وسط تراکنش. حالا بررسی `thread_id` انجام می‌شود و `connectionLost` بدون Retry پرتاب می‌شود. ریسک باقیمانده برای T2.2 در implementation-notes §5 ثبت شد.
+  - reviewer هم WP core را روی این ماشین نداشت و فرض‌های wpdb را از روی دانسته‌هایش بررسی کرد.
+
+**مشکلات و باقیمانده:**
+- T0.10 و T0.7 تا دیده شدن CI روی 🟨 می‌مانند.
+- فرض‌هایی که فقط CI تأیید می‌کند:
+  - خطای KILL در mysqlnd (2006 یا 2013)
+  - `wpdb::__get('dbh')`
+  - رفتار `process_fields` روی مقدار بلند
+  - `SET autocommit = 1` بعد از `WP_UnitTestCase`
+
+**قدم بعدی:** push و دیدن CI (کاربر: `gh auth login`). بعد T0.8.
+**Commitها:** `feat(kernel): db wrapper, transaction and migrator (T0.7)`
+
+---
+
 ## 2026-09-25 — سشن 4 — T0.10 wp-env + CI
 **Taskها:** T0.10
 **انجام شد:**

@@ -51,4 +51,14 @@ final class KernelException extends \LogicException
     {
         return new self(\sprintf('A module with the id "%s" is already registered.', $id));
     }
+
+    public static function nestedTransaction(): self
+    {
+        return new self('A transaction is already open on this connection; MySQL would commit it silently.');
+    }
+
+    public static function updateWithoutWhere(string $table): self
+    {
+        return new self(\sprintf('An update of "%s" has no WHERE condition.', $table));
+    }
 }

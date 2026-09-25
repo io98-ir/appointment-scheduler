@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Kernel;
 
+use Vaqtyar\Kernel\Database\Migration;
+
 /**
  * Entry point of a module (src/Modules/<Name>/<Name>Module.php).
  *
@@ -21,6 +23,16 @@ interface Module
      * Binds the module's services. No side effects: no hooks, no queries.
      */
     public function register(Container $container): void;
+
+    /**
+     * The module's schema changes, oldest first. Append only: never reorder or
+     * remove one, since the stored version is a position in this list.
+     * Called on activation and before boot() on every request, so it only
+     * constructs objects.
+     *
+     * @return list<Migration>
+     */
+    public function migrations(): array;
 
     /**
      * Hooks the module into WordPress. Scope work to a request through the

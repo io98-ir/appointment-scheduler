@@ -80,6 +80,7 @@
 | `notification_log` | `dedup_key, template_id, channel, provider, recipient_masked, status, provider_ref, error, sent_at` | UNIQUE(dedup_key) |
 
 ## 3. Migration
-- هر ماژول Migrationهای خودش را دارد: کلاس‌های `Migrations/M001_Create….php` با متد `up()` که **idempotent** است.
-- Migrator یک `GET_LOCK` می‌گیرد، migrationهای جدید را به ترتیب اجرا می‌کند و `db_versions` را به‌روز می‌کند.
+- هر ماژول Migrationهای خودش را دارد: کلاس‌های `Migrations/M001_Create….php` که interface `Kernel\Database\Migration` را پیاده می‌کنند و متد `up(Db)` آن‌ها **idempotent** است. ماژول آن‌ها را به ترتیب از `Module::migrations()` برمی‌گرداند. این لیست فقط اضافه‌شدنی است.
+- `db_versions` برای هر ماژول تعداد migrationهای اجراشده را نگه می‌دارد، مثل `{"booking": 3}`.
+- Migrator یک `GET_LOCK` بدون انتظار می‌گیرد، migrationهای جدید را به ترتیب اجرا می‌کند و `db_versions` را بعد از هر کدام به‌روز می‌کند. در activation و در boot هر درخواستی که نسخه‌اش عقب باشد اجرا می‌شود. جزئیات در implementation-notes §5.
 - هیچ Schema دستی تغییر نمی‌کند. هر تغییر یک Migration جدید است، حتی قبل از انتشار (تا تست ارتقا واقعی باشد).

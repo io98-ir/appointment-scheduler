@@ -84,7 +84,7 @@ vaqtyar.php
 
   سرویس‌ها داخل callback از Container گرفته می‌شوند.
 - **Context-aware:** صفحه Front بدون ویجت یعنی صفر asset و صفر کوئری. این نتیجه طبیعی قاعده بالاست.
-- **Exception در boot** یعنی باگ. گرفته نمی‌شود و recovery mode وردپرس افزونه را متوقف می‌کند و به مدیر سایت خبر می‌دهد.
+- **Exception در boot** یعنی باگ. گرفته نمی‌شود و recovery mode وردپرس افزونه را متوقف می‌کند و به مدیر سایت خبر می‌دهد. **استثنا: Migration ناموفق** شرط سرور است، نه باگ. گرفته و لاگ می‌شود، admin notice نمایش داده می‌شود و ماژول‌ها boot نمی‌شوند، تا کل سایت از کار نیفتد (implementation-notes §5).
 - Hook ثبت ماژول برای Add-onها (`{prefix}/modules/register`، §10) وقتی ساخته می‌شود که اولین Add-on واقعی نوشته شود. آن hook نمونه Registry را به Add-on پاس می‌دهد.
 - **Activation به boot وابسته نیست:** در درخواست فعال‌سازی، `plugins_loaded` زودتر رخ داده است (implementation-notes §1).
 - Activation: Migration، Capabilityها و Jobهای تکراری. Deactivation: لغو Jobها. Uninstall: فقط با گزینه صریح «حذف داده».

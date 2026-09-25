@@ -16,7 +16,7 @@
 - **تله Activation (برای T0.7):**
   - در درخواستی که افزونه را فعال می‌کند، `plugins_loaded` قبل از include شدن فایل اصلی رخ داده است. پس closure بالا اجرا نمی‌شود: Container ساخته نمی‌شود و هیچ `boot()` ای اجرا نمی‌شود.
   - در نتیجه `register_activation_hook` نباید داخل `boot()` ماژول باشد و باید در سطح بالای فایل اصلی بماند (مورد 6).
-  - لیست ماژول‌ها باید یک‌جا در سطح بالای فایل اصلی تعریف شود تا هم boot و هم activation (migration و capability) از آن استفاده کنند. مثال سازگار با PHP 7.0: `$vaqtyar_modules = static function () { return array(new XModule(), …); };`. این تغییر در T0.7 انجام می‌شود، چون اولین نیاز واقعی همان‌جاست.
+  - لیست ماژول‌ها باید یک‌جا در سطح بالای فایل اصلی تعریف شود تا هم boot و هم activation (migration و capability) از آن استفاده کنند. مثال سازگار با PHP 7.0: `$vaqtyar_modules = static function () { return array(new XModule(), …); };`. (در T0.7 انجام شد: `register_activation_hook` ← `Plugin::activate()` و `plugins_loaded` ← `Plugin::boot()`، هر دو با همین لیست.)
 - **Container (T0.3):**
   - شناسه همیشه نام کلاس یا interface است (`class-string`)، تا `get()` نوع درست برگرداند.
   - PHPStan اتصال نادرست را تشخیص نمی‌دهد، چون T را از هر دو آرگومان استنتاج می‌کند (مثلاً `set(Foo::class, fn () => new Bar())`). بررسی `instanceof` در زمان اجرا تنها محافظ است.
@@ -129,8 +129,28 @@
   - تاریخ و زمانی که کنار هم در صفحه LTR با ارقام فارسی می‌آیند، ممکن است جابه‌جا نمایش داده شوند. رفع این مورد کار UI است (`<bdi>`). در متن ذخیره‌شده یا پیامک کاراکتر نامرئی نمی‌گذاریم.
 
 ## 5. دیتابیس
-- `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود.
+- `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).
+- **`Kernel\Database\Db` (T0.7)** تنها راه کد ما به `$wpdb` است:
+  - `execute()` و `getVar()` پارامتر `literal-string` دارند (PHPStan). مقدار با `%s` یا `%d` و **نام جدول با `%i`** (از WP 6.2) وارد SQL می‌شود. پس هیچ رشته‌ای از بیرون کد به SQL چسبانده نمی‌شود. اگر PHPStan خطای `literal-string` داد، راه‌حل placeholder است، نه cast.
+  - `insert()` و `update()` برای `int` فرمت `%d` و برای `string` فرمت `%s` می‌سازند. `null` به `NULL` تبدیل می‌شود و در شرط `update` به `IS NULL`. `float` پذیرفته نمی‌شود (پول int است).
+  - هر خطا `DbException` می‌دهد، حتی وقتی wpdb بی‌صدا `false` برمی‌گرداند (مقدار بلندتر از ستون یا charset نامعتبر). **پیام Exception متن خطای MySQL را ندارد**، چون MySQL مقدار را نقل می‌کند (`Duplicate entry '0912…'`). متن در `$e->detail` و شماره خطا در `$e->errno` است.
+  - در طول هر فراخوانی، نمایش خطای wpdb خاموش است (`hide_errors()`) و بعد به حالت قبل برمی‌گردد. `error_log` خود wpdb سر جایش است.
+  - `errno` از `mysqli_errno()` روی `$wpdb->dbh` خوانده می‌شود. `dbh` در stubها protected است و از `__get()` قدیمی wpdb خوانده می‌شود.
+  - `Db::createTable()` بعد از `CREATE`، موتور جدول را از `information_schema` می‌خواند و اگر InnoDB نبود (جایگزینی بی‌صدای MySQL، یا جدولی که از قبل MyISAM بوده) `DbException` با پیام روشن می‌دهد. DDL قابل prepare نیست، پس نام از `Tables::name()` و تعریف ستون‌ها `literal-string` است.
+- **`Transaction::run(callable)`:** تراکنش تودرتو رد می‌شود (`KernelException`)، چون `START TRANSACTION` دوم در MySQL تراکنش اول را بی‌صدا commit می‌کند. روی 1213 و 1205 کل کار دوباره اجرا می‌شود (حداکثر 3 Retry، یعنی 4 تلاش، با مکث تصادفی 5 تا 20 میلی‌ثانیه ضرب در شماره تلاش). **پس callable باید هر چیزی را که بر اساسش تصمیم می‌گیرد داخل تراکنش بخواند و اثر جانبی بیرون از DB نداشته باشد.** اگر ROLLBACK هم شکست بخورد، `DbException` با خطای اصلی به‌عنوان previous پرتاب می‌شود.
+- **تله reconnect در wpdb:** روی خطای 2006 (server has gone away)، `wpdb::query()` بی‌صدا دوباره وصل می‌شود و همان statement را روی connection جدید اجرا می‌کند. آن connection تراکنش ندارد و autocommit است، پس قفل‌های `FOR UPDATE` و بررسی تداخل از دست رفته‌اند. `Db` شناسه connection (`thread_id`) را هنگام `START TRANSACTION` نگه می‌دارد و بعد از هر فراخوانی داخل تراکنش مقایسه می‌کند. اگر عوض شده باشد، `DbException::connectionLost()` (2006، **بدون Retry**) می‌دهد. **ریسک باقیمانده برای T2.2:** statementی که wpdb تکرار کرده ممکن است commit شده باشد (مثلاً یک ردیف `occupancies`). این در جهت امن است (اسلات بی‌دلیل اشغال می‌ماند، نه Double booking)، و ردیف Hold با انقضا پاک می‌شود. ولی کد رزرو نباید فرض کند که Exception یعنی «هیچ چیز نوشته نشده».
+- **Migrator:**
+  - `Migration` یک interface با `up(Db)` است. هر ماژول با `Module::migrations()` لیست مرتب خودش را می‌دهد. **لیست فقط اضافه‌شدنی است**، چون نسخه ذخیره‌شده همان تعداد migrationهای اجراشده است.
+  - نسخه‌ها در option `db_versions` (autoload) هستند، پس بررسی «به‌روز است؟» در هر درخواست کوئری ندارد. اگر ماژولی migration نداشته باشد، boot اصلاً به DB دست نمی‌زند.
+  - قفل با `GET_LOCK(SHA1(CONCAT(DATABASE(), '.' + نام پیشونددار سایت)), 0)` گرفته می‌شود، یعنی بدون انتظار. درخواستی که قفل را نگرفت migration را رد می‌کند و ادامه می‌دهد. نسخه‌ها زیر قفل دوباره خوانده می‌شوند و بعد از هر migration ذخیره می‌شوند.
+  - **تله cache:** `db_versions` autoload است و `get_option()` آن را از cache `alloptions` (یا `notoptions`) می‌خواند که ابتدای درخواست پر شده است. پس زیر قفل، قبل از خواندن دوباره، `alloptions`، `notoptions` و خود کلید از cache حذف می‌شوند. وگرنه درخواستی که بعد از پایان کار درخواست دیگر قفل را گرفته، migration را دوباره اجرا می‌کند.
+  - **Migration ناموفق در boot** (نبود مجوز ALTER، نبود InnoDB، …) شرط سرور است، نه باگ. پس برخلاف بقیه Exceptionهای boot، گرفته می‌شود: پیام عمومی در `error_log` ثبت می‌شود (بدون `detail`)، یک admin notice به کاربر `activate_plugins` نمایش داده می‌شود، و **هیچ ماژولی boot نمی‌شود**. در `activate()` Exception عبور می‌کند تا فعال‌سازی با پیام روشن رد شود. وقتی Logger ساخته شد (T0.9)، `error_log` با آن جایگزین می‌شود.
+  - نسخه ذخیره‌شده بزرگ‌تر از لیست (downgrade افزونه) خطا نیست و کاری انجام نمی‌شود.
+  - در multisite و فعال‌سازی شبکه‌ای، فقط سایت جاری در activation migrate می‌شود. بقیه سایت‌ها در اولین درخواستشان (مسیر boot) migrate می‌شوند.
+  - ALTER باید idempotent باشد: قبلش وجود ستون یا ایندکس را از `information_schema` بررسی کن.
+- **تله تست Integration:** `WP_UnitTestCase` در `set_up` دستور `SET autocommit = 0` را اجرا می‌کند و هیچ‌وقت برش نمی‌گرداند. همچنین با فیلتر `query`، `CREATE TABLE` را به `CREATE TEMPORARY TABLE` تبدیل می‌کند و جدول موقت در `information_schema.TABLES` دیده نمی‌شود. پس تست‌های Db، Transaction و Migrator از `PHPUnit\Framework\TestCase` ارث می‌برند، از trait `RealDatabase` استفاده می‌کنند (که `autocommit = 1` می‌گذارد) و خودشان جدول‌ها و option را پاک می‌کنند.
+- **تله Bash tool:** heredoc با ترکیب `'` و `"` و backtick در Bash tool گاهی خطای parse می‌دهد. برای ویرایش‌های چندخطی از Edit یا اسکریپت PHP در scratchpad استفاده کن.
 - تراکنش: `START TRANSACTION`، `COMMIT` و `ROLLBACK` از طریق `$wpdb->query`. بعد از هر query باید `$wpdb->last_error` بررسی شود و در صورت خطا Exception پرتاب شود.
 - **شماره خطاهای MySQL برای Retry:** 1213 (deadlock) و 1205 (lock wait timeout). با `mysqli_errno($wpdb->dbh)` خوانده می‌شوند.
 - `SET SESSION innodb_lock_wait_timeout = 5` فقط داخل مسیر رزرو اجرا شود.

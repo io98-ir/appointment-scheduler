@@ -7,6 +7,7 @@ namespace Vaqtyar\Tests\Unit\Kernel\Fixtures;
 use ArrayObject;
 use Vaqtyar\Kernel\Container;
 use Vaqtyar\Kernel\Context;
+use Vaqtyar\Kernel\Database\Migration;
 use Vaqtyar\Kernel\Module;
 
 /**
@@ -24,6 +25,8 @@ final class SampleModule implements Module
         private readonly string $id,
         private readonly ?ArrayObject $log = null,
         private readonly bool $bindsService = false,
+        /** @var list<Migration> */
+        private readonly array $migrations = [],
     ) {
     }
 
@@ -38,6 +41,14 @@ final class SampleModule implements Module
         if ($this->bindsService) {
             $container->singleton(SampleService::class, static fn (): SampleService => new SampleService());
         }
+    }
+
+    /**
+     * @return list<Migration>
+     */
+    public function migrations(): array
+    {
+        return $this->migrations;
     }
 
     public function boot(Context $context): void
