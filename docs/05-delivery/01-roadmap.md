@@ -30,7 +30,7 @@
 | T0.8 | REST base: `Controller` پایه، ثبت route با Identity، Error Envelope، تبدیل Exception به HTTP، `RateLimiter`، Pagination helper | تست Integration: endpoint نمونه، 403، 422 و 429 |
 | T0.9 | `Settings` (typed، گروه‌بندی، autoload=no برای موارد حجیم)، `SecretStore` (sodium)، `Logger` (جدول logs)، ثبت Capabilityها روی نقش‌ها | تست Unit و Integration |
 | T0.10 | محیط: `.wp-env.json` (✅ از قبل ساخته شده)، bootstrap و config جدای PHPUnit برای Integration + اسکریپت `composer test:integration`، **GitHub Actions** (lint، stan، deptrac، test-php با ماتریس، **`composer test:rename`**، **`php -l` با PHP 7.0 روی `vaqtyar.php`، `uninstall.php` و `src/Kernel/Requirements.php`**، و **Integration و Concurrency روی wp-env داخل runner**، build) | CI روی push سبز است. **Docker محلی لازم نیست**: تست‌های وابسته به MySQL در CI اجرا می‌شوند |
-| T0.11 | JS workspace: (نام پکیج‌های JS با توکن‌های Identity؛ `rename.php` بعد از rename، `pnpm install --lockfile-only` را هم اجرا کند و `test:rename` روی JS هم سبز بماند)، `pnpm-workspace`، `packages/shared` (api client، types، jalali، money)، `packages/admin` (shell صفحه Admin + router ساده)، `packages/widget` (Preact + mount)، wp-scripts، ESLint، Prettier، Stylelint، Vitest، size-limit | `pnpm build` و `pnpm test` سبزند و صفحه خالی Admin رندر می‌شود |
+| T0.11 | JS workspace: (نام پکیج‌های JS با توکن‌های Identity؛ `rename.php` بعد از rename، `pnpm install --lockfile-only` را هم اجرا کند و `test:rename` روی JS هم سبز بماند)، `pnpm-workspace`، `packages/shared` (api client، types، jalali، money)، `packages/admin` (shell صفحه Admin + router ساده)، `packages/widget` (Preact + mount)، wp-scripts، ESLint، Prettier، Stylelint، Vitest، size-limit | `pnpm build` و `pnpm test` سبزند و صفحه خالی Admin رندر می‌شود. jobهای `test-js` و `build` به CI اضافه می‌شوند (در T0.10 ساخته نشدند، چون JS و build وجود نداشت) |
 
 ## M1 — کاتالوگ و زمان‌بندی
 | ID | Task | انجام‌شده وقتی |
@@ -45,7 +45,7 @@
 | ID | Task | انجام‌شده وقتی |
 |---|---|---|
 | T2.1 | Booking Migration: holds، appointments، occupancies، history، answers، fields، labels، policies، price_rules، coupons | Migration تست‌شده |
-| T2.2 | `ResourceLocker` + **Hold** (ایجاد، تمدید، انقضا) + `POST /holds` | **تست همزمانی: 30 درخواست موازی، دقیقاً 1 موفق** |
+| T2.2 | `ResourceLocker` + **Hold** (ایجاد، تمدید، انقضا) + `POST /holds` | **تست همزمانی: 30 درخواست موازی، دقیقاً 1 موفق** + job `concurrency` در CI (در T0.10 ساخته نشد، چون تستی نداشت) |
 | T2.3 | `PriceCalculator` + Ruleها (Variant، Staff override، Time rule، Extra، Party size، Coupon، Rounding) | تست Unit جدولی |
 | T2.4 | `Appointment` Entity + ماشین وضعیت + `BookingService::confirm` + `POST /bookings` + ثبت Job اعلان در تراکنش | تست Unit گذارها + Integration |
 | T2.5 | `PolicyEvaluator` + cancel، reschedule و no_show (مشتری و پرسنل) + Override با Capability | تست پلکان استرداد و مهلت‌ها |

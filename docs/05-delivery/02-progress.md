@@ -7,18 +7,18 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M0** زیربنا |
-| **Task بعدی** | **T0.10** — wp-env + CI (قبل از T0.7؛ ر.ک. [01-roadmap.md](01-roadmap.md#m0--زیربنا)) |
-| **Task در حال انجام** | — |
-| **آخرین کار انجام‌شده** | T0.6: `Jalali` (Borkowski، سال 1 تا 3176، یکسان با ICU در 1300 تا 1500) و `DateFormatter` (تقویم شمسی یا میلادی، ارقام فارسی) (2026-09-24) |
+| **Task بعدی** | اول نتیجه CI برای T0.10 در Actions دیده شود، بعد **T0.7** — Db، Transaction، Migrator |
+| **Task در حال انجام** | T0.10 — کد و commit انجام شد. **منتظر نتیجه اولین اجرای CI** (repo خصوصی است و `gh` لاگین نیست) |
+| **آخرین کار انجام‌شده** | T0.10: workflow CI (quality، unit روی 8.1 و 8.4، `php -l` روی PHP 7.0، rename، integration روی wp-env با ماتریس PHP × WP)، config و bootstrap Integration، `composer test:integration` (2026-09-25) |
 | **Blockerها** | — (PHP 8.3 و Composer نصب شدند. Docker محلی لازم نیست و تست‌های MySQL در CI اجرا می‌شوند) |
 | **کار کاربر (اختیاری)** | (1) `gh auth login` تا وضعیت CI از اینجا دیده شود. (2) نصب pluginهای `php-lsp`، `typescript-lsp` و `security-guidance` از Manage plugins در VS Code. (3) انتقال پروژه به مسیری بدون فاصله |
-| **نکته برای سشن بعد** | اگر `php` یا `composer` پیدا نشد، PATH را refresh کن (dev-environment §2). قبل و بعد از کار `composer check` را اجرا کن. برای T0.10: شرط «CI سبز است» فقط با push و دیدن نتیجه Actions تأیید می‌شود. `gh` لاگین نشده، پس یا کاربر `gh auth login` را اجرا کند یا نتیجه را خودش ببیند. setup-php باید `intl` داشته باشد. در CI این‌ها اجرا شوند: `composer check`، `composer test:rename`، `php -l` روی PHP 7.0 برای سه فایل bootstrap (implementation-notes §1)، و Integration روی wp-env (config و bootstrap جدید، `composer test:integration`). پوشش را با `phpdbg -d memory_limit=-1` اندازه بگیر (dev-environment §1). توکن‌های Identity را لیترال و چسبیده به حرف ننویس (implementation-notes §2.1). قبل از هر commit، `composer test:rename` را هم اجرا کن. تابع‌های سراسری همیشه fully-qualified نوشته می‌شوند (`\add_action()`). **ترتیب: T0.10 قبل از T0.7 انجام می‌شود** |
+| **نکته برای سشن بعد** | اگر `php` یا `composer` پیدا نشد، PATH را refresh کن (dev-environment §2). قبل و بعد از کار `composer check` را اجرا کن. **T0.10:** اگر CI قرمز بود، اول همان را رفع کن و بعد T0.10 را ✅ کن. محتمل‌ترین نقاط شکست: unit روی PHP 8.4 (deprecation)، ترکیب WP 6.6 با PHP 8.4 در integration، و `wp-env start`. نکات wp-env در implementation-notes §2.2 است. قبل از push، `actionlint` را اجرا کن (dev-environment §5). پوشش را با `phpdbg -d memory_limit=-1` اندازه بگیر (dev-environment §1). توکن‌های Identity را لیترال و چسبیده به حرف ننویس (implementation-notes §2.1). قبل از هر commit، `composer test:rename` را هم اجرا کن. تابع‌های سراسری همیشه fully-qualified نوشته می‌شوند (`\add_action()`). **ترتیب: T0.10 قبل از T0.7 انجام می‌شود** |
 
 ## خلاصه Milestoneها
 | Milestone | وضعیت | پیشرفت |
 |---|---|---|
 | M(-1) تحقیق، معماری و اصول | ✅ | 100% |
-| M0 زیربنا | 🟨 | 6/11 |
+| M0 زیربنا | 🟨 | 6/11 (T0.10 منتظر CI) |
 | M1 کاتالوگ و زمان‌بندی | ⬜ | 0/5 |
 | M2 هسته رزرو | ⬜ | 0/8 |
 | M3 Admin | ⬜ | 0/6 |
@@ -41,7 +41,7 @@
 | T0.4 | Helperهای نام + rename.php | ✅ | `feat(kernel): naming helpers and rename tool (T0.4)` |
 | T0.5 | Shared Value Objects + IntervalSet | ✅ | `feat(shared): value objects, interval set and clock (T0.5)` |
 | T0.6 | Jalali + DateFormatter | ✅ | `feat(shared): jalali calendar and date formatter (T0.6)` |
-| T0.10 | wp-env + CI | ⬜ | |
+| T0.10 | wp-env + CI | 🟨 | `ci(kernel): wp-env integration suite and github actions (T0.10)`. محلی سبز است. **نتیجه CI هنوز دیده نشده.** jobهای concurrency، test-js و build به T2.2 و T0.11 منتقل شدند |
 | T0.7 | Db، Transaction، Migrator | ⬜ | |
 | T0.8 | REST base | ⬜ | |
 | T0.9 | Settings، SecretStore، Logger، Caps | ⬜ | |

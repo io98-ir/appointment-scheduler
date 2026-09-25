@@ -8,10 +8,11 @@
         "woocommerce/action-scheduler": "^3.9"
     },
     "require-dev": {
+        "ext-intl": "*",
         "brain/monkey": "^2.6",
         "deptrac/deptrac": "^2.0",
-        "ext-intl": "*",
         "mockery/mockery": "^1.6",
+        "php-stubs/wordpress-tests-stubs": "^7.1",
         "phpcompatibility/phpcompatibility-wp": "^2.1",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^9.6",
@@ -45,6 +46,7 @@
         ],
         "test": "@test:unit",
         "test:unit": "phpunit --testsuite unit",
+        "test:integration": "phpunit -c phpunit-integration.xml.dist",
         "check": [
             "@lint",
             "@stan",
@@ -62,6 +64,7 @@
         "stan": "PHPStan level 9 with WordPress stubs.",
         "deptrac": "Layer and module boundaries.",
         "test:unit": "PHPUnit unit suite (no WordPress).",
+        "test:integration": "PHPUnit integration suite: real WordPress and MySQL. Run it inside wp-env (docs/04-engineering/02-dev-environment.md).",
         "check": "Everything CI runs locally: lint, stan, deptrac, unit tests.",
         "test:rename": "Rename a copy of the plugin and run composer check on it (ADR-000)."
     },

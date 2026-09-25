@@ -69,11 +69,12 @@ MSYS_NO_PATHCONV=1 npx -y @wp-playground/cli@latest run-blueprint --blueprint=./
 | `composer stan` | PHPStan level 9 (`tools/phpstan.neon`) روی `src/`، `tests/` و فایل‌های bootstrap |
 | `composer deptrac` | دو config: `tools/deptrac-layers.yaml` (لایه‌ها) و `tools/deptrac-modules.yaml` (ایزوله‌بودن ماژول‌ها) |
 | `composer test` / `composer test:unit` | PHPUnit بدون WP (`phpunit.xml.dist`، suite `unit`) |
-| `composer test:integration` | PHPUnit روی wp-env. در T0.10 اضافه می‌شود |
+| `composer test:integration` | PHPUnit روی WP و MySQL واقعی (`phpunit-integration.xml.dist`). فقط داخل wp-env: `npx @wordpress/env@11 start` و بعد `npx @wordpress/env@11 run cli --env-cwd=wp-content/plugins/<نام پوشه> composer test:integration`. محلی Docker نداریم، پس در CI اجرا می‌شود |
 | `composer check` | lint، stan، deptrac و test:unit. حدود 30 ثانیه (اجرای اول deptrac به‌خاطر stubهای WP کندتر است) |
 | `composer test:rename` | rename یک کپی موقت و `composer check` روی آن (ADR-000)، حدود 40 ثانیه |
 | `php tools/rename.php --dry-run …` | تغییر شناسه فنی (implementation-notes §2.1) |
 | `pnpm build` / `pnpm test` / `pnpm lint` | JS (از T0.11) |
-| `npx wp-env start` | محیط محلی WP (http://localhost:8888) |
+| `npx @wordpress/env@11 start` | محیط محلی WP (http://localhost:8888) |
+| `actionlint .github/workflows/ci.yml` | بررسی workflow قبل از push (`pip install actionlint-py`؛ فایل اجرایی در `%APPDATA%\Python\Python313\Scripts`) |
 
 > **Cacheها:** `.phpstan.cache/` و `.deptrac.cache` در ریشه ساخته می‌شوند و در `.gitignore` هستند.

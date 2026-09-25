@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Integration tests: real WordPress and MySQL, through the WordPress test
+     library that wp-env ships ($WP_TESTS_DIR). Runs inside the wp-env cli
+     container as `composer test:integration`; the full command is in
+     docs/04-engineering/02-dev-environment.md §5 and .github/workflows/ci.yml.
+     Each test runs inside a transaction that is rolled back, so tests of
+     transactions and locks need their own suite (implementation-notes §5).
+     Deprecations are not converted: WordPress core raises its own on newer
+     PHP, and the unit suite already catches ours. -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/Integration/bootstrap.php"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         beStrictAboutOutputDuringTests="true">
+    <testsuites>
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

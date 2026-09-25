@@ -88,6 +88,16 @@
     <!-- The main plugin file defines its constants and loads the plugin by design. -->
     <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
         <exclude-pattern>*/vaqtyar.php$</exclude-pattern>
+        <exclude-pattern>*/tests/Integration/bootstrap\.php$</exclude-pattern>
+    </rule>
+    <!--
+        The integration bootstrap and test config run in the WordPress test
+        library's global scope, which dictates their global names
+        (WP_TESTS_CONFIG_FILE_PATH, $table_prefix). They never ship.
+    -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <exclude-pattern>*/tests/Integration/bootstrap\.php$</exclude-pattern>
+        <exclude-pattern>*/tests/Integration/wp-tests-config\.php$</exclude-pattern>
     </rule>
     <rule ref="PSR12.Properties.ConstantVisibility">
         <exclude-pattern>*/src/Kernel/Requirements\.php$</exclude-pattern>

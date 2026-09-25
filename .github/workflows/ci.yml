@@ -1,0 +1,113 @@
+# What every push and pull request must pass. The same checks run locally with
+# `composer check` and `composer test:rename`; the integration suite needs
+# Docker, so it runs only here (docs/04-engineering/02-dev-environment.md).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, PHPStan, Deptrac
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: composer lint
+      - run: composer stan
+      - run: composer deptrac
+
+  unit:
+    name: Unit (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.4']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, mbstring
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: composer test:unit
+
+  # The main file, uninstall.php and Requirements must parse on old PHP so an
+  # unsupported host gets a notice, not a fatal (implementation-notes §1).
+  # PHPCompatibility cannot see PHP 8 syntax, so only a real old PHP proves it.
+  legacy-syntax:
+    name: Bootstrap files parse on PHP 7.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.0'
+          coverage: none
+          tools: none
+      # php -l takes one file before PHP 8.3.
+      - run: |
+          for file in vaqtyar.php uninstall.php src/Kernel/Requirements.php; do
+            php -l "$file" || exit 1
+          done
+
+  rename:
+    name: Rename still works (ADR-000)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: composer test:rename
+
+  integration:
+    name: Integration (PHP ${{ matrix.php }}, WP ${{ matrix.wp }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.4']
+        wp: ['6.6', 'latest']
+    env:
+      WP_ENV_PHP_VERSION: ${{ matrix.php }}
+      # Empty means the core from .wp-env.json: the latest release.
+      WP_ENV_CORE: ${{ matrix.wp == '6.6' && 'WordPress/WordPress#6.6-branch' || '' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring
+          coverage: none
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      # vendor/ is installed on the host and mounted into the containers.
+      - run: composer install --no-interaction --no-progress
+      - run: npx --yes @wordpress/env@11 start
+      - name: Run the integration suite
+        run: >-
+          npx --yes @wordpress/env@11 run cli
+          --env-cwd=wp-content/plugins/${{ github.event.repository.name }}
+          composer test:integration

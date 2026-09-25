@@ -47,7 +47,7 @@
   - **هنوز اجبار نمی‌شود:** جهت گراف وابستگی ماژول‌ها (architecture §3). الان همه Contracts یک layer هستند و هر ماژولی می‌تواند Contracts هر ماژول دیگری را ببیند. با اولین ماژول‌ها در M1، Contracts هر ماژول جدا شود و ruleset از جدول §3 نوشته شود.
   - در regex داخل YAML تک‌کوتیشن، `\\` یعنی یک بک‌اسلش واقعی در namespace و `\w` همان کلاس کاراکتر است. مثال: `'#^Vaqtyar\\Modules\\\w+\\Domain\\#'`.
   - **شکاف:** PHPCompatibility 9.3 سینتکس PHP 8 (`?->`، `match`، named args، `enum`) را نمی‌شناسد. تضمین قطعی سازگاری PHP 7.0 سه فایل bootstrap با `php -l` روی PHP 7.0 واقعی در CI است (T0.10).
-  - `phpunit.xml.dist` فعلاً فقط suite `unit` دارد. config و bootstrap Integration به WP test library و MySQL نیاز دارند و در T0.10 ساخته می‌شوند.
+  - `phpunit.xml.dist` فقط suite `unit` دارد. Integration در `phpunit-integration.xml.dist` است (§2.2).
 - **مسیر Repo پرانتز دارد:** در فایل‌های `.neon` (PHPStan) مسیر مطلق را حتماً در quote بگذار، وگرنه Nette آن را Statement تفسیر می‌کند و خطای `expandIncludedFile()` می‌دهد. مسیر نسبی (`%currentWorkingDirectory%` یا نسبت به فایل neon) بهتر است.
 - Build تولیدی: `composer install --no-dev --optimize-autoloader --classmap-authoritative`.
 
@@ -71,6 +71,17 @@
   - **توکن جدید نباید از قبل در کد وجود داشته باشد.** در غیر این صورت rename بعدی نمی‌تواند آن را از توکن ما تشخیص دهد و ابزار rename را رد می‌کند. به همین دلیل **هیچ‌جای کد توکن تستی را لیترال ننویس.** `tools/test-rename.php` آن را از چند تکه می‌سازد.
   - بعد از rename، `composer update --lock` (نام پکیج در content-hash قفل است) و `dump-autoload` اجرا می‌شوند. در پایان هیچ توکن قدیمی (با هر حالت حروف) نباید مانده باشد.
 - **`composer test:rename`** یک کپی موقت می‌سازد، rename می‌کند و روی کپی `composer check` می‌گیرد (ADR-000). حدود 40 ثانیه طول می‌کشد و در CI اجرا می‌شود (T0.10).
+
+## 2.2 Integration و CI (T0.10)
+- **wp-env 11:** محیط `tests` جدا (`env.tests` و `testsEnvironment`) منسوخ شده، **ولی اگر کلید `testsEnvironment` نباشد هنوز روشن است** (README می‌گوید پیش‌فرض `false` است، ولی کد `!== false` را بررسی می‌کند). پس `"testsEnvironment": false` در `.wp-env.json` لازم است. وگرنه MariaDB، WordPress و CLI دوم ساخته می‌شوند و هر خرابی آن‌ها `start` را می‌شکند. تست‌ها در `cli` اجرا می‌شوند. نسخه wp-env در CI روی major 11 ثابت است (`npx @wordpress/env@11`)، چون هنوز `package.json` نداریم (T0.11).
+- **کتابخانه تست WP** از خود wp-env می‌آید (`$WP_TESTS_DIR` = `/wordpress-phpunit`، هم‌نسخه با core). پکیج `wp-phpunit/wp-phpunit` نصب نمی‌شود، چون نسخه‌اش با core ماتریس (6.6) نمی‌خواند. برای PHPStan فقط `php-stubs/wordpress-tests-stubs` در `scanFiles` است.
+- **تله prefix جدول:** wp-env فایل `wp-tests-config.php` را از `wp-config.php` سایت می‌سازد، با همان prefix `wp_`. کتابخانه تست جدول‌ها را drop و دوباره نصب می‌کند، پس اجرای تست سایت dev را پاک می‌کرد. `tests/Integration/wp-tests-config.php` همان فایل را include می‌کند و prefix را `wptests_` می‌گذارد (از طریق ثابت `WP_TESTS_CONFIG_FILE_PATH`). این فایل در پروسه جدای install هم include می‌شود، پس به bootstrap وابسته نیست.
+- افزونه با `tests_add_filter('muplugins_loaded', …)` بارگذاری می‌شود، یعنی **قبل از** `plugins_loaded`، مثل نصب واقعی.
+- `vendor/` روی host (runner) با PHP 8.1 نصب و در containerها mount می‌شود. PHP container از `WP_ENV_PHP_VERSION` و core از `WP_ENV_CORE` می‌آید. WP 6.6 یعنی `WordPress/WordPress#6.6-branch` (آخرین patch).
+- در config Integration، deprecationها Exception نمی‌شوند، چون core روی PHP جدیدتر deprecation خودش را دارد. suite Unit روی PHP 8.1 و 8.4 deprecationهای کد ما را می‌گیرد.
+- **jobهای CI** (`.github/workflows/ci.yml`): `quality` (lint، stan، deptrac)، `unit` (PHP 8.1 و 8.4)، `legacy-syntax` (`php -l` روی PHP 7.0 برای سه فایل bootstrap؛ `php -l` قبل از 8.3 فقط یک فایل می‌گیرد)، `rename`، `integration` (PHP {8.1، 8.4} × WP {6.6، latest}). jobهای `concurrency` (T2.2)، `test-js` و `build` (T0.11) با اولین محتوای واقعی‌شان اضافه می‌شوند.
+- **تله phpcs:** اضافه کردن `<rule ref="X">` برای exclude کردن یک فایل، اگر X قبلاً در ruleset نبوده، آن sniff را برای کل کد **روشن** می‌کند. قبل از exclude، بررسی کن sniff اصلاً فعال است.
+- **تله PowerShell:** `composer require "pkg:^1.0"` از `composer.bat` رد می‌شود و cmd علامت `^` را حذف می‌کند (constraint می‌شود `1.0`). constraint را بعداً در `composer.json` اصلاح کن و `composer update --lock` بزن، یا از Git Bash اجرا کن.
 
 ## 3. i18n: تله‌های WP 6.7+
 - **هیچ `__()` قبل از هوک `init` صدا زده نشود.** از WP 6.7 به بعد، این کار notice «_load_textdomain_just_in_time was called incorrectly» می‌دهد. پیام‌های Requirements هم از این قاعده مستثنی نیستند: ترجمه را داخل callback `admin_notices` انجام بده.

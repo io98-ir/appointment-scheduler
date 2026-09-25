@@ -16,6 +16,51 @@
 
 ---
 
+## 2026-09-25 — سشن 4 — T0.10 wp-env + CI
+**Taskها:** T0.10
+**انجام شد:**
+- `.github/workflows/ci.yml` با این jobها:
+  - `quality`: lint، stan و deptrac
+  - `unit`: روی PHP 8.1 و 8.4
+  - `legacy-syntax`: `php -l` روی PHP 7.0 برای `vaqtyar.php`، `uninstall.php` و `Requirements.php`
+  - `rename`: `composer test:rename`
+  - `integration`: روی wp-env، با ماتریس PHP {8.1، 8.4} × WP {6.6، latest}
+- `phpunit-integration.xml.dist`، `tests/Integration/bootstrap.php`، `tests/Integration/wp-tests-config.php` (prefix جدا به نام `wptests_`) و `BootstrapTest`. این تست Requirements را روی MySQL واقعی و بارگذاری Action Scheduler از فایل اصلی بررسی می‌کند.
+- اسکریپت `composer test:integration`.
+- `php-stubs/wordpress-tests-stubs` (dev) برای PHPStan.
+- `.wp-env.json`: `env.tests` منسوخ حذف و `"testsEnvironment": false` اضافه شد.
+- اسناد:
+  - implementation-notes §2.2 (جدید)
+  - dev-environment §5
+  - roadmap: job `concurrency` به T2.2 و jobهای `test-js` و `build` به T0.11 منتقل شدند
+
+**تصمیم‌ها و فرض‌ها:**
+- کتابخانه تست WP از خود wp-env می‌آید (`$WP_TESTS_DIR`، هم‌نسخه با core). `wp-phpunit/wp-phpunit` نصب نشد، چون نسخه‌اش در lock ثابت است و با WP 6.6 ماتریس نمی‌خواند.
+- jobهای `concurrency`، `test-js` و `build` ساخته نشدند، چون محتوایی ندارند (principles §0). job خالی فقط سبز دروغین می‌دهد.
+- wp-env بدون `package.json` با `npx @wordpress/env@11` روی major 11 ثابت شد. در T0.11 به devDependency منتقل می‌شود.
+- Actionها فقط `actions/checkout`، `actions/setup-node` و `shivammathur/setup-php` هستند. برای composer از action شخص ثالث استفاده نشد.
+- در config Integration، deprecation به Exception تبدیل نمی‌شود، چون core خودش deprecation دارد. suite Unit روی 8.4 کد ما را پوشش می‌دهد.
+
+**تأیید:**
+- `composer check` ← exit 0:
+  - phpcs: پاک
+  - PHPStan: No errors
+  - deptrac: 0 violation (1 uncovered که از قبل بود: `Requirements` ← `wpdb`)
+  - PHPUnit: OK (256 tests, 11686 assertions)
+- `composer test:rename` ← OK (فایل‌های جدید هم در کپی بودند، چون untracked هم کپی می‌شود).
+- `actionlint` روی workflow ← پاک.
+- **Integration محلی اجرا نشد** (Docker نداریم). **نتیجه CI هنوز دیده نشده.** repo خصوصی است و `gh` لاگین نیست.
+- Subagent `reviewer`: همه فرض‌های wp-env را با سورس 11.16.0 و کتابخانه تست WP (6.6.9 و trunk) بررسی کرد. دو مورد پیدا کرد:
+  - `testsEnvironment` بدون کلید هنوز روشن است (برخلاف README). اصلاح شد.
+  - خط‌شکستگی در `phpcs.xml`. اصلاح شد.
+
+**مشکلات و باقیمانده:**
+- تا وقتی CI دیده نشود، T0.10 روی 🟨 می‌ماند.
+- unit روی PHP 8.4 هرگز اجرا نشده است (محلی 8.3 داریم).
+
+**قدم بعدی:** دیدن نتیجه CI (کاربر یا `gh auth login`)، رفع اگر لازم بود، ✅ کردن T0.10، سپس T0.7.
+**Commitها:** `ci(kernel): wp-env integration suite and github actions (T0.10)`
+
 ## 2026-09-24 — سشن 3 — T0.6 Jalali + DateFormatter
 **Taskها:** T0.6
 **انجام شد:**
