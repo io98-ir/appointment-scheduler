@@ -16,6 +16,19 @@
 
 ---
 
+## 2026-09-25 — سشن 7 (ادامه) — CI برای T0.11 و پایان M0
+**Taskها:** T0.11
+**انجام شد:** push `abab1d6`. اولین run (36176335757) فقط در 4 job Integration قرمز شد، و علتش در کد نبود: `actions/setup-node@v5` با دیدن `packageManager` در `package.json` خودکار cache pnpm را روشن می‌کند، ولی در job Integration pnpm نصب نیست. با `package-manager-cache: false` رفع شد (`6dab2b0`). تله در implementation-notes §7.1 ثبت شد.
+**تأیید:** run 36176578809 روی `6dab2b0` ← هر 11 job سبز:
+- jobهای جدید `test-js` و `build`.
+- `rename` با بررسی‌های JS، روی CI با `CI=true`.
+- Integration روی {8.1، 8.4} × {6.6، latest} ← `OK (56 tests, 179 assertions)`، که 4 تست `AdminPageTest` را هم شامل می‌شود.
+- رفع `MigratorTest` (flaky) هم در همین run پاس شد.
+**M0 تمام شد (11/11).**
+**قدم بعدی:** T1.1 — Catalog Domain + Migration.
+**Commitها:** `fix(ci): no automatic pnpm cache in the integration job`، `docs: close T0.11 and M0 in the tracker`
+---
+
 ## 2026-09-25 — سشن 7 (ادامه) — T0.11 JS workspace
 **Taskها:** T0.11
 **انجام شد:**
