@@ -53,7 +53,7 @@ final class CreateCatalogTablesTest extends TestCase
         (new CreateCatalogTables())->up($this->realDb());
 
         self::assertSame(
-            ['smallint unsigned', 'bigint', 'YES'],
+            ['smallint unsigned', 'bigint', 'yes'],
             [
                 $this->column('service_variants', 'duration_min', 'COLUMN_TYPE'),
                 $this->column('service_variants', 'price', 'COLUMN_TYPE'),
