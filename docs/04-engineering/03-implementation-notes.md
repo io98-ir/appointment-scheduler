@@ -147,7 +147,7 @@
   - نسخه‌ها در option `db_versions` (autoload) هستند، پس بررسی «به‌روز است؟» در هر درخواست کوئری ندارد. اگر ماژولی migration نداشته باشد، boot اصلاً به DB دست نمی‌زند.
   - قفل با `GET_LOCK(SHA1(CONCAT(DATABASE(), '.' + نام پیشونددار سایت)), 0)` گرفته می‌شود، یعنی بدون انتظار. درخواستی که قفل را نگرفت migration را رد می‌کند و ادامه می‌دهد. نسخه‌ها زیر قفل دوباره خوانده می‌شوند و بعد از هر migration ذخیره می‌شوند.
   - **تله cache:** `db_versions` autoload است و `get_option()` آن را از cache `alloptions` (یا `notoptions`) می‌خواند که ابتدای درخواست پر شده است. پس زیر قفل، قبل از خواندن دوباره، `alloptions`، `notoptions` و خود کلید از cache حذف می‌شوند. وگرنه درخواستی که بعد از پایان کار درخواست دیگر قفل را گرفته، migration را دوباره اجرا می‌کند.
-  - **Migration ناموفق در boot** (نبود مجوز ALTER، نبود InnoDB، …) شرط سرور است، نه باگ. پس برخلاف بقیه Exceptionهای boot، گرفته می‌شود: پیام عمومی در `error_log` ثبت می‌شود (بدون `detail`)، یک admin notice به کاربر `activate_plugins` نمایش داده می‌شود، و **هیچ ماژولی boot نمی‌شود**. در `activate()` Exception عبور می‌کند تا فعال‌سازی با پیام روشن رد شود. وقتی Logger ساخته شد (T0.9)، `error_log` با آن جایگزین می‌شود.
+  - **Migration ناموفق در boot** (نبود مجوز ALTER، نبود InnoDB، …) شرط سرور است، نه باگ. پس برخلاف بقیه Exceptionهای boot، گرفته می‌شود: پیام عمومی در `error_log` ثبت می‌شود (بدون `detail`)، یک admin notice به کاربر `activate_plugins` نمایش داده می‌شود، و **هیچ ماژولی boot نمی‌شود**. در `activate()` Exception عبور می‌کند تا فعال‌سازی با پیام روشن رد شود. **این مسیر عمداً `error_log` می‌ماند، نه Logger** (T0.9): چیزی که شکسته خود DB است (شاید همان جدول `logs`)، و notice مدیر را به لاگ PHP می‌فرستد که بدون افزونه هم خواندنی است.
   - نسخه ذخیره‌شده بزرگ‌تر از لیست (downgrade افزونه) خطا نیست و کاری انجام نمی‌شود.
   - در multisite و فعال‌سازی شبکه‌ای، فقط سایت جاری در activation migrate می‌شود. بقیه سایت‌ها در اولین درخواستشان (مسیر boot) migrate می‌شوند.
   - ALTER باید idempotent باشد: قبلش وجود ستون یا ایندکس را از `information_schema` بررسی کن.
@@ -163,7 +163,7 @@
 - `permission_callback` **همیشه** تعریف می‌شود. برای endpoint عمومی: callback ای که nonce یا توکن را بررسی کند، یا `__return_true` **فقط برای GET عمومی** (مثل availability)، همراه با rate limit.
 - **`Kernel\Rest\Router` (T0.8)** به‌جای کلاس پایه Controller است. Controller یک کلاس `final` ساده است که روی `rest_api_init` متد `$router->add($path, $methods, $callback, $permission, $args, ?RateLimit)` را صدا می‌زند. Router از Container (singleton) گرفته می‌شود.
   - Router مرز خطاست. callback و `permission_callback` هر دو داخل `try` اجرا می‌شوند و هر Exception به Envelope تبدیل می‌شود: `{"code","message","data":{"status","details","request_id"}}`. این شکل همان شکل `WP_Error` در REST است، پس کلاینت‌های وردپرس (`apiFetch`) هم آن را می‌فهمند. `details` در JSON همیشه object است، حتی خالی.
-  - نگاشت: `ApiError` ← status، code و details خودش (پیام را Controller ترجمه‌شده می‌دهد). `InvalidValue` ← 422 با `errorCode` و پیام عمومی ترجمه‌شده. هر چیز دیگر ← 500 `internal_error` با پیام عمومی. در `error_log` فقط کلاس، کد، فایل و خط Exception با `request_id` ثبت می‌شود، **نه متن آن**، چون متن ممکن است موبایل یا ایمیل داشته باشد و لاگ ماسک‌نشده است (principles §7). Logger در T0.9 با ماسک PII می‌تواند متن را هم نگه دارد. `WP_Error` ای که callback برگرداند هم به Envelope تبدیل می‌شود (status از data آن، وگرنه 500).
+  - نگاشت: `ApiError` ← status، code و details خودش (پیام را Controller ترجمه‌شده می‌دهد). `InvalidValue` ← 422 با `errorCode` و پیام عمومی ترجمه‌شده. هر چیز دیگر ← 500 `internal_error` با پیام عمومی. Exception با `Logger` (کانال `rest`) ثبت می‌شود: کلاس، کد، فایل، خط و متن **ماسک‌شده** (§6.1)، زیر همان `request_id` که کلاینت می‌بیند. `WP_Error` ای که callback برگرداند هم به Envelope تبدیل می‌شود (status از data آن، وگرنه 500).
   - `permission_callback` فقط با `true` عبور می‌کند. در غیر این صورت `rest_forbidden` با `rest_authorization_required_code()` (401 برای مهمان و 403 برای کاربر بدون مجوز)، مثل خود وردپرس.
   - `Router::ANYONE` (همان `'__return_true'`) فقط روی `GET` و همراه `RateLimit` پذیرفته می‌شود. در غیر این صورت `add()` خطای `KernelException` می‌دهد. closure ای که `true` برمی‌گرداند این بررسی را دور می‌زند، پس Reviewer آن را چک می‌کند.
   - خطاهایی که وردپرس **قبل از** کد ما تولید می‌کند (route ناموجود، و پارامتری که schema در `args` را رد می‌کند: 400 `rest_invalid_param`) شکل خود وردپرس را دارند و `request_id` ندارند. یعنی خطای نوع و بازه در schema 400 است و خطای قاعده دامنه 422.
@@ -187,6 +187,31 @@
 
   **Plugin Check این sniff را گزارش می‌کند.** `Late_Escaping_Check` کل `WordPress.Security.EscapeOutput` را بدون استثنا اجرا می‌کند (از سورس plugin-check بررسی شد، 2026-09-24). پس هر `throw` که آرگومان متغیر دارد در Plugin Check خطا می‌گیرد. Domain نمی‌تواند `esc_html()` صدا بزند، پس راه‌حل همگانی نداریم. **اگر wp.org کانال فروش شد (تصمیم باز 2)، این سیاست قبل از T6.4 بازبینی می‌شود.** گزینه این است که پیام Exception در Domain متغیر نداشته باشد و جزئیات در property نگه داشته شود.
 - در پیام Exception ورودی کاربر گذاشته نشود. با `WP_DEBUG_DISPLAY`، PHP پیام Exception گرفته‌نشده را خام چاپ می‌کند.
+
+## 6.1 Settings، SecretStore، Logger، Capabilities (T0.9)
+- **Settings:** هر گروه یک کلاس `final` با propertyهای `readonly` و typed است که `SettingsGroup` را پیاده می‌کند (`name()`، `autoload()`، `fromStored()`، `toStored()`) و در یک option ذخیره می‌شود: `Options::key('settings_' . name)`. `Settings::get(GeneralSettings::class)` نمونه typed برمی‌گرداند.
+  - `fromStored()` **هرگز Exception نمی‌دهد:** هر مقدار ناموجود یا نامعتبر (نسخه قدیمی، option دست‌کاری‌شده) جداگانه به پیش‌فرض خودش برمی‌گردد. Validation سختگیرانه ورودی کاربر کار REST تنظیمات است (T3.5 و T6.1).
+  - `Settings` چیزی cache نمی‌کند: `get_option()` خودش cache دارد و نسخه نگه‌داشته‌شده بعد از `switch_to_blog()` کهنه می‌شد.
+  - `autoload` در `update_option()` فقط وقتی مقدار عوض شود اعمال می‌شود. اگر گروهی در نسخه بعد autoload خود را عوض کرد، migration لازم دارد.
+  - گروه موجود: `GeneralSettings` (تقویم و ارقام، autoload). `DateFormatter` در Container از همین ساخته می‌شود. **تا اولین ذخیره (Onboarding در T6.1) option وجود ندارد** و بدون object cache هر خواندن یک کوئری است.
+  - Application به `Settings` دسترسی ندارد (deptrac)؛ Infrastructure مقدار لازم را به آن پاس می‌دهد.
+- **SecretStore:** `get/set/isDefinedInConfig`. ثابت `{SLUG}_{NAME}` در `wp-config.php` اولویت دارد (نام از `Identity::SLUG` ساخته می‌شود، پس با rename عوض می‌شود). ثابت عددی (terminal id بدون کوتیشن) به متن تبدیل می‌شود. ثابت خالی یا غیر رشته‌ای null است و لاگ می‌شود. `set()` روی secretی که ثابت دارد `KernelException` می‌دهد. مقدار خالی یعنی حذف.
+  - رمزنگاری: XChaCha20-Poly1305 (AEAD) با nonce تصادفی 24 بایتی، و **نام option به‌عنوان Additional Data**، تا ciphertext کپی‌شده زیر نام دیگر باز نشود. قالب ذخیره `v1:` + base64(nonce + ciphertext)، autoload خاموش.
+  - کلید: BLAKE2b از `'secret-store:' . wp_salt('auth')` (یعنی AUTH_KEY و AUTH_SALT؛ اگر تعریف نشده باشند، مقدار تصادفی ذخیره‌شده وردپرس). **عوض‌کردن salt همه secretها را غیرقابل‌خواندن می‌کند:** `get()` مقدار null می‌دهد و خطا با نام secret (نه مقدار) لاگ می‌شود.
+  - `sodium_*` همیشه هست: وردپرس sodium_compat را همراه دارد.
+  - ماسک UI (`••••1234`، principles §7) با صفحه تنظیمات secretها ساخته می‌شود (M5)، نه الان (principles §0).
+- **Logger:** `error/warning/info($channel, $message, $context)` در جدول `logs` با `request_id`. **هرگز Exception نمی‌دهد.**
+  - `Pii::mask()` روی پیام، مقدارها **و کلیدهای** context اجرا می‌شود: ایمیل ← `***@domain`، و هر رشته 8 رقم یا بیشتر (لاتین، فارسی، عربی؛ با فاصله، `-` و پرانتز بینشان) ← `***` + 4 رقم آخر. تاریخ ISO دست نمی‌خورد، ولی timestamp یونیکس ماسک می‌شود. **نام و آدرس تشخیص داده نمی‌شوند:** آن‌ها را در پیام و context نگذار.
+  - `Throwable` در context به کلاس، کد، متن ماسک‌شده، فایل و خط تبدیل می‌شود. enum به مقدارش، object به نام کلاس، عمق بیش از 5 به `[too deep]`، و JSON بزرگ‌تر از 16KB به `{"truncated":true}`. پیام بعد از ماسک به 1000 کاراکتر کوتاه می‌شود (ماسک قبل از برش، تا نیمه شماره باقی نماند).
+  - اگر نوشتن در جدول شکست بخورد (جدول هنوز ساخته نشده، DB قطع است)، همان خط ماسک‌شده همراه context در `error_log` می‌رود.
+  - Retention سی‌روزه: بعد از هر نوشتن، تا 100 ردیف قدیمی حذف می‌شود، **جز داخل تراکنش** (`Db::inTransaction()`)، چون قفل ردیف‌های حذف‌شده تا commit فراخواننده می‌ماند و کنار قفل‌های رزرو یال جدید deadlock می‌سازد.
+  - خطی که داخل `Transaction` نوشته شود با rollback آن از بین می‌رود. شکست را بعد از تراکنش و در catch لاگ کن.
+  - Application به Logger دسترسی ندارد (deptrac). اگر Use Caseی لازم داشت، Port در Contracts یا SharedDomain با اولین مصرف‌کننده ساخته می‌شود.
+- **Capabilities:** هر ماژول با `Module::capabilities()` نقشه «نام کوتاه ← نقش‌های پیش‌فرض» می‌دهد (اگر دو ماژول یک capability را نام ببرند، نقش‌ها جمع می‌شوند). `Capabilities::grant()` در `activate()` و در `boot()` بعد از migration موفق اجرا می‌شود (بعد از update، activation اجرا نمی‌شود).
+  - هر جفت «capability، نقش» **فقط یک‌بار** داده می‌شود و در option autoload `granted_caps` ثبت می‌شود. پس capabilityی که مدیر سایت از نقشی گرفت، با update برنمی‌گردد، و درخواستی که چیز جدیدی ندارد کوئری ندارد. نقشی که هنوز وجود ندارد رد می‌شود و بعد از ساخته‌شدن، در اولین درخواست capability را می‌گیرد.
+  - نقش‌ها و option برای هر سایت جدا هستند. در multisite هر سایت در اولین درخواست خودش به‌روز می‌شود.
+  - **نقش‌های خود افزونه** (Manager، Receptionist، Staff؛ product-scope §2) با اولین capabilityهای واقعی‌شان ساخته می‌شوند (M1 تا M3). حذف capabilityها در uninstall هم با همان کار می‌آید.
+  - **تله تست:** `WP_User` ساخته‌شده capabilityهایش را هنگام بارگذاری نگه می‌دارد. در تست بعد از `grant()`، `user_can()` را با id صدا بزن. `WP_Roles` در حافظه با rollback تست برنمی‌گردد، پس تست capability را در `tear_down` پس بگیرد.
 
 ## 7. Assets
 - Assetها فقط در صفحات لازم enqueue می‌شوند. در Admin با بررسی `$hook_suffix`. در Front با بررسی وجود block یا shortcode (`has_block()`، یا ثبت lazy در render callback).

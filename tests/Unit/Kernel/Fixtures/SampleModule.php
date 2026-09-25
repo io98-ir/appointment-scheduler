@@ -27,7 +27,17 @@ final class SampleModule implements Module
         private readonly bool $bindsService = false,
         /** @var list<Migration> */
         private readonly array $migrations = [],
+        /** @var array<string, list<string>> */
+        private readonly array $capabilities = [],
     ) {
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public function capabilities(): array
+    {
+        return $this->capabilities;
     }
 
     public function id(): string

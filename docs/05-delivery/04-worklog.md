@@ -16,6 +16,52 @@
 
 ---
 
+## 2026-09-25 — سشن 7 — T0.9 Settings، SecretStore، Logger، Caps
+**Taskها:** T0.9
+**انجام شد:**
+- `src/Kernel/Settings/`: `SettingsGroup` (interface)، `Settings` (get/save، یک option برای هر گروه)، `GeneralSettings` (تقویم و ارقام).
+- `src/Kernel/SecretStore.php`: ثابت wp-config با اولویت، رمزنگاری AEAD با نام option به‌عنوان AD، و لاگ خطا وقتی مقدار قابل رمزگشایی نیست.
+- `src/Kernel/Log/`: `Logger`، `LogLevel`، `Pii`، و `CreateLogsTable` (دومین migration با owner `kernel`).
+- `src/Kernel/Capabilities.php` و `Module::capabilities()`.
+- `Plugin`: ثبت `Logger`، `Settings`، `SecretStore` و `DateFormatter` در Container، و اجرای grant در `activate()` و در `boot()` بعد از migration.
+- `Router`: خطای 500 با `Logger` ثبت می‌شود. `Db::inTransaction()`.
+- تست‌ها:
+  - Unit: `PiiTest`، `LoggerTest`، `SettingsTest`، `SecretStoreTest`، `CapabilitiesTest`، `PluginTest`، و fixture `LargeSettings`.
+  - Integration: `LoggerTest`، `SettingsTest`، `SecretStoreTest`، `CapabilitiesTest`، و به‌روزرسانی `RouterTest` (خطای 500 حالا در جدول `logs` بررسی می‌شود) و `PaginationTest`.
+- اسناد: implementation-notes §6.1 (جدید)، §5 و §6، و data-model (`logs`).
+
+**تصمیم‌ها و فرض‌ها:**
+- **`SettingsGroup` یک interface است، با یک پیاده‌سازی واقعی.** دلیل: مرز هر ماژول برای تنظیمات خودش است (Catalog، Booking، Payments، Notifications، White-label). principles §0 را بازبینی کردم. بدون آن، `Settings::get()` نمی‌تواند typed باشد.
+- **کلید SecretStore از `wp_salt('auth')` مشتق می‌شود، نه مستقیم از `AUTH_KEY`.** این هم AUTH_KEY را دارد (ADR-014) و هم سایتی را که AUTH_KEY تعریف نکرده پوشش می‌دهد.
+- **خرابی Migration همچنان به `error_log` می‌رود، نه Logger** (برخلاف یادداشت T0.7). دلیل: DB همان چیزی است که شکسته و notice مدیر را به لاگ PHP می‌فرستد.
+- **Retention لاگ:** 30 روز (ثابت) و prune بعد از هر نوشتن، مثل `RateLimiter`. Job جدا یا تنظیمات برای آن ساخته نشد (principles §0).
+- **ماسک PII در Logger با الگو است:** ایمیل و رشته‌های 8 رقمی یا بیشتر. نام و آدرس تشخیص داده نمی‌شوند و این در سند آمده است. timestamp یونیکس هم ماسک می‌شود.
+- **نقش‌های خود افزونه** (Manager، Receptionist، Staff) ساخته نشدند، چون هنوز هیچ capability واقعی وجود ندارد. با M1 تا M3 ساخته می‌شوند. Kernel خودش capability ندارد.
+- `SecretStore::mask()` به توصیه reviewer حذف شد و با صفحه تنظیمات secretها می‌آید.
+
+**Review:** subagent `reviewer` هفت مورد پیدا کرد، هیچ‌کدام blocker نبود:
+- رفع شد: خط fallback در `error_log` context را نداشت. برای 500 در REST این یعنی از دست رفتن کلاس، فایل و خط.
+- رفع شد: ثابت عددی wp-config (terminal id) بی‌صدا null می‌شد.
+- رفع شد: کلیدهای آرایه context ماسک نمی‌شدند.
+- رفع شد: شماره داخل پرانتز، مثل `(0912) 123 4567`، ماسک نمی‌شد.
+- رفع شد: prune داخل تراکنش رزرو قفل ردیف می‌گرفت. حالا با `Db::inTransaction()` رد می‌شود.
+- مستند شد: `GeneralSettings` تا اولین ذخیره یک کوئری در هر درخواست دارد (Onboarding در T6.1 آن را ذخیره می‌کند).
+- حذف شد: `SecretStore::mask()` بدون مصرف‌کننده.
+
+**تأیید:**
+- `composer check` ← exit 0:
+  - phpcs: پاک
+  - PHPStan: No errors
+  - deptrac: 0 violation در هر دو فایل. هر 25 مورد uncovered داخل stubهای وردپرس است.
+  - PHPUnit: OK (383 tests, 11926 assertions)
+- `composer test:rename` ← OK.
+- **Integration محلی اجرا نشد** (Docker محلی نداریم). 9 تست جدید و تغییر `RouterTest` فقط در CI بررسی می‌شوند.
+
+**مشکلات و باقیمانده:** نتیجه CI دیده نشده است.
+**قدم بعدی:** push و بررسی CI. سپس T0.11.
+**Commitها:** `feat(kernel): settings, secret store, logger and capabilities (T0.9)`
+---
+
 ## 2026-09-25 — سشن 6 (ادامه) — CI برای T0.8
 **Taskها:** T0.8
 **انجام شد:** push `6513c8e` و بستن T0.8 در Tracker.

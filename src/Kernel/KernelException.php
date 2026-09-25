@@ -89,4 +89,17 @@ final class KernelException extends \LogicException
     {
         return new self(\sprintf('An update of "%s" has no WHERE condition.', $table));
     }
+
+    public static function secretInConfig(string $name): self
+    {
+        return new self(\sprintf(
+            'The secret "%s" is defined in wp-config.php; a stored value would be ignored.',
+            $name
+        ));
+    }
+
+    public static function secretKeyLength(int $bytes): self
+    {
+        return new self(\sprintf('The secret store key must be 32 bytes, got %d.', $bytes));
+    }
 }

@@ -151,6 +151,16 @@ final class Db
         $this->inTransaction = true;
     }
 
+    /**
+     * Whether a transaction opened through this object is still open. The
+     * Db is one per request (a container singleton), so this covers every
+     * Transaction::run().
+     */
+    public function inTransaction(): bool
+    {
+        return $this->inTransaction;
+    }
+
     public function commit(): void
     {
         $this->execute('COMMIT');

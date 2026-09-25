@@ -6,6 +6,7 @@ namespace Vaqtyar\Kernel\Rest;
 
 use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\KernelException;
+use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\RequestId;
 use Vaqtyar\Shared\Domain\InvalidValue;
 
@@ -34,6 +35,7 @@ final class Router
     public function __construct(
         private readonly RateLimiter $limiter,
         private readonly RequestId $requestId,
+        private readonly Logger $logger,
     ) {
     }
 
@@ -156,20 +158,10 @@ final class Router
             return $this->error(422, $e->errorCode, \__('A value in the request is not valid.', 'vaqtyar'));
         }
 
-        // A bug or a server condition. Its message may quote user data (a phone
-        // number, an email), which must not reach an unmasked log (principles §7),
-        // so the log gets where it happened under the request id and the client
-        // gets neither. The Logger (T0.9) masks PII and can keep the message.
-        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- the Logger comes in T0.9.
-        \error_log(\sprintf(
-            '%s: REST request %s failed: %s (code %s) in %s:%d',
-            Identity::NAME,
-            $this->requestId->value(),
-            $e::class,
-            (string) $e->getCode(),
-            $e->getFile(),
-            $e->getLine()
-        ));
+        // A bug or a server condition. The client gets a generic message; the
+        // log gets the exception, personal data masked, under the request id
+        // the client sees.
+        $this->logger->error('rest', 'A REST request failed.', ['exception' => $e]);
 
         return $this->error(500, 'internal_error', \__('Something went wrong on the server.', 'vaqtyar'));
     }

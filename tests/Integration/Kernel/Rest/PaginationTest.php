@@ -6,6 +6,7 @@ namespace Vaqtyar\Tests\Integration\Kernel\Rest;
 
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Identity;
+use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\RequestId;
 use Vaqtyar\Kernel\Rest\Pagination;
 use Vaqtyar\Kernel\Rest\RateLimiter;
@@ -23,7 +24,13 @@ final class PaginationTest extends \WP_UnitTestCase
     {
         parent::set_up();
         $GLOBALS['wp_rest_server'] = null;
-        $router = new Router(new RateLimiter(Db::fromGlobals(), new SystemClock()), new RequestId());
+        $db = Db::fromGlobals();
+        $requestId = new RequestId();
+        $router = new Router(
+            new RateLimiter($db, new SystemClock()),
+            $requestId,
+            new Logger($db, new SystemClock(), $requestId)
+        );
         \add_action('rest_api_init', static function () use ($router): void {
             $router->add(
                 '/items',

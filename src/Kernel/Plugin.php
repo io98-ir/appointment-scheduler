@@ -8,10 +8,16 @@ use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Migration;
 use Vaqtyar\Kernel\Database\Migrator;
 use Vaqtyar\Kernel\Database\Transaction;
+use Vaqtyar\Kernel\Log\CreateLogsTable;
+use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\Rest\CreateRateLimitsTable;
 use Vaqtyar\Kernel\Rest\RateLimiter;
 use Vaqtyar\Kernel\Rest\Router;
+use Vaqtyar\Kernel\Settings\GeneralSettings;
+use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Shared\DateFormatter;
 use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\Domain\Jalali;
 use Vaqtyar\Shared\SystemClock;
 
 /**
@@ -50,9 +56,34 @@ final class Plugin
             static fn (Container $c): RateLimiter => new RateLimiter($c->get(Db::class), $c->get(Clock::class))
         );
         $container->singleton(
-            Router::class,
-            static fn (Container $c): Router => new Router($c->get(RateLimiter::class), $c->get(RequestId::class))
+            Logger::class,
+            static fn (Container $c): Logger => new Logger(
+                $c->get(Db::class),
+                $c->get(Clock::class),
+                $c->get(RequestId::class)
+            )
         );
+        $container->singleton(
+            Router::class,
+            static fn (Container $c): Router => new Router(
+                $c->get(RateLimiter::class),
+                $c->get(RequestId::class),
+                $c->get(Logger::class)
+            )
+        );
+        $container->singleton(Settings::class, static fn (): Settings => new Settings());
+        $container->singleton(
+            SecretStore::class,
+            static fn (Container $c): SecretStore => new SecretStore(
+                SecretStore::keyFromSalt(\wp_salt('auth')),
+                $c->get(Logger::class)
+            )
+        );
+        $container->singleton(DateFormatter::class, static function (Container $c): DateFormatter {
+            $general = $c->get(Settings::class)->get(GeneralSettings::class);
+
+            return new DateFormatter(new Jalali(), $general->calendar, $general->digits);
+        });
 
         foreach ($registry->all() as $module) {
             $module->register($container);
@@ -73,6 +104,9 @@ final class Plugin
             return;
         }
 
+        // Like the migrations: activation does not run after an update.
+        (new Capabilities())->grant($this->capabilities($registry));
+
         $context = new Context($container, $this->pluginFile, $this->version);
         foreach ($registry->all() as $module) {
             $module->boot($context);
@@ -87,13 +121,18 @@ final class Plugin
      */
     public function activate(Module ...$modules): void
     {
-        (new Migrator(Db::fromGlobals()))->migrate($this->migrations(new ModuleRegistry(...$modules)));
+        $registry = new ModuleRegistry(...$modules);
+        (new Migrator(Db::fromGlobals()))->migrate($this->migrations($registry));
+        (new Capabilities())->grant($this->capabilities($registry));
     }
 
     private function reportFailedMigration(\Throwable $e): void
     {
-        // Without the server's error text, which may quote data (DbException).
-        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- no Logger before migrations.
+        // Not the Logger: the database is what failed (the logs table may be
+        // the missing piece), and the notice below sends the admin to a log
+        // they can read without the plugin. Without the server's error text,
+        // which may quote data (DbException).
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- see above.
         \error_log(\sprintf(
             '%s: a database migration failed, the plugin is paused: %s %s',
             Identity::NAME,
@@ -126,7 +165,8 @@ final class Plugin
      */
     private function migrations(ModuleRegistry $registry): array
     {
-        $migrations = [self::KERNEL_ID => [new CreateRateLimitsTable()]];
+        // Append only, like a module's list (Module::migrations()).
+        $migrations = [self::KERNEL_ID => [new CreateRateLimitsTable(), new CreateLogsTable()]];
         foreach ($registry->all() as $module) {
             $list = $module->migrations();
             if ([] !== $list) {
@@ -135,5 +175,24 @@ final class Plugin
         }
 
         return $migrations;
+    }
+
+    /**
+     * Two modules may name the same capability; the roles add up.
+     *
+     * @return array<string, list<string>>
+     */
+    private function capabilities(ModuleRegistry $registry): array
+    {
+        $capabilities = [];
+        foreach ($registry->all() as $module) {
+            foreach ($module->capabilities() as $capability => $roles) {
+                $capabilities[$capability] = \array_values(\array_unique(
+                    \array_merge($capabilities[$capability] ?? [], $roles)
+                ));
+            }
+        }
+
+        return $capabilities;
     }
 }

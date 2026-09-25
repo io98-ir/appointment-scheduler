@@ -7,11 +7,13 @@ namespace Vaqtyar\Tests\Integration\Kernel\Rest;
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\KernelException;
+use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\RequestId;
 use Vaqtyar\Kernel\Rest\ApiError;
 use Vaqtyar\Kernel\Rest\RateLimit;
 use Vaqtyar\Kernel\Rest\RateLimiter;
 use Vaqtyar\Kernel\Rest\Router;
+use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Tests\Fixtures\FixedClock;
 
@@ -34,9 +36,11 @@ final class RouterTest extends \WP_UnitTestCase
     {
         parent::set_up();
         $this->requestId = new RequestId();
+        $clock = new FixedClock('2026-09-25 10:00:30');
         $this->router = new Router(
-            new RateLimiter(Db::fromGlobals(), new FixedClock('2026-09-25 10:00:30')),
-            $this->requestId
+            new RateLimiter(Db::fromGlobals(), $clock),
+            $this->requestId,
+            new Logger(Db::fromGlobals(), $clock, $this->requestId)
         );
         $_SERVER['REMOTE_ADDR'] = '203.0.113.7';
         // A fresh server, so rest_api_init runs again with this test's routes.
@@ -140,26 +144,23 @@ final class RouterTest extends \WP_UnitTestCase
     public function testAnUnexpectedErrorHidesItsTextAndLogsIt(): void
     {
         $this->throwingRoute(new \RuntimeException('Duplicate entry 09121234567'));
-        $errorLog = \tempnam(\sys_get_temp_dir(), 'log');
-        self::assertIsString($errorLog);
-        $previous = \ini_set('error_log', $errorLog);
 
-        try {
-            $response = $this->get('/throws');
-        } finally {
-            \ini_set('error_log', (string) $previous);
-        }
+        $response = $this->get('/throws');
 
         self::assertSame(500, $response->get_status());
         $data = $this->assertEnvelope($response, 'internal_error', 500);
         self::assertStringNotContainsString('0912', (string) \wp_json_encode($data));
-        $logged = (string) \file_get_contents($errorLog);
-        \unlink($errorLog);
         // The log line carries the request id, so a support request can find it.
-        self::assertStringContainsString($this->requestId->value(), $logged);
+        $logged = Db::fromGlobals()->getVar(
+            'SELECT context FROM %i WHERE request_id = %s AND channel = %s',
+            Tables::name('logs'),
+            $this->requestId->value(),
+            'rest'
+        );
+        self::assertIsString($logged);
         self::assertStringContainsString('RuntimeException', $logged);
-        // No unmasked personal data in the log either (principles §7).
-        self::assertStringNotContainsString('09121234567', $logged);
+        // Masked, so no personal data reaches the log (principles §7).
+        self::assertStringContainsString('Duplicate entry ***4567', $logged);
     }
 
     public function testAReturnedWpErrorGetsTheEnvelopeToo(): void

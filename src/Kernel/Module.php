@@ -35,6 +35,16 @@ interface Module
     public function migrations(): array;
 
     /**
+     * The module's capabilities (short names, as for Caps::name()) and the
+     * roles that get each by default, e.g. ['manage_services' => ['administrator']].
+     * Each is given once per role (Capabilities), on activation and on the
+     * first request after an update.
+     *
+     * @return array<string, list<string>>
+     */
+    public function capabilities(): array;
+
+    /**
      * Hooks the module into WordPress. Scope work to a request through the
      * WordPress hooks themselves (rest_api_init, admin_menu, cli_init, …) and
      * resolve services inside the callbacks, so an unrelated request pays
