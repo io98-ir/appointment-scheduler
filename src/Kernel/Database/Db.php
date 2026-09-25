@@ -51,6 +51,17 @@ final class Db
     }
 
     /**
+     * The id MySQL reported for the last INSERT on this connection, or the
+     * value of LAST_INSERT_ID(expr) in its ON DUPLICATE KEY UPDATE. Read from
+     * the same statement, so a read/write-split drop-in (HyperDB, LudicrousDB)
+     * cannot route it to a replica the way a separate SELECT LAST_INSERT_ID() would be.
+     */
+    public function lastInsertId(): int
+    {
+        return $this->wpdb->insert_id;
+    }
+
+    /**
      * The first column of the first row, or null when there is no row or the
      * value is NULL.
      *

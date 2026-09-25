@@ -16,6 +16,44 @@
 
 ---
 
+## 2026-09-25 — سشن 6 — T0.8 REST base
+**Taskها:** T0.8
+**انجام شد:**
+- `src/Kernel/Rest/`:
+  - `Router`: ثبت route زیر `Identity::REST_NAMESPACE`، مرز خطا، Envelope و `request_id`. `Router::ANYONE` فقط روی GET و همراه rate limit پذیرفته می‌شود.
+  - `ApiError` و `RateLimit`.
+  - `RateLimiter`: fixed window در جدول `rate_limits`، با یک upsert اتمی و `LAST_INSERT_ID(expr)`.
+  - `ClientIp`: `REMOTE_ADDR`، فیلتر `rest/client_ip`، IPv6 با /64.
+  - `Pagination`.
+  - `CreateRateLimitsTable`.
+- `Kernel\RequestId`.
+- `Plugin`: migrationهای خود Kernel با owner `kernel` (`Plugin::KERNEL_ID`، در `ModuleRegistry` رزرو شده) و ثبت `Clock`، `RequestId`، `RateLimiter` و `Router` در Container. `Db::lastInsertId()`.
+- تست‌ها:
+  - Unit: `RateLimitTest`، `ClientIpTest`، `RateLimiterTest`، و به‌روزرسانی `PluginTest` و `ModuleRegistryTest`. `FakesWpdb` حالا `%i` و `get_charset_collate` را می‌شناسد. `tests/Fixtures/FixedClock`.
+  - Integration: `RouterTest` (نمونه، 401، 403، 422، 404 با details، 500 بدون نشت متن و PII، 429 با `Retry-After`، شمارش جدا برای هر client و هر route، رد route عمومی ناامن)، `PaginationTest`، `RateLimiterTest` (MySQL واقعی، prune).
+- اسناد: implementation-notes §6 (Router، RateLimiter، ClientIp، Pagination، جداول Kernel، تست REST، تله PHPStan) و data-model (`rate_limits`). در phpcs، sniff `CamelCapsMethodName` برای `tests/Integration` خاموش شد (`set_up` در WP_UnitTestCase).
+
+**تصمیم‌ها و فرض‌ها:**
+- **«Controller پایه» ← `Router` (composition)** به‌جای کلاس abstract. Controllerها کلاس `final` ساده‌اند و وابستگی‌هایشان را از constructor خودشان می‌گیرند.
+- خطای schema در `args` همان 400 `rest_invalid_param` وردپرس می‌ماند. 422 برای قاعده دامنه (`InvalidValue`) است.
+- Rate limit بعد از permission و داخل callback شمرده می‌شود (فقط آنجا هدر `Retry-After` ممکن است). endpointی که باید تلاش رد‌شده را بشمارد (OTP) خودش `RateLimiter` را صدا می‌زند.
+- `RateLimiter` از `Transaction` استفاده نمی‌کند (`START TRANSACTION` تراکنش تست WP را commit می‌کند) و Retry برای deadlock ندارد (چرخه قفل ممکن نیست، implementation-notes §6).
+- سایت پشت CDN باید فیلتر `rest/client_ip` را پیاده کند. گزینه تنظیمات برای آن تصمیم باز است.
+
+**Review:** subagent `reviewer` شش مورد پیدا کرد و هر شش بررسی شد:
+- رفع شد: متن Exception در `error_log` (نشت PII) حذف شد.
+- رفع شد: `SELECT LAST_INSERT_ID()` جدا (با drop-inهای HyperDB یا LudicrousDB fail-open می‌شد) با `Db::lastInsertId()` جایگزین شد.
+- رفع شد: فیلتر خراب IP دیگر 500 نمی‌دهد.
+- رفع شد: `page` سقف گرفت (سرریز offset).
+- رفع شد: `WP_Error` برگشتی از callback هم Envelope می‌گیرد.
+- نگه داشته شد و مستند شد: شمرده‌نشدن درخواست‌هایی که permission ردشان کرده.
+
+**تأیید:** `composer check` ← lint و stan (No errors)، deptrac (0 violation در هر دو فایل)، unit (322 tests OK). `composer test:rename` ← OK. **Integration فقط در CI اجرا می‌شود** (نتیجه در ورودی بعدی).
+**مشکلات و باقیمانده:** —
+**قدم بعدی:** بررسی CI، سپس T0.9.
+**Commitها:** `feat(kernel): rest router, error envelope, rate limiter and pagination (T0.8)`
+---
+
 ## 2026-09-25 — سشن 5 (ادامه) — اولین CI واقعی و رفع آن
 **Taskها:** T0.10، T0.7
 **انجام شد:** کاربر `gh auth login` زد. اولین اجرای CI (run 36144097562) در سه job قرمز بود و هر سه رفع شد:

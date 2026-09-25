@@ -8,6 +8,11 @@ use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Migration;
 use Vaqtyar\Kernel\Database\Migrator;
 use Vaqtyar\Kernel\Database\Transaction;
+use Vaqtyar\Kernel\Rest\CreateRateLimitsTable;
+use Vaqtyar\Kernel\Rest\RateLimiter;
+use Vaqtyar\Kernel\Rest\Router;
+use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\SystemClock;
 
 /**
  * Boots the plugin on plugins_loaded. The main plugin file is the composition
@@ -15,6 +20,9 @@ use Vaqtyar\Kernel\Database\Transaction;
  */
 final class Plugin
 {
+    /** The owner of the kernel's own tables in the migration versions; no module may use it. */
+    public const KERNEL_ID = 'kernel';
+
     public function __construct(
         private readonly string $pluginFile,
         private readonly string $version,
@@ -35,6 +43,16 @@ final class Plugin
             Transaction::class,
             static fn (Container $c): Transaction => new Transaction($c->get(Db::class))
         );
+        $container->singleton(Clock::class, static fn (): Clock => new SystemClock());
+        $container->singleton(RequestId::class, static fn (): RequestId => new RequestId());
+        $container->singleton(
+            RateLimiter::class,
+            static fn (Container $c): RateLimiter => new RateLimiter($c->get(Db::class), $c->get(Clock::class))
+        );
+        $container->singleton(
+            Router::class,
+            static fn (Container $c): Router => new Router($c->get(RateLimiter::class), $c->get(RequestId::class))
+        );
 
         foreach ($registry->all() as $module) {
             $module->register($container);
@@ -42,19 +60,17 @@ final class Plugin
 
         // After an update the activation hook does not run, so the schema
         // catches up here. When another request holds the migration lock,
-        // this one goes on with the schema it finds.
-        $migrations = $this->migrations($registry);
-        if ([] !== $migrations) {
-            try {
-                (new Migrator($container->get(Db::class)))->migrate($migrations);
-            } catch (\Throwable $e) {
-                // The host refused a schema change (no ALTER privilege, no InnoDB, …):
-                // a condition of the server, not a bug. Throwing here would break
-                // every page of the site, so the plugin stays off until it is fixed.
-                $this->reportFailedMigration($e);
+        // this one goes on with the schema it finds. With the schema current
+        // this reads one autoloaded option and sends no query.
+        try {
+            (new Migrator($container->get(Db::class)))->migrate($this->migrations($registry));
+        } catch (\Throwable $e) {
+            // The host refused a schema change (no ALTER privilege, no InnoDB, …):
+            // a condition of the server, not a bug. Throwing here would break
+            // every page of the site, so the plugin stays off until it is fixed.
+            $this->reportFailedMigration($e);
 
-                return;
-            }
+            return;
         }
 
         $context = new Context($container, $this->pluginFile, $this->version);
@@ -71,10 +87,7 @@ final class Plugin
      */
     public function activate(Module ...$modules): void
     {
-        $migrations = $this->migrations(new ModuleRegistry(...$modules));
-        if ([] !== $migrations) {
-            (new Migrator(Db::fromGlobals()))->migrate($migrations);
-        }
+        (new Migrator(Db::fromGlobals()))->migrate($this->migrations(new ModuleRegistry(...$modules)));
     }
 
     private function reportFailedMigration(\Throwable $e): void
@@ -107,11 +120,13 @@ final class Plugin
     }
 
     /**
+     * The kernel's own tables first: modules may rely on them.
+     *
      * @return array<string, list<Migration>>
      */
     private function migrations(ModuleRegistry $registry): array
     {
-        $migrations = [];
+        $migrations = [self::KERNEL_ID => [new CreateRateLimitsTable()]];
         foreach ($registry->all() as $module) {
             $list = $module->migrations();
             if ([] !== $list) {

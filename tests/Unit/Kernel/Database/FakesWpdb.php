@@ -33,11 +33,12 @@ trait FakesWpdb
         $wpdb->insert_id = 0;
         $wpdb->shouldReceive('hide_errors')->andReturn(true)->byDefault();
         $wpdb->shouldReceive('show_errors')->andReturn(false)->byDefault();
+        $wpdb->shouldReceive('get_charset_collate')->andReturn('DEFAULT CHARACTER SET utf8mb4')->byDefault();
         // No real connection, so no MySQL error number.
         $wpdb->shouldReceive('__get')->with('dbh')->andReturn(null)->byDefault();
         $wpdb->shouldReceive('prepare')->andReturnUsing(
             static fn (string $sql, int|string ...$args): string => \vsprintf(
-                \str_replace('%s', "'%s'", $sql),
+                \str_replace(['%s', '%i'], ["'%s'", '`%s`'], $sql),
                 $args
             )
         )->byDefault();

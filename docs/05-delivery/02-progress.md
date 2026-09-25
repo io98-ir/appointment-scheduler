@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M0** زیربنا |
-| **Task بعدی** | **T0.8** — REST base |
-| **Task در حال انجام** | — |
+| **Task بعدی** | T0.9 — Settings، SecretStore، Logger، Caps |
+| **Task در حال انجام** | **T0.8** — REST base |
 | **آخرین کار انجام‌شده** | T0.7: `Kernel\Database` (`Db` با `literal-string` و `%i`، `Transaction` با Retry طبق ADR-004، `Migrator` با `GET_LOCK` و `db_versions`، interface `Migration`)، `Module::migrations()`، activation hook در سطح بالای فایل اصلی (2026-09-25) |
 | **Blockerها** | — (PHP 8.3 و Composer نصب شدند. Docker محلی لازم نیست و تست‌های MySQL در CI اجرا می‌شوند). CI سبز است و `gh` لاگین است (`gh run list`، `gh run watch`) |
 | **کار کاربر (اختیاری)** | (1) نصب pluginهای `php-lsp`، `typescript-lsp` و `security-guidance` از Manage plugins در VS Code. (2) انتقال پروژه به مسیری بدون فاصله |
@@ -43,7 +43,7 @@
 | T0.6 | Jalali + DateFormatter | ✅ | `feat(shared): jalali calendar and date formatter (T0.6)` |
 | T0.10 | wp-env + CI | ✅ | `9ddb825` `ci(kernel): wp-env integration suite and github actions (T0.10)`. محلی سبز است. **CI سبز (run 36145578720، commit `0888e32`).** jobهای concurrency، test-js و build به T2.2 و T0.11 منتقل شدند |
 | T0.7 | Db، Transaction، Migrator | ✅ | `0ce43dc` `feat(kernel): db wrapper, transaction and migrator (T0.7)`. Unit و `composer check` سبز است. **Integration روی CI سبز است (4 ترکیب PHP × WP، run 36145578720)** |
-| T0.8 | REST base | ⬜ | |
+| T0.8 | REST base | 🟨 | |
 | T0.9 | Settings، SecretStore، Logger، Caps | ⬜ | |
 | T0.11 | JS workspace | ⬜ | |
 | T1.1 | Catalog Domain | ⬜ | |

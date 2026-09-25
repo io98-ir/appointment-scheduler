@@ -22,6 +22,9 @@ final class ModuleRegistry
     public function add(Module $module): void
     {
         $id = $module->id();
+        if (Plugin::KERNEL_ID === $id) {
+            throw KernelException::reservedModuleId($id);
+        }
         if (isset($this->modules[$id])) {
             throw KernelException::moduleAlreadyRegistered($id);
         }

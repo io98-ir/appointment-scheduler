@@ -52,6 +52,34 @@ final class KernelException extends \LogicException
         return new self(\sprintf('A module with the id "%s" is already registered.', $id));
     }
 
+    public static function reservedModuleId(string $id): self
+    {
+        return new self(\sprintf('The module id "%s" is reserved for the kernel.', $id));
+    }
+
+    public static function invalidRateLimit(int $limit, int $windowSeconds): self
+    {
+        return new self(\sprintf(
+            'A rate limit needs at least 1 attempt in at least 1 second, got %d in %d.',
+            $limit,
+            $windowSeconds
+        ));
+    }
+
+    public static function unprotectedRoute(string $methods, string $path): self
+    {
+        return new self(\sprintf(
+            'The route %s %s lets anyone in: that is allowed only for GET with a rate limit.',
+            $methods,
+            $path
+        ));
+    }
+
+    public static function paginationArgsMissing(): self
+    {
+        return new self('page and per_page are not valid integers: register the route with Pagination::ARGS.');
+    }
+
     public static function nestedTransaction(): self
     {
         return new self('A transaction is already open on this connection; MySQL would commit it silently.');

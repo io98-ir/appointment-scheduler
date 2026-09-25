@@ -16,7 +16,7 @@
 | جدول | ستون‌ها | ایندکس |
 |---|---|---|
 | `logs` | `level, channel, message, context JSON, request_id, created_at` | (level, created_at) |
-| `rate_limits` | `bucket, window_start, hits` | PK(bucket, window_start) |
+| `rate_limits` | `bucket` (HMAC، بدون PII)، `window_start, expires_at, hits`. بدون `created_at`: هر ردیف فقط یک پنجره عمر می‌کند | PK(bucket, window_start)، (expires_at) |
 
 > وضعیت Migration در option `{prefix}_db_versions` نگه داشته می‌شود (یک آرایه برای همه ماژول‌ها). جدول جدا لازم نیست.
 

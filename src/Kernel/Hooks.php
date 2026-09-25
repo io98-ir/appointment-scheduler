@@ -10,6 +10,9 @@ namespace Vaqtyar\Kernel;
  */
 final class Hooks
 {
+    /**
+     * @return non-empty-string
+     */
     public static function name(string $name): string
     {
         if (1 !== \preg_match('#^[a-z][a-z0-9_]*(/[a-z][a-z0-9_]*)*$#D', $name)) {

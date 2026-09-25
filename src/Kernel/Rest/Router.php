@@ -1,0 +1,189 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Vaqtyar\Kernel\Rest;
+
+use Vaqtyar\Kernel\Identity;
+use Vaqtyar\Kernel\KernelException;
+use Vaqtyar\Kernel\RequestId;
+use Vaqtyar\Shared\Domain\InvalidValue;
+
+/**
+ * Registers REST routes under the plugin's namespace and is the error
+ * boundary around them (architecture §8, §9): every exception becomes the
+ * error envelope, never a fatal error or a PHP message in the response.
+ *
+ *     {"code": "…", "message": "…", "data": {"status": 422, "details": {…}, "request_id": "…"}}
+ *
+ * Controllers are plain classes that call add() on rest_api_init; there is no
+ * base class to extend.
+ *
+ * Errors WordPress raises before our code runs (unknown route, a parameter
+ * that fails the args schema: 400 rest_invalid_param) keep its own shape,
+ * which has code, message and data.status too.
+ */
+final class Router
+{
+    /**
+     * The permission of a public read, e.g. availability. Accepted only on a
+     * GET route with a rate limit (implementation-notes §6).
+     */
+    public const ANYONE = '__return_true';
+
+    public function __construct(
+        private readonly RateLimiter $limiter,
+        private readonly RequestId $requestId,
+    ) {
+    }
+
+    /**
+     * Call on rest_api_init.
+     *
+     * @param non-falsy-string $path Relative to the namespace, e.g. "/services/(?P<id>\d+)".
+     * @param string $methods One of the WP_REST_Server constants, e.g. WP_REST_Server::READABLE.
+     * @param callable(\WP_REST_Request<array<string, mixed>>): mixed $callback Returns the
+     *     response data or a WP_REST_Response. Fails by throwing: ApiError,
+     *     InvalidValue, or anything else for a 500. A returned WP_Error is
+     *     wrapped in the envelope too.
+     * @param callable(\WP_REST_Request<array<string, mixed>>): bool $permission Runs before
+     *     the callback; only true lets the request through. Authorization is
+     *     checked again in the Application layer (architecture §12).
+     * @param array<string, array<string, mixed>> $args The args schema; WordPress validates it.
+     * @param RateLimit|null $rateLimit Counted per client address, after the permission check.
+     */
+    public function add(
+        string $path,
+        string $methods,
+        callable $callback,
+        callable $permission,
+        array $args = [],
+        ?RateLimit $rateLimit = null,
+    ): void {
+        if (self::ANYONE === $permission && ('GET' !== $methods || null === $rateLimit)) {
+            throw KernelException::unprotectedRoute($methods, $path);
+        }
+
+        \register_rest_route(Identity::REST_NAMESPACE, $path, [
+            'methods' => $methods,
+            'callback' => fn (\WP_REST_Request $request): \WP_REST_Response => $this->respond(
+                $request,
+                $callback,
+                null === $rateLimit ? null : [$rateLimit, "{$methods} {$path}"]
+            ),
+            'permission_callback' => fn (\WP_REST_Request $request): bool|\WP_Error => $this->authorize(
+                $request,
+                $permission
+            ),
+            'args' => $args,
+        ]);
+    }
+
+    /**
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     * @param callable(\WP_REST_Request<array<string, mixed>>): bool $permission
+     */
+    private function authorize(\WP_REST_Request $request, callable $permission): bool|\WP_Error
+    {
+        try {
+            if (true === $permission($request)) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            return $this->toError($e);
+        }
+
+        // 401 for a guest, 403 for a user without the capability, as WordPress does.
+        return $this->error(
+            \rest_authorization_required_code(),
+            'rest_forbidden',
+            \__('Sorry, you are not allowed to do that.', 'vaqtyar')
+        );
+    }
+
+    /**
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     * @param callable(\WP_REST_Request<array<string, mixed>>): mixed $callback
+     * @param array{RateLimit, string}|null $rateLimit The rule and the route it counts for.
+     */
+    private function respond(
+        \WP_REST_Request $request,
+        callable $callback,
+        ?array $rateLimit,
+    ): \WP_REST_Response {
+        try {
+            if (null !== $rateLimit) {
+                [$rule, $route] = $rateLimit;
+                $wait = $this->limiter->attempt(
+                    "rest:{$route}:ip:" . ClientIp::fromRequest()->rateLimitKey(),
+                    $rule
+                );
+                if ($wait > 0) {
+                    throw ApiError::tooManyRequests($wait);
+                }
+            }
+
+            $result = $callback($request);
+            if ($result instanceof \WP_Error) {
+                // Into the envelope too, rather than passed through without a request id.
+                $data = $result->get_error_data();
+                $status = \is_array($data) && \is_int($data['status'] ?? null) ? $data['status'] : 500;
+
+                return \rest_convert_error_to_response(
+                    $this->error($status, (string) $result->get_error_code(), $result->get_error_message())
+                );
+            }
+
+            return \rest_ensure_response($result);
+        } catch (\Throwable $e) {
+            $response = \rest_convert_error_to_response($this->toError($e));
+            if ($e instanceof ApiError && null !== $e->retryAfter) {
+                $response->header('Retry-After', (string) $e->retryAfter);
+            }
+
+            return $response;
+        }
+    }
+
+    private function toError(\Throwable $e): \WP_Error
+    {
+        if ($e instanceof ApiError) {
+            return $this->error($e->status, $e->errorCode, $e->getMessage(), $e->details);
+        }
+        if ($e instanceof InvalidValue) {
+            // The code tells the client which rule failed; the Domain has no
+            // translated text (principles §3).
+            return $this->error(422, $e->errorCode, \__('A value in the request is not valid.', 'vaqtyar'));
+        }
+
+        // A bug or a server condition. Its message may quote user data (a phone
+        // number, an email), which must not reach an unmasked log (principles §7),
+        // so the log gets where it happened under the request id and the client
+        // gets neither. The Logger (T0.9) masks PII and can keep the message.
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- the Logger comes in T0.9.
+        \error_log(\sprintf(
+            '%s: REST request %s failed: %s (code %s) in %s:%d',
+            Identity::NAME,
+            $this->requestId->value(),
+            $e::class,
+            (string) $e->getCode(),
+            $e->getFile(),
+            $e->getLine()
+        ));
+
+        return $this->error(500, 'internal_error', \__('Something went wrong on the server.', 'vaqtyar'));
+    }
+
+    /**
+     * @param array<string, mixed> $details
+     */
+    private function error(int $status, string $code, string $message, array $details = []): \WP_Error
+    {
+        return new \WP_Error($code, $message, [
+            'status' => $status,
+            // An object in JSON even when empty, so clients can rely on its type.
+            'details' => [] === $details ? new \stdClass() : $details,
+            'request_id' => $this->requestId->value(),
+        ]);
+    }
+}

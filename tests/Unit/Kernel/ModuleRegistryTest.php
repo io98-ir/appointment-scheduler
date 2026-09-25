@@ -35,4 +35,12 @@ final class ModuleRegistryTest extends TestCase
 
         $registry->add(new SampleModule('catalog'));
     }
+
+    public function testTheKernelIdIsReserved(): void
+    {
+        // The kernel records its own schema version under this id (Migrator).
+        $this->expectException(KernelException::class);
+
+        new ModuleRegistry(new SampleModule('kernel'));
+    }
 }

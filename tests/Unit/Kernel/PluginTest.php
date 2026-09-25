@@ -13,6 +13,11 @@ use Vaqtyar\Kernel\Database\DbException;
 use Vaqtyar\Kernel\Database\Transaction;
 use Vaqtyar\Kernel\Options;
 use Vaqtyar\Kernel\Plugin;
+use Vaqtyar\Kernel\RequestId;
+use Vaqtyar\Kernel\Rest\Router;
+use Vaqtyar\Kernel\Tables;
+use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\SystemClock;
 use Vaqtyar\Tests\Unit\Kernel\Database\FakesWpdb;
 use Vaqtyar\Tests\Unit\Kernel\Fixtures\RecordingMigration;
 use Vaqtyar\Tests\Unit\Kernel\Fixtures\SampleModule;
@@ -38,7 +43,11 @@ final class PluginTest extends TestCase
         });
         Functions\when('wp_cache_delete')->justReturn(true);
         $this->fakeWpdb();
-        $this->respondWith(static fn (string $sql): string|bool => \str_contains($sql, 'GET_LOCK') ? '1' : true);
+        $this->respondWith(static fn (string $sql): string|bool => match (true) {
+            \str_contains($sql, 'GET_LOCK') => '1',
+            \str_contains($sql, 'ENGINE') => 'InnoDB',
+            default => true,
+        });
     }
 
     protected function tearDown(): void
@@ -94,15 +103,28 @@ final class PluginTest extends TestCase
         (new Plugin('/path/to/plugin.php', '1.2.3'))->boot($catalog);
 
         self::assertSame(['catalog:register', 'catalog 1', 'catalog:boot'], $log->getArrayCopy());
-        self::assertSame(['catalog' => 1], $this->options[Options::key('db_versions')]);
+        self::assertSame(['kernel' => 1, 'catalog' => 1], $this->options[Options::key('db_versions')]);
     }
 
-    public function testBootWithoutMigrationsDoesNotTouchTheDatabase(): void
+    public function testTheKernelMigratesItsOwnTablesFirst(): void
     {
         (new Plugin('/path/to/plugin.php', '1.2.3'))->boot(new SampleModule('catalog'));
 
+        self::assertSame(['kernel' => 1], $this->options[Options::key('db_versions')]);
+        self::assertStringContainsString(
+            'CREATE TABLE IF NOT EXISTS `' . Tables::name('rate_limits') . '`',
+            \implode("
+", $this->queries)
+        );
+    }
+
+    public function testBootWithACurrentSchemaDoesNotTouchTheDatabase(): void
+    {
+        $this->options[Options::key('db_versions')] = ['kernel' => 1];
+
+        (new Plugin('/path/to/plugin.php', '1.2.3'))->boot(new SampleModule('catalog'));
+
         self::assertSame([], $this->queries);
-        self::assertSame([], $this->options);
     }
 
     public function testAFailedMigrationOnBootPausesThePluginInsteadOfBreakingTheSite(): void
@@ -151,7 +173,7 @@ final class PluginTest extends TestCase
         (new Plugin('/path/to/plugin.php', '1.2.3'))->activate($catalog);
 
         self::assertSame(['catalog 1'], $log->getArrayCopy());
-        self::assertSame(['catalog' => 1], $this->options[Options::key('db_versions')]);
+        self::assertSame(['kernel' => 1, 'catalog' => 1], $this->options[Options::key('db_versions')]);
     }
 
     public function testModulesGetTheSharedDatabaseServices(): void
@@ -164,5 +186,18 @@ final class PluginTest extends TestCase
         $container = $catalog->context->container;
         self::assertSame($container->get(Db::class), $container->get(Db::class));
         self::assertInstanceOf(Transaction::class, $container->get(Transaction::class));
+    }
+
+    public function testModulesGetTheSharedRestServices(): void
+    {
+        $catalog = new SampleModule('catalog');
+
+        (new Plugin('/path/to/plugin.php', '1.2.3'))->boot($catalog);
+
+        self::assertNotNull($catalog->context);
+        $container = $catalog->context->container;
+        self::assertSame($container->get(Router::class), $container->get(Router::class));
+        self::assertSame($container->get(RequestId::class), $container->get(RequestId::class));
+        self::assertInstanceOf(SystemClock::class, $container->get(Clock::class));
     }
 }
