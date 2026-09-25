@@ -16,6 +16,14 @@
 
 ---
 
+## 2026-09-25 — سشن 6 (ادامه) — CI برای T0.8
+**Taskها:** T0.8
+**انجام شد:** push `6513c8e` و بستن T0.8 در Tracker.
+**تأیید:** run 36149430470 ← هر 9 job سبز شدند. Integration روی {8.1، 8.4} × {6.6، latest} ← `OK (43 tests, 149 assertions)`، یعنی هر 24 تست جدید (Router، Pagination، RateLimiter روی MySQL واقعی) از اولین اجرا پاس شدند.
+**قدم بعدی:** T0.9.
+**Commitها:** `docs: close T0.8 in the tracker`
+---
+
 ## 2026-09-25 — سشن 6 — T0.8 REST base
 **Taskها:** T0.8
 **انجام شد:**
