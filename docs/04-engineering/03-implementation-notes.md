@@ -130,6 +130,18 @@
   - **Bidi:** ارقام فارسی در Unicode کلاس AN دارند. `/` چند رشته AN را به یک run تبدیل می‌کند ولی `-` این کار را نمی‌کند، پس «۲۰۲۶-۰۹-۲۴» برعکس نمایش داده می‌شود. به همین دلیل تاریخ عددی با ارقام فارسی همیشه `/` دارد.
   - تاریخ و زمانی که کنار هم در صفحه LTR با ارقام فارسی می‌آیند، ممکن است جابه‌جا نمایش داده شوند. رفع این مورد کار UI است (`<bdi>`). در متن ذخیره‌شده یا پیامک کاراکتر نامرئی نمی‌گذاریم.
 
+## 4.3 Catalog Domain (T1.1)
+- Entityها `final` با propertyهای `readonly` هستند و هر invariant در سازنده بررسی می‌شود. `id` تا ذخیره‌شدن `null` است. ویرایش یعنی ساختن نمونه جدید با همان id (Repository در T1.2). خطای ورودی `InvalidValue` با کد است (مثل `invalid_name`، `default_variant`، `duplicate_staff`) و Router آن را به 422 تبدیل می‌کند.
+- Value Objectهای ماژول: `Name` (یک خط، 1 تا 191 کاراکتر، بدون کاراکتر کنترلی، چون در پیامک و subject ایمیل می‌رود)، `Color` (فقط `#rrggbb` کوچک، چون در style inline نوشته می‌شود) و `Slug` (کلید گروه منبع و تقویم تعطیلات).
+- **`Service` تنها Aggregate چندبخشی است** (Variantها، `ServiceStaff` و `ResourceRequirement`) و یک‌جا ذخیره می‌شود. دقیقاً یک Variant پیش‌فرض دارد.
+- **معنای `ServiceStaff`:** ردیف بدون Variant یعنی پرسنل همه Variantها را ارائه می‌دهد، و ردیف با Variant یعنی فقط همان را. `Service::terms($variantId, $staffId)` مدت و قیمت را فیلد به فیلد از اولین منبعی که مقدار دارد برمی‌دارد: ردیف همان Variant، ردیف سراسری، خود Variant. اگر پرسنل تخصیص نداشته باشد، `null` برمی‌گرداند. **ردیف سراسری فقط وقتی قیمت یا مدت دارد که خدمت یک Variant داشته باشد** (`override_needs_variant`)، چون یک قیمت یا مدت برای ویزیت 30 و 60 دقیقه‌ای تفاوت Variantها را از بین می‌برد. PriceCalculator (T2.3، مرحله 2) و Availability (T1.4، مدت) از همین استفاده می‌کنند.
+- تخصیص فقط به Variant ذخیره‌شده (با id) ممکن است. پس UI اول Variant جدید را ذخیره می‌کند و بعد قیمت اختصاصی آن را.
+- **idها و `sort` در سازنده بررسی می‌شوند** (trait `GuardsStoredNumbers`: id مثبت، sort بین 0 و 1,000,000). wpdb حالت strict در MySQL را خاموش می‌کند، پس مقدار بیرون از بازه ستون بی‌صدا clamp می‌شود (id منفی ← 0) و خطا نمی‌دهد.
+- **Timezone شعبه** فقط از `DateTimeZone::listIdentifiers()` است (نام‌های منطقه‌ای و `UTC`). offset ثابت (`+03:30`، `Etc/GMT-3`، `EST`) و aliasهای قدیمی (`Iran`) رد می‌شوند.
+- کلاس منبع `BookableResource` نام دارد، چون `resource` در PHP کلمه soft-reserved است و PHPCompatibility آن را رد می‌کند.
+- سقف‌ها: مدت، Buffer و گام اسلات تا 1440 دقیقه. ظرفیت خدمت و منبع تا 1000. تعداد Extra و منبع لازم تا 100. متن‌های TEXT تا 65535 بایت (نه کاراکتر). قیمت منفی در Variant، Extra و قیمت اختصاصی پذیرفته نمی‌شود، چون تخفیف کار Price rule و کوپن است.
+- `search_name` پرسنل را Repository در T1.2 پر می‌کند. نرمال‌سازی فارسی با Customers (T2.7) مشترک است و وقتی دومین مصرف‌کننده آمد جدا می‌شود.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

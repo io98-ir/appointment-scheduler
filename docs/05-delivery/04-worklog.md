@@ -16,6 +16,44 @@
 
 ---
 
+## 2026-09-25 — سشن 8 — T1.1 Catalog Domain + Migration
+**Taskها:** T1.1
+**انجام شد:**
+- **Domain** (`src/Modules/Catalog/Domain`): `Location`، `Staff`، `BookableResource`، `ServiceCategory`، `Extra`، و Aggregate `Service` با `Variant`، `ServiceStaff` و `ResourceRequirement`. VOها: `Name`، `Color`، `Slug`، و enum `Status`. `Terms` خروجی `Service::terms()` است. trait `GuardsStoredNumbers` idها و `sort` را بررسی می‌کند.
+- **Migration:** `CreateCatalogTables` با 9 جدول، ثبت‌شده در `CatalogModule` و فایل اصلی.
+- **تست‌ها:** 72 تست Unit برای Catalog (invariantها، VOها و منطق override). Integration: `CreateCatalogTablesTest` (InnoDB بودن هر 9 جدول، اجرای دوباره، نوع ستون‌ها، ایندکس یکتا، قیمت بزرگ‌تر از 2^31).
+- **اسناد:** implementation-notes §4.3، یادداشت انحراف در data-model §2، نام‌گذاری migration در data-model §3 و docblock `Migration`، و `src/Modules/Catalog/README.md`.
+
+**تصمیم‌ها و فرض‌ها:**
+- **ستون `approval` از `services` حذف شد:** تأیید دستی یک Policy است (`policies`)، و دو منبع حقیقت نباید داشته باشیم.
+- **ستون‌های `meta` ساخته نشدند:** هنوز مصرف‌کننده‌ای ندارند (principles §0).
+- **`holiday_calendar` به‌جای `holiday_calendar_id`:** مقدارش Slug است، چون تقویم‌ها در option هستند.
+- **معنای `ServiceStaff`:** ردیف بدون Variant یعنی همه Variantها، و ردیف با Variant یعنی فقط همان. override فیلد به فیلد است: ردیف Variant، ردیف سراسری، خود Variant. **با بیش از یک Variant، ردیف سراسری قیمت یا مدت ندارد** (`override_needs_variant`).
+- **Timezone شعبه:** فقط نام‌های `DateTimeZone::listIdentifiers()`. offset ثابت، `Etc/*` و aliasها رد می‌شوند.
+- **سقف‌ها:** مدت، Buffer و گام تا 1440 دقیقه. ظرفیت تا 1000. تعداد تا 100. sort بین 0 و 1,000,000.
+- **`BookableResource` به‌جای `Resource`:** `resource` در PHP کلمه soft-reserved است.
+- **هنوز ساخته نشدند:** Repository، REST، capabilityها، `CatalogApi` و پر کردن `search_name`. همه در T1.2.
+- **نام migration بدون شماره است** (`CreateCatalogTables`)، مثل Kernel. سند (M001_…) با کد هماهنگ شد.
+
+**Review:** subagent `reviewer` چهار مورد واقعی پیدا کرد و هر چهار رفع شد:
+1. idها و `sort` بررسی نمی‌شدند، و MySQL بدون strict آن‌ها را clamp می‌کرد.
+2. override سراسری مدت و قیمت همه Variantها را یکی می‌کرد.
+3. `ALL_WITH_BC` مقدارهای `Etc/GMT-3` و `EST` را می‌پذیرفت.
+4. ایندکس `avatar_id` و `image_id` نبود.
+
+دو مورد جزئی هم رفع شد: ناهماهنگی نام migration در سند، و تست Integration ضعیف.
+
+**تأیید:**
+- `composer check` ← lint و PHPStan بدون خطا، deptrac با 0 violation، `OK (455 tests, 12011 assertions)`.
+- `composer test:rename` ← «OK. The renamed copy passed composer check and the JS checks».
+- پوشش Catalog Domain حدود 98% است. تنها خط پوشش‌نیافته `LogicException` غیرقابل‌دسترس در `defaultVariant()` است.
+- **Integration محلی اجرا نشد** (Docker نداریم) و بعد از push روی CI بررسی می‌شود.
+
+**مشکلات و باقیمانده:** یکی از اجراهای `test:rename` با exit 255 تمام شد. علت پاک‌کردن پوشه موقت روی Windows بود (`unlink` روی symlink پوشه‌های pnpm)، نه شکست بررسی‌ها. اجرای دوباره پیام OK داد.
+**قدم بعدی:** push و دیدن CI، سپس T1.2 (Repositoryها، REST CRUD و `CatalogApi`).
+**Commitها:** `feat(catalog): domain entities and catalog tables (T1.1)`
+---
+
 ## 2026-09-25 — سشن 7 (ادامه) — CI برای T0.11 و پایان M0
 **Taskها:** T0.11
 **انجام شد:** push `abab1d6`. اولین run (36176335757) فقط در 4 job Integration قرمز شد، و علتش در کد نبود: `actions/setup-node@v5` با دیدن `packageManager` در `package.json` خودکار cache pnpm را روشن می‌کند، ولی در job Integration pnpm نصب نیست. با `package-manager-cache: false` رفع شد (`6dab2b0`). تله در implementation-notes §7.1 ثبت شد.

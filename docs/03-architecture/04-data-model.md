@@ -23,15 +23,22 @@
 ### Catalog
 | جدول | ستون‌های کلیدی |
 |---|---|
-| `locations` | `name, timezone, address, phone, holiday_calendar_id, status, sort` |
-| `staff` | `wp_user_id NULL, location_id NULL, name, search_name, title, email, phone, color, avatar_id, bio, status, sort, meta` |
+| `locations` | `name, timezone, address, phone, holiday_calendar, status, sort`. `timezone` نام IANA است و `holiday_calendar` Slug تقویم تعطیلات |
+| `staff` | `wp_user_id NULL, location_id NULL, name, search_name, title, email, phone, color, avatar_id, bio, status, sort` |
 | `resources` | `location_id NULL, group_key, name, capacity, status` (اتاق، صندلی، دستگاه) |
 | `service_categories` | `name, color, sort` |
-| `services` | `category_id, name, description, image_id, capacity, approval, status, sort, meta` |
-| `service_variants` | `service_id, label, duration_min, price, buffer_before_min, buffer_after_min, slot_step_min NULL, is_default, sort` |
+| `services` | `category_id, name, description, image_id, capacity, status, sort` |
+| `service_variants` | `service_id, label, duration_min, price, buffer_before_min, buffer_after_min, slot_step_min NULL, is_default, sort, deleted_at` |
 | `service_staff` | `service_id, staff_id, variant_id NULL, price NULL, duration_min NULL` — قیمت و مدت اختصاصی پرسنل |
-| `service_resources` | `service_id, resource_group_key, quantity` |
+| `service_resources` | `service_id, resource_group_key, quantity`، UNIQUE(service_id, resource_group_key) |
 | `extras` | `service_id NULL, name, price, duration_min, max_qty, status` |
+
+> **تغییرات T1.1 نسبت به طرح اولیه:**
+> - ستون `approval` از `services` حذف شد، چون تأیید دستی یک Policy است (`policies` با `type = approval` و `service_id`) و دو منبع حقیقت نباید داشته باشیم.
+> - ستون‌های `meta` حذف شدند، چون هنوز مصرف‌کننده‌ای ندارند (principles §0). اگر لازم شدند، با Migration جدید اضافه می‌شوند.
+> - `holiday_calendar_id` به `holiday_calendar` تغییر نام داد و مقدارش Slug است (مثل `ir`)، چون تقویم‌ها در option هستند و id عددی ندارند.
+> - `service_variants` ستون `deleted_at` دارد، چون نوبت‌ها به Variant ارجاع می‌دهند.
+> - `service_staff` قید یکتا ندارد، چون `variant_id` برای تخصیص سراسری NULL است و UNIQUE در MySQL چند NULL را می‌پذیرد. یکتایی (پرسنل، Variant) قاعده Aggregate `Service` است.
 
 ### Scheduling
 | جدول | ستون‌های کلیدی | ایندکس |
@@ -80,7 +87,7 @@
 | `notification_log` | `dedup_key, template_id, channel, provider, recipient_masked, status, provider_ref, error, sent_at` | UNIQUE(dedup_key) |
 
 ## 3. Migration
-- هر ماژول Migrationهای خودش را دارد: کلاس‌های `Migrations/M001_Create….php` که interface `Kernel\Database\Migration` را پیاده می‌کنند و متد `up(Db)` آن‌ها **idempotent** است. ماژول آن‌ها را به ترتیب از `Module::migrations()` برمی‌گرداند. این لیست فقط اضافه‌شدنی است.
+- هر ماژول Migrationهای خودش را دارد: کلاس‌هایی در `Infrastructure/Migrations` با نامی که کارشان را می‌گوید (مثل `CreateCatalogTables`، بدون شماره، چون جایگاه در لیست همان نسخه است) که interface `Kernel\Database\Migration` را پیاده می‌کنند و متد `up(Db)` آن‌ها **idempotent** است. ماژول آن‌ها را به ترتیب از `Module::migrations()` برمی‌گرداند. این لیست فقط اضافه‌شدنی است.
 - `db_versions` برای هر ماژول تعداد migrationهای اجراشده را نگه می‌دارد، مثل `{"booking": 3}`.
 - Migrator یک `GET_LOCK` بدون انتظار می‌گیرد، migrationهای جدید را به ترتیب اجرا می‌کند و `db_versions` را بعد از هر کدام به‌روز می‌کند. در activation و در boot هر درخواستی که نسخه‌اش عقب باشد اجرا می‌شود. جزئیات در implementation-notes §5.
 - هیچ Schema دستی تغییر نمی‌کند. هر تغییر یک Migration جدید است، حتی قبل از انتشار (تا تست ارتقا واقعی باشد).

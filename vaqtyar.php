@@ -40,6 +40,7 @@ require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.ph
 // on none and boot and activation see the same list.
 $vaqtyar_modules = static function () {
     return array(
+        new \Vaqtyar\Modules\Catalog\CatalogModule(),
         new \Vaqtyar\Modules\Admin\AdminModule(),
     );
 };
