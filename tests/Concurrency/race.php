@@ -19,7 +19,7 @@ exit((static function (array $args): int {
     $requests = 30;
 
     [, $base, $seedJson, $mode] = $args + [null, null, null, null];
-    $seed = json_decode((string) $seedJson, true, 512, JSON_THROW_ON_ERROR);
+    $seed = json_decode((string) $seedJson, true);
     $route = is_array($seed) ? ($seed['route'] ?? null) : null;
     $nonce = is_array($seed) ? ($seed['nonce'] ?? null) : null;
     $staff = is_array($seed) ? ($seed['staff'] ?? null) : null;
@@ -27,7 +27,7 @@ exit((static function (array $args): int {
         !is_array($seed) || !is_string($route) || !is_string($nonce) || !is_array($staff)
         || !in_array($mode, ['staff', 'any'], true)
     ) {
-        fwrite(STDERR, "Usage: race.php <base url> <seed json> <staff|any>\n");
+        fwrite(STDERR, "Usage: race.php <base url> <seed json> <staff|any>\nGot seed: " . $seedJson . "\n");
         return 2;
     }
 

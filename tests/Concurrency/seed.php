@@ -2,7 +2,8 @@
 
 /**
  * Seeds one bookable slot for the concurrency job and prints what the
- * requests need, as JSON. Run with `wp eval-file` inside wp-env, so the
+ * requests need, as JSON on a line of its own after "SEED " (wp-env adds
+ * lines of its own to the output). Run with `wp eval-file` inside wp-env, so the
  * plugin is loaded; the job then races tests/Concurrency/race.php against
  * it (ADR-004).
  */
@@ -73,7 +74,7 @@ use Vaqtyar\Shared\SystemClock;
     ));
     $day = (new DateTimeImmutable('now', $zone))->modify('+2 days')->format('Y-m-d');
 
-    echo wp_json_encode([
+    echo "\nSEED " . wp_json_encode([
         'route' => '/' . Identity::REST_NAMESPACE . '/holds',
         'nonce' => wp_create_nonce('wp_rest'),
         'variant' => (int) $service->variants[0]->id,
@@ -82,5 +83,5 @@ use Vaqtyar\Shared\SystemClock;
         'start' => $day . 'T10:00:00+03:30',
         'holds_table' => Tables::name('holds'),
         'occupancies_table' => Tables::name('occupancies'),
-    ]);
+    ]) . "\n";
 })();

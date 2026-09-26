@@ -171,7 +171,10 @@ jobs:
         run: |
           seed() {
             npx --yes @wordpress/env@11 run cli --env-cwd=wp-content/plugins/${{ github.event.repository.name }} \
-              wp eval-file tests/Concurrency/seed.php 2>/dev/null | tail -n 1
+              wp eval-file tests/Concurrency/seed.php > seed.log 2>&1 || { cat seed.log >&2; return 1; }
+            json=$(sed -n 's/^SEED //p' seed.log)
+            if [ -z "$json" ]; then cat seed.log >&2; return 1; fi
+            echo "$json"
           }
           php tests/Concurrency/race.php http://localhost:8888 "$(seed)" staff
           php tests/Concurrency/race.php http://localhost:8888 "$(seed)" any
