@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Booking\Domain;
 
+use Vaqtyar\Modules\Booking\Domain\Pricing\PriceQuote;
 use Vaqtyar\Shared\Domain\InvalidValue;
 
 /**
@@ -28,6 +29,7 @@ final class Hold
      * @param int $to the end plus the buffer after.
      * @param list<int> $extraIds an id once per unit.
      * @param list<int> $resourceIds
+     * @param PriceQuote $quote the price when placed, kept with the booking.
      */
     public function __construct(
         public readonly int $locationId,
@@ -42,6 +44,7 @@ final class Hold
         public readonly array $resourceIds,
         public readonly int $createdAt,
         public readonly int $expiresAt,
+        public readonly PriceQuote $quote,
     ) {
         if (!($from <= $start && $start < $end && $end <= $to)) {
             throw new InvalidValue('invalid_interval', 'A hold must end after it starts, inside its buffers.');

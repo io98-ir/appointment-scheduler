@@ -5,18 +5,31 @@ declare(strict_types=1);
 namespace Vaqtyar\Tests\Unit\Modules\Booking\Application;
 
 use PHPUnit\Framework\TestCase;
+use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldRepository;
 use Vaqtyar\Modules\Booking\Application\HoldService;
+use Vaqtyar\Modules\Booking\Application\PricingReader;
 use Vaqtyar\Modules\Booking\Application\ResourceLocker;
 use Vaqtyar\Modules\Booking\Application\StoredHold;
 use Vaqtyar\Modules\Booking\Domain\Hold;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
+use Vaqtyar\Modules\Booking\Domain\Pricing\Coupon;
+use Vaqtyar\Modules\Booking\Domain\Pricing\CouponType;
+use Vaqtyar\Modules\Booking\Domain\Pricing\PriceLine;
+use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
+use Vaqtyar\Modules\Catalog\Contracts\ExtraOffer;
+use Vaqtyar\Modules\Catalog\Contracts\LocationInfo;
+use Vaqtyar\Modules\Catalog\Contracts\Offer;
+use Vaqtyar\Modules\Catalog\Contracts\StaffOffer;
 use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
 use Vaqtyar\Modules\Scheduling\Contracts\Claim;
 use Vaqtyar\Modules\Scheduling\Contracts\ClaimScope;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Shared\Domain\Conflict;
+use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\Money;
 use Vaqtyar\Shared\Domain\NotFound;
+use Vaqtyar\Shared\Domain\Rounding;
 use Vaqtyar\Shared\Domain\TransactionRunner;
 use Vaqtyar\Tests\Fixtures\FixedClock;
 
@@ -82,7 +95,35 @@ final class HoldServiceTest extends TestCase
             ]
         );
         self::assertSame([1_800_000_000, 1_800_000_600], [$hold->createdAt, $hold->expiresAt]);
+        // Staff member 3's own price, one extra, a party of two, to whole thousand tomans.
+        self::assertSame(
+            [[PriceLine::BASE, 1_200_000], [PriceLine::EXTRA, 150_000], [PriceLine::PARTY, 1_350_000]],
+            \array_map(static fn (PriceLine $line): array => [$line->code, $line->amount->amount], $hold->quote->lines)
+        );
+        self::assertSame(2_700_000, $hold->quote->total()->amount);
         self::assertArrayHasKey(HoldToken::fromString($placed->token)->hash(), $this->stored);
+    }
+
+    public function testACouponDiscountsTheQuote(): void
+    {
+        $placed = $this->service()->place(self::query(), self::START, 'NOWRUZ');
+
+        $coupon = $placed->hold->quote->lines[3] ?? null;
+        self::assertNotNull($coupon);
+        self::assertSame([PriceLine::COUPON, -270_000, 8], [$coupon->code, $coupon->amount->amount, $coupon->ref]);
+        self::assertSame(2_430_000, $placed->hold->quote->total()->amount);
+    }
+
+    public function testAnUnknownCouponRefusesTheHoldAndWritesNothing(): void
+    {
+        try {
+            $this->service()->place(self::query(), self::START, 'NOPE');
+            self::fail('No exception.');
+        } catch (InvalidValue $e) {
+            self::assertSame('coupon_not_found', $e->errorCode);
+        }
+        self::assertSame([], $this->stored);
+        self::assertContains('rollback', $this->log);
     }
 
     public function testATakenSlotIsAConflictAndWritesNothing(): void
@@ -104,6 +145,19 @@ final class HoldServiceTest extends TestCase
 
         $this->claim = new Claim(3, self::START, self::START + 3600, self::START - 600, self::START + 7201, [21]);
         $this->assertConflict();
+    }
+
+    public function testAServiceGoneBeforeItIsPricedIsAConflict(): void
+    {
+        foreach ([new AvailabilityQuery(6, 1), new AvailabilityQuery(5, 2)] as $query) {
+            try {
+                $this->service()->place($query, self::START);
+                self::fail('No exception.');
+            } catch (Conflict $e) {
+                self::assertSame('slot_taken', $e->errorCode);
+            }
+        }
+        self::assertSame([], $this->stored);
     }
 
     public function testExtendLocksThenRereadsAndMovesTheExpiry(): void
@@ -239,6 +293,7 @@ final class HoldServiceTest extends TestCase
 
         return new HoldService(
             $slots,
+            new HoldPricing($this->catalog(), $this->pricingReader(), 10_000, Rounding::HalfUp),
             $locker,
             $this->repository(),
             $transaction,
@@ -247,6 +302,43 @@ final class HoldServiceTest extends TestCase
                 $this->record('changed');
             }
         );
+    }
+
+    private function catalog(): CatalogApi
+    {
+        return new class () implements CatalogApi {
+            public function offer(int $variantId): ?Offer
+            {
+                // Variant 6 was deleted between the claim and the price.
+                return 6 === $variantId ? null : new Offer(7, $variantId, 3, 10, 0, null, [
+                    new StaffOffer(4, 1, 60, Money::ofRial(1_000_000)),
+                    new StaffOffer(3, 1, 60, Money::ofRial(1_200_000)),
+                ], [], [new ExtraOffer(40, 15, Money::ofRial(150_000), 2)]);
+            }
+
+            public function location(int $locationId): ?LocationInfo
+            {
+                return 2 === $locationId ? null : new LocationInfo($locationId, new \DateTimeZone('Asia/Tehran'), null);
+            }
+        };
+    }
+
+    private function pricingReader(): PricingReader
+    {
+        return new class () implements PricingReader {
+            /**
+             * @return list<\Vaqtyar\Modules\Booking\Domain\Pricing\TimeRule>
+             */
+            public function timeRules(int $serviceId): array
+            {
+                return [];
+            }
+
+            public function coupon(string $code): ?Coupon
+            {
+                return 'NOWRUZ' === $code ? new Coupon(8, $code, CouponType::Percent, 10, true) : null;
+            }
+        };
     }
 
     private function repository(): HoldRepository

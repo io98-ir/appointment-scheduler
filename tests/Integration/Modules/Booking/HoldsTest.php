@@ -55,7 +55,15 @@ final class HoldsTest extends TestCase
 
     private const TEHRAN = 'Asia/Tehran';
 
-    private const OWN_TABLES = ['schedule_rules', 'occupancies', 'holds', 'resource_day_locks', 'rate_limits'];
+    private const OWN_TABLES = [
+        'schedule_rules',
+        'occupancies',
+        'holds',
+        'resource_day_locks',
+        'rate_limits',
+        'price_rules',
+        'coupons',
+    ];
 
     private int $variant;
 
@@ -125,6 +133,67 @@ final class HoldsTest extends TestCase
             \array_values(\array_diff($before, ['09:30', '10:00', '10:30'])),
             $this->starts($day)
         );
+    }
+
+    /**
+     * A morning rule of the price_rules table prices the hold, and the quote
+     * is kept with it (T2.3). A broken rule row is skipped, not fatal.
+     */
+    public function testTheHoldIsPricedWithTheTimeRulesAndKeepsTheQuote(): void
+    {
+        $db = $this->realDb();
+        $rule = static fn (string $config, int $priority): int => $db->insert(Tables::name('price_rules'), [
+            'type' => 'time',
+            'service_id' => null,
+            'config' => $config,
+            'priority' => $priority,
+            'status' => 'active',
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+        $rule('{"weekdays": [], "from": "25:00", "to": "12:00", "percent": 50}', 9);
+        $morning = $rule('{"weekdays": [], "from": "09:00", "to": "12:00", "percent": 20}', 5);
+
+        $response = $this->post(self::inDays(2), '10:00');
+
+        $irr = static fn (int $amount): array => ['amount' => $amount, 'currency' => 'IRR'];
+        $expected = [
+            'total' => $irr(1_200_000),
+            'lines' => [
+                ['code' => 'base', 'amount' => $irr(1_000_000), 'ref' => null, 'qty' => 1],
+                ['code' => 'time_rule', 'amount' => $irr(200_000), 'ref' => $morning, 'qty' => 1],
+            ],
+        ];
+        self::assertSame(201, $response['status'], (string) \wp_json_encode($response['body']));
+        self::assertSame($expected, $response['body']['price'] ?? null);
+        $stored = $db->getVar('SELECT price_quote FROM %i', Tables::name('holds'));
+        self::assertSame($expected, \json_decode((string) $stored, true));
+    }
+
+    /**
+     * The code is found whatever its case, and its discount is a line of
+     * the quote; an unknown code refuses the hold.
+     */
+    public function testACouponFromTheDatabaseDiscountsTheHold(): void
+    {
+        $coupon = $this->realDb()->insert(Tables::name('coupons'), [
+            'code' => 'NOWRUZ',
+            'type' => 'percent',
+            'value' => 10,
+            'status' => 'active',
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+
+        $unknown = $this->post(self::inDays(2), '10:00', true, 'NOPE');
+        $response = $this->post(self::inDays(2), '10:00', true, 'nowruz');
+
+        self::assertSame([422, 'coupon_not_found'], [$unknown['status'], $unknown['body']['code'] ?? null]);
+        self::assertSame(201, $response['status'], (string) \wp_json_encode($response['body']));
+        /** @var array{total: array{amount: int}, lines: list<array{code: string, ref: ?int}>} $price */
+        $price = $response['body']['price'] ?? [];
+        self::assertSame(900_000, $price['total']['amount']);
+        self::assertSame(['coupon', $coupon], [$price['lines'][1]['code'], $price['lines'][1]['ref']]);
     }
 
     public function testTheSameStartTwiceIsAConflict(): void
@@ -202,14 +271,14 @@ final class HoldsTest extends TestCase
     /**
      * @return array{status: int, body: array<string, mixed>}
      */
-    private function post(LocalDate $day, string $time, bool $nonce = true): array
+    private function post(LocalDate $day, string $time, bool $nonce = true, ?string $coupon = null): array
     {
         $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . '/holds');
         $request->set_body_params([
             'variant' => $this->variant,
             'location' => $this->location,
             'start' => $day->toString() . 'T' . $time . ':00+03:30',
-        ]);
+        ] + (null === $coupon ? [] : ['coupon' => $coupon]));
         if ($nonce) {
             $request->set_header('X-WP-Nonce', \wp_create_nonce('wp_rest'));
         }

@@ -10,14 +10,19 @@ use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
+use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldService;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateBookingTables;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateOccupanciesTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateResourceDayLocksTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbHoldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbOccupancyReader;
+use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPricingReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbResourceLocker;
+use Vaqtyar\Modules\Booking\Infrastructure\PricingSettings;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
+use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Shared\Domain\Clock;
@@ -48,6 +53,12 @@ final class BookingModule implements Module
             HoldService::class,
             static fn (Container $c) => new HoldService(
                 $c->get(SlotClaims::class),
+                new HoldPricing(
+                    $c->get(CatalogApi::class),
+                    new WpdbPricingReader($c->get(Db::class)),
+                    $c->get(Settings::class)->get(PricingSettings::class)->roundingStep,
+                    $c->get(Settings::class)->get(PricingSettings::class)->rounding
+                ),
                 new WpdbResourceLocker($c->get(Db::class)),
                 new WpdbHoldRepository($c->get(Db::class)),
                 $c->get(TransactionRunner::class),

@@ -88,7 +88,9 @@
 > **تغییرات T2.2 نسبت به طرح اولیه:**
 > - `resource_day_locks` در ماژول Booking ساخته شد (migration `CreateResourceDayLocksTable`)، چون `ResourceLocker` تنها کاربر آن است. ستون `local_date` به `day` تغییر کرد و **تاریخ UTC** است: هر دو اشغال هم‌پوشان یک کلید حداقل یک روز UTC مشترک دارند، پس Locker به timezone نیاز ندارد.
 > - جدول `hold_resources` و `appointment_resources` (booking-engine §3) ساخته نمی‌شوند: همان ردیف‌های `occupancies` با `owner_type = hold` این نقش را دارند.
-> - `holds.price_quote` تا T2.3 برابر `{}` است.
+> - `holds.price_quote` همان `PriceQuote::toArray()` است: `{total, lines}` (T2.3).
+>
+> **T2.3 (`price_rules`):** فعلاً فقط `type = time` خوانده می‌شود. `service_id` برابر NULL یعنی سراسری است و ترتیب `priority DESC, id` است. `config` برابر `{"weekdays": [0-6], "from": "HH:MM", "to": "HH:MM", "valid_from": "YYYY-MM-DD"|null, "valid_to": "YYYY-MM-DD"|null, "percent": int}` است (روز هفته 0 = شنبه، `to` انحصاری، درصد از -100 تا +1000 و نه صفر). ردیفی که parse نشود نادیده گرفته می‌شود.
 
 ### Customers
 | جدول | ستون‌های کلیدی | ایندکس |

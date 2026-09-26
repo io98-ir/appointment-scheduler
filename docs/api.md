@@ -60,8 +60,9 @@
 | پارامتر | نوع | توضیح |
 |---|---|---|
 | `variant`، `location`، `staff`، `extras[]`، `party_size` | | مثل `GET /availability`، با همان خطاها |
+| `coupon` | string، 1 تا 64 کاراکتر | کد تخفیف، بدون حساسیت به بزرگی و کوچکی حروف. کد ناموجود: 422 `coupon_not_found`. غیرفعال، بیرون از بازه، مال خدمت دیگر، یا تمام‌شده: 422 `coupon_inactive`، `coupon_expired`، `coupon_not_applicable`، `coupon_used_up` |
 | `start` | ISO-8601 با offset، الزامی | یکی از `start`های `GET /availability`، مثل `2026-10-03T10:00:00+03:30`. بدون offset: 422 `invalid_start` |
 
-- **201:** `{token, expires_at, staff_id, start, end}`. زمان‌ها با offset همان `start` درخواست هستند. `token` فقط همین‌جا برمی‌گردد (فقط هش آن ذخیره می‌شود) و برای تأیید نوبت (T2.4) لازم است.
+- **201:** `{token, expires_at, staff_id, start, end, price}`. زمان‌ها با offset همان `start` درخواست هستند. `price` برابر `{total, lines: [{code, amount, ref, qty}]}` است؛ `code` یکی از `base`، `time_rule`، `extra`، `party`، `coupon` و `rounding` است و `ref` شناسه Extra، Price rule یا کوپن. تخفیف منفی است. این قیمت با Hold ذخیره می‌شود و تغییر تعرفه بعد از آن اثری ندارد. `token` فقط همین‌جا برمی‌گردد (فقط هش آن ذخیره می‌شود) و برای تأیید نوبت (T2.4) لازم است.
 - **409 `slot_taken`:** شروع دیگر آزاد نیست، روی شبکه اسلات نیست، یا بیرون از بازه رزرو است. کلاینت باید availability را دوباره بگیرد.
 - Hold بعد از 10 دقیقه منقضی می‌شود. تمدید (موقع رفتن به درگاه) هر بار 10 دقیقه است و از 20 دقیقه بعد از ساخت جلوتر نمی‌رود.

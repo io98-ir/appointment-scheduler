@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Booking\Domain\Hold;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
 use Vaqtyar\Modules\Booking\Domain\LockKey;
+use Vaqtyar\Modules\Booking\Domain\Pricing\PriceQuote;
 use Vaqtyar\Shared\Domain\InvalidValue;
 
 final class HoldTest extends TestCase
@@ -82,6 +83,20 @@ final class HoldTest extends TestCase
         int $expiresAt = self::T - 3600 + 600,
         array $resourceIds = [],
     ): Hold {
-        return new Hold(1, 5, 3, self::T, $end, $from, $to, $partySize, [], $resourceIds, self::T - 3600, $expiresAt);
+        return new Hold(
+            1,
+            5,
+            3,
+            self::T,
+            $end,
+            $from,
+            $to,
+            $partySize,
+            [],
+            $resourceIds,
+            self::T - 3600,
+            $expiresAt,
+            PriceQuote::empty()
+        );
     }
 }

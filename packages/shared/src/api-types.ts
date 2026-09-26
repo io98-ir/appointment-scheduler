@@ -169,6 +169,22 @@ export interface AvailabilityFirst {
 	slots: AvailabilitySlot[];
 }
 
+export type PriceLineCode =
+	'base' | 'time_rule' | 'extra' | 'party' | 'coupon' | 'rounding';
+
+export interface PriceLine {
+	code: PriceLineCode;
+	amount: Money;
+	/** The extra, price rule or coupon the line comes from. */
+	ref: number | null;
+	qty: number;
+}
+
+export interface PriceQuote {
+	total: Money;
+	lines: PriceLine[];
+}
+
 /** POST /holds, 201 (docs/api.md). */
 export interface PlacedHold {
 	token: string;
@@ -176,4 +192,5 @@ export interface PlacedHold {
 	staff_id: number;
 	start: string;
 	end: string;
+	price: PriceQuote;
 }

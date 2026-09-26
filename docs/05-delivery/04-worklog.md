@@ -16,6 +16,25 @@
 
 ---
 
+## 2026-09-27 — سشن 11 — T2.3 PriceCalculator
+**Taskها:** T2.3
+**انجام شد:**
+- `Booking\Domain\Pricing`: `PriceCalculator`، `PriceQuote`، `PriceLine`، `PriceContext`، `ChosenExtra`، و Ruleهای `BasePrice`، `TimePricing` (`TimeRule`)، `ExtrasPrice`، `PartySize`، `CouponDiscount` (`Coupon`، `CouponType`) و `RoundTotal`.
+- `HoldPricing` (Application) و port `PricingReader` با `WpdbPricingReader` (time ruleها از `price_rules`، کوپن از `coupons`)، و `PricingSettings` (گام و حالت گرد کردن Total).
+- Hold قیمت را snapshot می‌کند (`holds.price_quote`)، و `POST /holds` پارامتر `coupon` می‌گیرد و `price` برمی‌گرداند. نوع‌های TS `PriceQuote` و `PriceLine`.
+- تست‌ها: جدول Unit با 16 سناریو، کوپن‌های غیرقابل‌استفاده، قانون‌های نامعتبر، و HoldService با قیمت و کوپن. Integration برای time rule از DB، snapshot، و کوپن (بدون حساسیت به حروف).
+**تصمیم‌ها و فرض‌ها:**
+- قیمت اختصاصی پرسنل همان `StaffOffer::price` است که Catalog حل کرده است، پس مراحل 1 و 2 یک خط `base` هستند.
+- از time ruleها فقط اولین قانون منطبق اعمال می‌شود و درصد فقط روی قیمت پایه است. درصد تخفیف کوپن رو به بالا گرد می‌شود (به نفع مشتری).
+- Party size شامل Extraها هم ضرب می‌شود.
+- یافته reviewer: کد کوپن در ابتدا به هیچ مسیر production وصل نبود. مسیر کامل شد: پارامتر `coupon` در REST ← `PricingReader::coupon()` ← `PriceContext`. شمردن `used` در T2.4 است.
+**تأیید:** `composer check` ← OK (661 tests). `composer test:rename` ← OK. `pnpm lint`، `pnpm test` ← OK. Integration روی CI بعد از push.
+**مشکلات و باقیمانده:** —
+**قدم بعدی:** T2.4.
+**Commitها:** `feat(booking): price calculator and hold price quote (T2.3)`
+
+---
+
 ## 2026-09-27 — سشن 11 — T2.2 Locker + Hold + تست همزمانی
 **Taskها:** T2.2
 **انجام شد:**

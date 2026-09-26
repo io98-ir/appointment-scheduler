@@ -39,8 +39,7 @@ final class WpdbHoldRepository implements HoldRepository
             'end_at' => self::utc($hold->end),
             'party_size' => $hold->partySize,
             'extras' => self::json($hold->extraIds),
-            // The price comes with PriceCalculator (T2.3).
-            'price_quote' => '{}',
+            'price_quote' => (string) \json_encode($hold->quote->toArray(), \JSON_THROW_ON_ERROR),
             'expires_at' => $expires,
             'created_at' => $created,
             'updated_at' => $created,

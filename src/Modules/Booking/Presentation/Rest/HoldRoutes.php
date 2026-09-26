@@ -33,6 +33,7 @@ final class HoldRoutes
             'default' => [],
         ],
         'party_size' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 1000, 'default' => 1],
+        'coupon' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
     ];
 
     /**
@@ -61,6 +62,7 @@ final class HoldRoutes
     {
         $start = self::start($request->get_param('start'));
         $staff = $request->get_param('staff');
+        $coupon = $request->get_param('coupon');
         $placed = ($this->service)()->place(
             new AvailabilityQuery(
                 self::int($request->get_param('variant')),
@@ -69,7 +71,8 @@ final class HoldRoutes
                 \array_map(self::int(...), \array_values((array) $request->get_param('extras'))),
                 self::int($request->get_param('party_size'))
             ),
-            $start->getTimestamp()
+            $start->getTimestamp(),
+            \is_string($coupon) ? \trim($coupon) : null
         );
         $zone = $start->getTimezone();
         $time = static fn (int $timestamp): string => (new DateTimeImmutable('@' . $timestamp))
@@ -82,6 +85,7 @@ final class HoldRoutes
             'staff_id' => $placed->hold->staffId,
             'start' => $time($placed->hold->start),
             'end' => $time($placed->hold->end),
+            'price' => $placed->hold->quote->toArray(),
         ], 201);
     }
 

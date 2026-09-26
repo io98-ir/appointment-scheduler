@@ -246,6 +246,15 @@
 - `AvailabilityQuery` به `Scheduling\Contracts` منتقل شد، چون Booking از آن استفاده می‌کند.
 - port `Shared\Domain\TransactionRunner` (پیاده‌سازی: `Kernel\Database\Transaction`) برای Application است که به Kernel دسترسی ندارد.
 
+## 4.10 قیمت (T2.3)
+- **Domain:** `Booking\Domain\Pricing`: `PriceCalculator::standard()` مراحل booking-engine §5 را به ترتیب اجرا می‌کند: `BasePrice` (قیمت Variant یا قیمت اختصاصی پرسنل، که Catalog در `StaffOffer::price` حل کرده است)، `TimePricing`، `ExtrasPrice`، `PartySize`، `CouponDiscount`، `RoundTotal`. هر مرحله یک `PriceRule` است و خط (`PriceLine`) اضافه می‌کند. جمع خط‌ها Total است.
+- **گرد کردن‌ها صریح‌اند:** درصد Time rule با HalfUp. تخفیف درصدی کوپن با **Up**، یعنی به نفع مشتری. Total با گام و حالت `PricingSettings` (پیش‌فرض گام 1 ریال، یعنی بدون گرد کردن؛ UI در T6.1).
+- **Time rule:** فقط **اولین** قانون منطبق به ترتیب اولویت اعمال می‌شود تا قانون‌های هم‌پوشان ناخواسته روی هم جمع نشوند. درصد فقط روی قیمت پایه است. زمان شروع در timezone شعبه سنجیده می‌شود.
+- **Party size:** بقیه افراد گروه جمع تا آن مرحله (شامل Extraها) را یک‌بار دیگر می‌پردازند.
+- **کوپن:** اگر قابل استفاده نباشد، رد می‌شود (`coupon_inactive`، `coupon_expired`، `coupon_not_applicable`، `coupon_used_up`) و بی‌صدا نادیده گرفته نمی‌شود. تخفیف هیچ‌وقت از Total بیشتر نمی‌شود. کوپن با پارامتر `coupon` در `POST /holds` از `PricingReader::coupon()` خوانده می‌شود (یافته reviewer: بدون آن کد کوپن به هیچ مسیری وصل نبود). **شمردن `used` هنوز نیست:** T2.4 باید موقع تأیید، کوپن را با `FOR UPDATE` دوباره بخواند، `assertUsable` را دوباره اجرا کند و `used` را در همان تراکنش یکی زیاد کند.
+- **Total منفی** (که فقط از Rule یک Add-on ممکن است) با `negative_price` رد می‌شود.
+- **`HoldPricing`** (Application) داخل تراکنش Hold و **بعد از قفل‌ها** اجرا می‌شود، پس کاتالوگ و price_rules از همان snapshot خوانده می‌شوند. اگر پرسنل یا Variant بین claim و قیمت‌گذاری ناپدید شود: `slot_taken`.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

@@ -35,6 +35,7 @@ final class HoldService
      */
     public function __construct(
         private readonly SlotClaims $slots,
+        private readonly HoldPricing $pricing,
         private readonly ResourceLocker $locker,
         private readonly HoldRepository $holds,
         private readonly TransactionRunner $transaction,
@@ -45,10 +46,11 @@ final class HoldService
 
     /**
      * @param int $start UTC seconds.
+     * @param ?string $couponCode as the customer typed it.
      * @throws Conflict slot_taken when the start is not free any more, or
      *     was never offered.
      */
-    public function place(AvailabilityQuery $query, int $start): PlacedHold
+    public function place(AvailabilityQuery $query, int $start, ?string $couponCode = null): PlacedHold
     {
         // Outside the transaction: a read before the locks would fix the
         // snapshot the re-check reads (REPEATABLE READ).
@@ -56,7 +58,7 @@ final class HoldService
         $keys = LockKey::sorted($scope->staffIds, $scope->resourceIds);
         $token = HoldToken::generate();
 
-        $placed = $this->transaction->run(function () use ($query, $start, $scope, $keys, $token): PlacedHold {
+        $work = function () use ($query, $start, $scope, $keys, $token, $couponCode): PlacedHold {
             $this->locker->lock($keys, $scope->from, $scope->to);
             $claim = $this->slots->claim($query, $start);
             if (null === $claim || !self::within($claim, $keys, $scope->from, $scope->to)) {
@@ -75,12 +77,14 @@ final class HoldService
                 $query->extraIds,
                 $claim->resourceIds,
                 $now,
-                $now + Hold::TTL_SECONDS
+                $now + Hold::TTL_SECONDS,
+                $this->pricing->quote($query, $claim, $now, $couponCode)
             );
             $id = $this->holds->add($hold, $token->hash());
 
             return new PlacedHold($id, $token->value, $hold);
-        });
+        };
+        $placed = $this->transaction->run($work);
         ($this->changed)();
 
         return $placed;
