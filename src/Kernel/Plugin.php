@@ -17,6 +17,7 @@ use Vaqtyar\Kernel\Settings\GeneralSettings;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Shared\DateFormatter;
 use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\Domain\TransactionRunner;
 use Vaqtyar\Shared\Domain\Jalali;
 use Vaqtyar\Shared\SystemClock;
 
@@ -48,6 +49,10 @@ final class Plugin
         $container->singleton(
             Transaction::class,
             static fn (Container $c): Transaction => new Transaction($c->get(Db::class))
+        );
+        $container->singleton(
+            TransactionRunner::class,
+            static fn (Container $c): TransactionRunner => $c->get(Transaction::class)
         );
         $container->singleton(Clock::class, static fn (): Clock => new SystemClock());
         $container->singleton(RequestId::class, static fn (): RequestId => new RequestId());

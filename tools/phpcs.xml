@@ -33,9 +33,13 @@
         -->
         <exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
     </rule>
-    <!-- tools/ holds CLI dev scripts: never shipped, never rendered as HTML. -->
+    <!--
+        tools/ and tests/Concurrency/ hold CLI scripts: never shipped, never
+        rendered as HTML.
+    -->
     <rule ref="WordPress.Security.EscapeOutput">
         <exclude-pattern>*/tools/*</exclude-pattern>
+        <exclude-pattern>*/tests/Concurrency/*</exclude-pattern>
     </rule>
     <rule ref="WordPress.DB.PreparedSQL"/>
     <rule ref="WordPress.DB.PreparedSQLPlaceholders"/>

@@ -7,6 +7,8 @@ namespace Vaqtyar\Modules\Booking\Infrastructure\Persistence;
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Kernel\Tables;
+use Vaqtyar\Modules\Booking\Domain\Hold;
+use Vaqtyar\Modules\Booking\Domain\LockKey;
 use Vaqtyar\Modules\Scheduling\Contracts\BusySpan;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Shared\Domain\Clock;
@@ -25,7 +27,7 @@ final class WpdbOccupancyReader implements OccupancyReader
      * longer one). It bounds start_at from below, so the index range of each
      * key is [from - MAX_SPAN, to) and not the key's whole history.
      */
-    public const MAX_SPAN_SECONDS = 7 * 86_400;
+    public const MAX_SPAN_SECONDS = Hold::MAX_SPAN_SECONDS;
 
     public function __construct(private readonly Db $db, private readonly Clock $clock)
     {
@@ -38,10 +40,7 @@ final class WpdbOccupancyReader implements OccupancyReader
      */
     public function overlapping(array $staffIds, array $resourceIds, int $from, int $to): array
     {
-        $keys = [
-            ...\array_map(static fn (int $id): string => 'staff:' . $id, $staffIds),
-            ...\array_map(static fn (int $id): string => 'res:' . $id, $resourceIds),
-        ];
+        $keys = LockKey::sorted($staffIds, $resourceIds);
         if ([] === $keys || $from >= $to) {
             return [];
         }

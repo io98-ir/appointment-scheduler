@@ -9,7 +9,7 @@ use DateTimeZone;
 use Vaqtyar\Kernel\Rest\RateLimit;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Scheduling\Application\Availability;
-use Vaqtyar\Modules\Scheduling\Application\AvailabilityQuery;
+use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
 use Vaqtyar\Modules\Scheduling\Application\AvailabilityService;
 use Vaqtyar\Modules\Scheduling\Application\DayAvailability;
 use Vaqtyar\Modules\Scheduling\Domain\Availability\Slot;

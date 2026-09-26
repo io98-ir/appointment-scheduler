@@ -88,15 +88,62 @@ final class AvailabilityRandomizedTest extends TestCase
             }
 
             $expected = self::bruteForce($request, $now, $staff, $resources);
-            $actual = self::flatten((new AvailabilityCalculator())->slots(
-                $request,
-                self::day(),
-                new \DateTimeImmutable('@' . $now),
-                $staff,
-                $resources
-            ));
+            $calculator = new AvailabilityCalculator();
+            $slots = $calculator->slots($request, self::day(), new \DateTimeImmutable('@' . $now), $staff, $resources);
+            $actual = self::flatten($slots);
 
             self::assertSame($expected, $actual, "Seed {$seed}");
+            self::assertPicksMatch($calculator, $request, $now, $staff, $resources, $slots, "Seed {$seed}");
+        }
+    }
+
+    /**
+     * pick() at every minute of the day agrees with slots(): a start is
+     * picked exactly when it is offered, by the slot's first staff member,
+     * with one distinct unit per needed quantity from the right groups.
+     *
+     * @param list<StaffCandidate> $staff
+     * @param list<ResourceGroup> $resources
+     * @param list<\Vaqtyar\Modules\Scheduling\Domain\Availability\Slot> $slots
+     */
+    private static function assertPicksMatch(
+        AvailabilityCalculator $calculator,
+        SlotRequest $request,
+        int $now,
+        array $staff,
+        array $resources,
+        array $slots,
+        string $message,
+    ): void {
+        $offered = [];
+        foreach ($slots as $slot) {
+            $offered[$slot->start] = $slot->staff[0];
+        }
+        $needed = 0;
+        $groupOf = [];
+        foreach ($resources as $g => $group) {
+            $needed += $group->quantity;
+            foreach ($group->units as $unit) {
+                $groupOf[$unit->resourceId] = $g;
+            }
+        }
+        for ($start = self::day()->start(); $start < self::day()->end(); $start += 300) {
+            $at = new \DateTimeImmutable('@' . $now);
+            $pick = $calculator->pick($request, self::day(), $at, $staff, $resources, $start);
+            $slotStaff = $offered[$start] ?? null;
+            self::assertSame(null === $slotStaff, null === $pick, "{$message}, start {$start}");
+            if (null === $pick || null === $slotStaff) {
+                continue;
+            }
+            self::assertEquals($slotStaff, $pick->staff, $message);
+            self::assertCount($needed, \array_unique($pick->resourceIds), $message);
+            $perGroup = [];
+            foreach ($pick->resourceIds as $id) {
+                $perGroup[$groupOf[$id]] = ($perGroup[$groupOf[$id]] ?? 0) + 1;
+            }
+            foreach ($resources as $g => $group) {
+                self::assertSame($group->quantity, $perGroup[$g] ?? 0, $message);
+            }
         }
     }
 

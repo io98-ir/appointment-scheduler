@@ -148,3 +148,30 @@ jobs:
           npx --yes @wordpress/env@11 run cli
           --env-cwd=wp-content/plugins/${{ github.event.repository.name }}
           composer test:integration
+
+  # ADR-004: 30 parallel POST /holds for one slot through the real web server
+  # must give exactly one hold per free staff member (tests/Concurrency).
+  concurrency:
+    name: Concurrency (no double booking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring, curl
+          coverage: none
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: composer install --no-interaction --no-progress --no-dev
+      - run: npx --yes @wordpress/env@11 start
+      - name: Race for one staff member, then for either of two
+        run: |
+          seed() {
+            npx --yes @wordpress/env@11 run cli --env-cwd=wp-content/plugins/${{ github.event.repository.name }} \
+              wp eval-file tests/Concurrency/seed.php 2>/dev/null | tail -n 1
+          }
+          php tests/Concurrency/race.php http://localhost:8888 "$(seed)" staff
+          php tests/Concurrency/race.php http://localhost:8888 "$(seed)" any

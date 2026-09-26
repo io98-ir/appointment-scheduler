@@ -44,4 +44,20 @@ final class SlotRequest
             throw new InvalidValue('invalid_minutes', 'Durations and notice periods are not negative.');
         }
     }
+
+    public function withWindow(int $minNoticeMin, int $maxAdvanceMin): self
+    {
+        return new self(
+            $this->variantId,
+            $this->capacity,
+            $this->partySize,
+            $this->extrasMin,
+            $this->bufferBeforeMin,
+            $this->bufferAfterMin,
+            $this->stepMin,
+            $minNoticeMin,
+            $maxAdvanceMin,
+            $this->choice
+        );
+    }
 }

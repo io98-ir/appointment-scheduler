@@ -9,8 +9,12 @@ use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Catalog\Contracts\Offer;
 use Vaqtyar\Modules\Catalog\Contracts\ResourceUnit;
 use Vaqtyar\Modules\Catalog\Contracts\StaffOffer;
+use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
 use Vaqtyar\Modules\Scheduling\Contracts\BusySpan;
+use Vaqtyar\Modules\Scheduling\Contracts\Claim;
+use Vaqtyar\Modules\Scheduling\Contracts\ClaimScope;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
+use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Modules\Scheduling\Domain\Availability\AvailabilityCalculator;
 use Vaqtyar\Modules\Scheduling\Domain\Availability\LocalDay;
 use Vaqtyar\Modules\Scheduling\Domain\Availability\Occupancy;
@@ -47,9 +51,9 @@ use Vaqtyar\Shared\Domain\Slug;
  * exceptions and holidays still apply). A computed day
  * is cached without the booking window, which moves with the clock and is
  * applied on every read. Nothing here decides a booking: the hold re-checks
- * the database under locks (ADR-004).
+ * the database under locks (ADR-004) through claim(), which skips the cache.
  */
-final class AvailabilityService
+final class AvailabilityService implements SlotClaims
 {
     public const MAX_DAYS = 62;
 
@@ -115,6 +119,52 @@ final class AvailabilityService
         ));
 
         return new Availability($request->location->timezone, $found);
+    }
+
+    public function scope(AvailabilityQuery $query, int $start): ClaimScope
+    {
+        $request = $this->prepare($query);
+        $resourceIds = [];
+        foreach ($request->groups as [, $units]) {
+            foreach ($units as $unit) {
+                $resourceIds[$unit->resourceId] = $unit->resourceId;
+            }
+        }
+
+        return new ClaimScope(
+            \array_map(static fn (StaffOffer $s): int => $s->staffId, $request->staff),
+            \array_values($resourceIds),
+            $start - $request->slot->bufferBeforeMin * 60,
+            $start + ($request->longestMin + $request->slot->extrasMin + $request->slot->bufferAfterMin) * 60
+        );
+    }
+
+    public function claim(AvailabilityQuery $query, int $start): ?Claim
+    {
+        $request = $this->prepare($query);
+        $date = LocalDate::fromDateTime(new DateTimeImmutable('@' . $start), $request->location->timezone);
+        $rules = null;
+        [$day, $open, $staff, $groups] = $this->inputs($request, [$date], $rules)[$date->toString()];
+        $pick = $open ? $this->calculator->pick(
+            $request->slot->withWindow($this->defaults->minNoticeMin, $this->defaults->maxAdvanceMin),
+            $day,
+            $this->clock->now(),
+            $staff,
+            $groups,
+            $start
+        ) : null;
+        if (null === $pick) {
+            return null;
+        }
+
+        return new Claim(
+            $pick->staff->staffId,
+            $start,
+            $pick->staff->end,
+            $start - $request->slot->bufferBeforeMin * 60,
+            $pick->staff->end + $request->slot->bufferAfterMin * 60,
+            $pick->resourceIds
+        );
     }
 
     /**
@@ -193,6 +243,35 @@ final class AvailabilityService
      * @return array<string, array{bool, list<Slot>}>
      */
     private function compute(PreparedQuery $request, array $dates, ?array &$rules): array
+    {
+        $days = [];
+        foreach ($this->inputs($request, $dates, $rules) as $key => [$day, $open, $staff, $groups]) {
+            $days[$key] = [
+                $open,
+                $open ? $this->calculator->slots(
+                    $request->slot,
+                    $day,
+                    (new DateTimeImmutable('@' . $day->start())),
+                    $staff,
+                    $groups
+                ) : [],
+            ];
+        }
+
+        return $days;
+    }
+
+    /**
+     * What the calculator takes for each of $dates, read from the
+     * repositories and the occupancies, never from the cache: the day,
+     * whether anyone works it, the staff and the resource groups.
+     *
+     * @param non-empty-list<LocalDate> $dates In order.
+     * @param ?array<string, list<ScheduleRule>> $rules Read on the first call.
+     * @param-out array<string, list<ScheduleRule>> $rules
+     * @return array<string, array{LocalDay, bool, list<StaffCandidate>, list<ResourceGroup>}>
+     */
+    private function inputs(PreparedQuery $request, array $dates, ?array &$rules): array
     {
         $zone = $request->location->timezone;
         $first = $dates[0];
@@ -282,16 +361,7 @@ final class AvailabilityService
                 $groups[] = new ResourceGroup($quantity, $candidates);
             }
 
-            $days[$date->toString()] = [
-                $open,
-                $open ? $this->calculator->slots(
-                    $request->slot,
-                    $day,
-                    (new DateTimeImmutable('@' . $day->start())),
-                    $staff,
-                    $groups
-                ) : [],
-            ];
+            $days[$date->toString()] = [$day, $open, $staff, $groups];
         }
 
         return $days;

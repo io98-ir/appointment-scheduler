@@ -16,6 +16,25 @@
 
 ---
 
+## 2026-09-27 — سشن 11 — T2.2 Locker + Hold + تست همزمانی
+**Taskها:** T2.2
+**انجام شد:**
+- **Scheduling:** `AvailabilityCalculator::pick()` (همان قواعد `slots()` برای یک شروع، به‌علاوه واحدهای منبع). `AvailabilityService` حالا port `Contracts\SlotClaims` را پیاده می‌کند: `scope()` برای کاندیدهای قفل و `claim()` برای بررسی مجدد از DB بدون cache. `AvailabilityQuery` به Contracts منتقل شد.
+- **Booking:** Domain (`Hold`، `HoldToken`، `LockKey`)، `HoldService` (place، extend، purgeExpired)، `WpdbResourceLocker`، `WpdbHoldRepository`، migration `CreateResourceDayLocksTable`، و `POST /holds`. Job `booking/purge_holds` و action `booking/changed` برای باطل کردن cache.
+- **Kernel و Shared:** `Shared\Domain\Conflict` (409)، `Shared\Domain\TransactionRunner`، و `Router::hasRestNonce`.
+- **تست‌ها:** Unit برای Hold و HoldService (ترتیب scope ← قفل ← claim ← نوشتن ← commit ← changed)، و property تصادفی `pick` در برابر `slots` (300 seed). Integration `HoldsTest`. CI job `concurrency` با `tests/Concurrency`.
+**تصمیم‌ها و فرض‌ها:**
+- قفل روی روز **UTC** است و جدول در Booking (data-model، تغییرات T2.2).
+- وقتی مشتری پرسنل انتخاب نکند، همه پرسنل کاندید قفل می‌شوند. ساده و درست است، به قیمت سریالی شدن Holdهای یک خدمت در یک روز.
+- `price_quote` تا T2.3 برابر `{}` است. تمدید فقط متد سرویس است و route ندارد (مصرف‌کننده‌اش پرداخت در M5 است).
+- rate limit برای `POST /holds` برابر 30 در دقیقه است (NAT اپراتورها).
+**تأیید:** `composer check` ← OK (630 tests). `composer test:rename` ← OK. `pnpm lint`، `pnpm test` ← OK. `actionlint` ← OK. Reviewer ← بدون یافته (ضد double-booking را بررسی کرد: snapshot، ترتیب قفل، پوشش روز، تمدید، ظرفیت). Integration و concurrency فقط روی CI اجرا می‌شوند و بعد از push بررسی می‌شوند.
+**مشکلات و باقیمانده:** —
+**قدم بعدی:** T2.3.
+**Commitها:** `feat(booking): holds with day locks and POST /holds (T2.2)`
+
+---
+
 ## 2026-09-26 — سشن 10 (ادامه) — T2.1 Booking Migrations
 **Taskها:** T2.1
 **انجام شد:**

@@ -16,7 +16,7 @@ use Vaqtyar\Modules\Catalog\Contracts\ResourceUnit;
 use Vaqtyar\Modules\Catalog\Contracts\StaffOffer;
 use Vaqtyar\Modules\Scheduling\Application\Availability;
 use Vaqtyar\Modules\Scheduling\Application\AvailabilityDefaults;
-use Vaqtyar\Modules\Scheduling\Application\AvailabilityQuery;
+use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
 use Vaqtyar\Modules\Scheduling\Application\AvailabilityService;
 use Vaqtyar\Modules\Scheduling\Application\DayAvailability;
 use Vaqtyar\Modules\Scheduling\Application\DayStatus;
@@ -384,6 +384,81 @@ final class AvailabilityServiceTest extends TestCase
         self::assertCount(2, $this->reads);
     }
 
+    public function testAClaimTakesTheFirstStaffMemberAndAFreeUnitAtAnOfferedStart(): void
+    {
+        $this->offer = self::offer(resources: [new ResourceNeed('room', 1, [
+            new ResourceUnit(20, self::LOCATION, 1),
+            new ResourceUnit(21, self::LOCATION, 1),
+        ])]);
+        $this->busy = [self::busy(true, 20, '10:00', '11:00')];
+
+        $claim = $this->service()->claim(self::query(), self::utc(self::SATURDAY . ' 10:00'));
+
+        self::assertNotNull($claim);
+        self::assertSame(
+            [3, '10:00', '11:00', '10:00', '11:00', [21]],
+            [
+                $claim->staffId,
+                self::clock($claim->start),
+                self::clock($claim->end),
+                self::clock($claim->from),
+                self::clock($claim->to),
+                $claim->resourceIds,
+            ]
+        );
+    }
+
+    public function testAClaimIsNullOffTheGridTakenOrTooSoon(): void
+    {
+        $this->busy = [self::busy(false, 3, '11:00', '12:00')];
+        $service = $this->service();
+
+        self::assertSame(
+            [false, true, true, true, true],
+            [
+                null === $service->claim(self::query(), self::utc(self::SATURDAY . ' 10:00')),
+                null === $service->claim(self::query(), self::utc(self::SATURDAY . ' 10:30')),
+                null === $service->claim(self::query(), self::utc(self::SATURDAY . ' 11:00')),
+                null === $service->claim(self::query(), self::utc(self::SATURDAY . ' 12:00')),
+                // Friday 09:00 is now, inside the 60-minute notice.
+                null === $service->claim(self::query(), self::utc('2026-10-02 09:00')),
+            ]
+        );
+    }
+
+    /**
+     * The day is cached free; the claim still reads the booking made since.
+     */
+    public function testAClaimReadsTheOccupanciesNotTheCache(): void
+    {
+        $service = $this->service();
+        $day = $service->day(self::query(), LocalDate::fromString(self::SATURDAY))->days[0];
+        self::assertContains('10:00', self::starts($day));
+        $this->busy = [self::busy(false, 3, '10:00', '11:00')];
+
+        self::assertNull($service->claim(self::query(), self::utc(self::SATURDAY . ' 10:00')));
+    }
+
+    public function testTheScopeIsEveryCandidateOverTheLongestBooking(): void
+    {
+        $this->offer = self::offer(
+            [
+                new StaffOffer(3, self::LOCATION, 60, Money::ofRial(1_000_000)),
+                new StaffOffer(5, null, 90, Money::ofRial(1_000_000)),
+                new StaffOffer(4, 2, 120, Money::ofRial(1_000_000)),
+            ],
+            [new ResourceNeed('room', 1, [new ResourceUnit(20, self::LOCATION, 1), new ResourceUnit(22, 2, 1)])]
+        );
+        $start = self::utc(self::SATURDAY . ' 10:00');
+
+        $scope = $this->service()->scope(new AvailabilityQuery(self::VARIANT, self::LOCATION, null, [40]), $start);
+
+        self::assertSame(
+            [[3, 5], [20], $start, $start + (90 + 15) * 60],
+            [$scope->staffIds, $scope->resourceIds, $scope->from, $scope->to]
+        );
+    }
+
     private function day(?AvailabilityQuery $query = null): DayAvailability
     {
         return $this->service()->day($query ?? self::query(), LocalDate::fromString(self::SATURDAY))->days[0];
@@ -548,6 +623,14 @@ final class AvailabilityServiceTest extends TestCase
             self::VARIANT,
             $ownerId
         );
+    }
+
+    /**
+     * A Tehran wall-clock time, "H:i".
+     */
+    private static function clock(int $utc): string
+    {
+        return (new \DateTimeImmutable('@' . $utc))->setTimezone(new \DateTimeZone('Asia/Tehran'))->format('H:i');
     }
 
     /**

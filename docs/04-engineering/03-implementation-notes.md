@@ -228,6 +228,24 @@
 - **Policy سراسری `service_id = 0` است، نه NULL.** T2.5 باید upsert را روی UNIQUE(type, service_id) انجام دهد.
 - **تله charset برای T2.7:** `appointments` ستون `ascii` دارد، پس جستجوی SQL خام با متن فارسی (مثلاً `LIKE` روی `customer_note`) رد می‌شود. جستجوی متنی را روی `customers.search_name` بزن (§4.5).
 
+## 4.9 Hold و ResourceLocker (T2.2)
+- **ترتیب در `HoldService::place`** (ADR-004):
+  1. بیرون از تراکنش: `SlotClaims::scope()`، یعنی همه پرسنل و منابع کاندید در شعبه و بازه `[start − buffer قبل، start + طولانی‌ترین مدت + extras + buffer بعد)`.
+  2. داخل تراکنش، **اولین دستور قفل است:** `WpdbResourceLocker` روی `resource_day_locks` برای هر کلید × هر روز UTC، به ترتیب `(lock_key, day)`، اول `INSERT IGNORE` و بعد `SELECT … FOR UPDATE`. `innodb_lock_wait_timeout` برای session برابر 5 است.
+  3. `SlotClaims::claim()`: همان calculator (`AvailabilityCalculator::pick`) روی داده تازه DB، **بدون cache**، با پنجره رزرو واقعی.
+  4. اگر claim نبود، یا کلید یا بازه‌ای بیرون از آنچه قفل شد گرفت (کاتالوگ بین دو خواندن عوض شده): `Conflict('slot_taken')` یعنی 409.
+  5. نوشتن `holds` و یک ردیف `occupancies` برای هر کلید، با `expires_at` خود Hold.
+  6. بعد از COMMIT، action `booking/changed`، که SchedulingModule با آن cache را باطل می‌کند.
+- **تله REPEATABLE READ:** snapshot تراکنش با اولین consistent read ساخته می‌شود. اگر قبل از قفل‌ها چیزی (حتی کاتالوگ یا یک option) در همان تراکنش خوانده شود، بررسی مجدد رزروهایی را که همان لحظه COMMIT شده‌اند نمی‌بیند. **هر کد جدیدی که occupancies می‌نویسد (confirm، reschedule و cancel در T2.4 و T2.5) باید قفل را اولین کار تراکنش کند.** `INSERT IGNORE` و `FOR UPDATE` خواندن‌های قفل‌دار هستند و snapshot نمی‌سازند.
+- هر نوشتن در `occupancies` باید کلیدهای خودش را روی همه روزهای UTC بازه‌اش قفل کند. `LockKey::sorted()` تنها راه ساختن و مرتب کردن کلیدهاست.
+- **تمدید** هم قفل می‌گیرد و بعد Hold را با `FOR UPDATE` دوباره می‌خواند. بدون قفل، Holdی که لحظه‌ای بعد منقضی می‌شد می‌توانست بعد از گرفته شدن زمانش توسط دیگری دوباره زنده شود.
+- **انقضا:** درستی به پاک‌سازی وابسته نیست، چون Reader شرط `expires_at > now` را دارد. Job تکرارشونده `booking/purge_holds` (Action Scheduler، هر 10 دقیقه، ثبت در `admin_init`) هر بار تا 500 Hold منقضی و ردیف‌های قفل قدیمی‌تر از دو روز را پاک می‌کند و cache را باطل می‌کند. پس روزِ cache‌شده بعد از انقضای Hold حداکثر تا اجرای بعدی Job یا TTL پنج‌دقیقه‌ای cache پر دیده می‌شود.
+- **توکن:** 32 بایت تصادفی به base64url (43 کاراکتر). فقط SHA-256 آن در `holds.token_hash` است.
+- **REST عمومی با نوشتن:** `Router::ANYONE` فقط برای GET است. `POST /holds` از `Router::hasRestNonce` استفاده می‌کند. nonce مهمان برای همه مهمان‌ها یکی است و حدود 24 ساعت عمر دارد، پس فقط نشان می‌دهد درخواست از صفحه سایت آمده است و محدودکننده واقعی rate limit است (یافته reviewer). ویجت (T4.2) باید nonce تازه بگیرد، چون HTML cache‌شده nonce کهنه دارد.
+- **تست همزمانی** (job `concurrency` در CI): `tests/Concurrency/seed.php` با `wp eval-file` یک اسلات با دو پرسنل می‌سازد و `race.php` از host با `curl_multi` سی درخواست موازی به `http://localhost:8888` می‌فرستد. برای یک پرسنل مشخص دقیقاً 1 موفق، و با «فرقی نمی‌کند» دقیقاً 2 موفق با دو پرسنل متفاوت. بقیه باید 409 باشند. seed قبل از هر دور جدول `rate_limits` را خالی می‌کند.
+- `AvailabilityQuery` به `Scheduling\Contracts` منتقل شد، چون Booking از آن استفاده می‌کند.
+- port `Shared\Domain\TransactionRunner` (پیاده‌سازی: `Kernel\Database\Transaction`) برای Application است که به Kernel دسترسی ندارد.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

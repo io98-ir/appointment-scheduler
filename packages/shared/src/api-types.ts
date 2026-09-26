@@ -168,3 +168,12 @@ export interface AvailabilityFirst {
 	date: string | null;
 	slots: AvailabilitySlot[];
 }
+
+/** POST /holds, 201 (docs/api.md). */
+export interface PlacedHold {
+	token: string;
+	expires_at: string;
+	staff_id: number;
+	start: string;
+	end: string;
+}

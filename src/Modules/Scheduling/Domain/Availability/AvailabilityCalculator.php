@@ -42,58 +42,25 @@ final class AvailabilityCalculator
         array $staff,
         array $resources,
     ): array {
-        if ($request->partySize > $request->capacity || [] === $staff) {
+        $prepared = self::prepare($request, $staff, $resources);
+        if (null === $prepared) {
             return [];
         }
-        foreach ($resources as $group) {
-            if (\count($group->units) < $group->quantity) {
-                return [];
-            }
-        }
+        [$candidates, $groups] = $prepared;
 
-        $candidates = self::prepareStaff($request, $staff);
-        $groups = \array_map(
-            static fn (ResourceGroup $group): array => [
-                $group->quantity,
-                \array_map(
-                    static fn (ResourceCandidate $unit): array => [
-                        $unit->working->subtract($unit->blocked),
-                        $unit->occupancies,
-                        $unit->capacity,
-                    ],
-                    $group->units
-                ),
-            ],
-            $resources
-        );
-
-        $earliest = $now->getTimestamp() + $request->minNoticeMin * 60;
-        $latest = $now->getTimestamp() + $request->maxAdvanceMin * 60;
+        [$earliest, $latest] = self::window($request, $now);
         $step = $request->stepMin * 60;
-        $before = $request->bufferBeforeMin * 60;
-        $after = $request->bufferAfterMin * 60;
-        $extras = $request->extrasMin * 60;
         $slots = [];
         for ($start = $day->start(); $start < $day->end() && $start <= $latest; $start += $step) {
             if ($start < $earliest) {
                 continue;
             }
             $fits = [];
-            foreach ($candidates as [$id, $duration, $free, $sameVariant]) {
-                $end = $start + $duration + $extras;
-                $from = $start - $before;
-                $to = $end + $after;
-                if (!$free->covers($from, $to)) {
-                    continue;
+            foreach ($candidates as $candidate) {
+                $fit = self::fit($request, $candidate, $groups, $start);
+                if (null !== $fit) {
+                    $fits[] = $fit[0];
                 }
-                $used = self::sessionSeats($sameVariant, $request->variantId, $id, $from, $to);
-                if (null === $used || $used + $request->partySize > $request->capacity) {
-                    continue;
-                }
-                if (!self::resourcesFit($groups, $request->variantId, $id, $from, $to)) {
-                    continue;
-                }
-                $fits[] = new SlotStaff($id, $end, $request->capacity - $used);
             }
             if ([] !== $fits) {
                 $slots[] = new Slot($start, $fits);
@@ -101,6 +68,119 @@ final class AvailabilityCalculator
         }
 
         return $slots;
+    }
+
+    /**
+     * What a hold takes at $start (booking-engine §3): the first staff
+     * member in StaffChoice order who fits, and the units of each resource
+     * group. Null when $start is not on the day's grid or in the booking
+     * window, or nobody fits: the rules of slots(), for one start.
+     *
+     * @param list<StaffCandidate> $staff
+     * @param list<ResourceGroup> $resources
+     */
+    public function pick(
+        SlotRequest $request,
+        LocalDay $day,
+        DateTimeImmutable $now,
+        array $staff,
+        array $resources,
+        int $start,
+    ): ?Pick {
+        [$earliest, $latest] = self::window($request, $now);
+        $onGrid = $start >= $day->start() && $start < $day->end()
+            && 0 === ($start - $day->start()) % ($request->stepMin * 60);
+        $prepared = self::prepare($request, $staff, $resources);
+        if (!$onGrid || $start < $earliest || $start > $latest || null === $prepared) {
+            return null;
+        }
+        [$candidates, $groups] = $prepared;
+        foreach ($candidates as $candidate) {
+            $fit = self::fit($request, $candidate, $groups, $start);
+            if (null !== $fit) {
+                return new Pick($start, $fit[0], $fit[1]);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The staff in StaffChoice order and the resource groups, as fit()
+     * takes them; null when nothing can fit.
+     *
+     * @param list<StaffCandidate> $staff
+     * @param list<ResourceGroup> $resources
+     * @return ?array{
+     *     list<array{int, int, IntervalSet, list<Occupancy>}>,
+     *     list<array{int, list<array{int, IntervalSet, list<Occupancy>, int}>}>
+     * }
+     */
+    private static function prepare(SlotRequest $request, array $staff, array $resources): ?array
+    {
+        if ($request->partySize > $request->capacity || [] === $staff) {
+            return null;
+        }
+        foreach ($resources as $group) {
+            if (\count($group->units) < $group->quantity) {
+                return null;
+            }
+        }
+
+        return [
+            self::prepareStaff($request, $staff),
+            \array_map(
+                static fn (ResourceGroup $group): array => [
+                    $group->quantity,
+                    \array_map(
+                        static fn (ResourceCandidate $unit): array => [
+                            $unit->resourceId,
+                            $unit->working->subtract($unit->blocked),
+                            $unit->occupancies,
+                            $unit->capacity,
+                        ],
+                        $group->units
+                    ),
+                ],
+                $resources
+            ),
+        ];
+    }
+
+    /**
+     * @return array{int, int} The earliest and the latest start, UTC seconds.
+     */
+    private static function window(SlotRequest $request, DateTimeImmutable $now): array
+    {
+        return [
+            $now->getTimestamp() + $request->minNoticeMin * 60,
+            $now->getTimestamp() + $request->maxAdvanceMin * 60,
+        ];
+    }
+
+    /**
+     * Whether one staff member takes $start, and with which resource units.
+     *
+     * @param array{int, int, IntervalSet, list<Occupancy>} $candidate
+     * @param list<array{int, list<array{int, IntervalSet, list<Occupancy>, int}>}> $groups
+     * @return ?array{SlotStaff, list<int>}
+     */
+    private static function fit(SlotRequest $request, array $candidate, array $groups, int $start): ?array
+    {
+        [$id, $duration, $free, $sameVariant] = $candidate;
+        $end = $start + $duration + $request->extrasMin * 60;
+        $from = $start - $request->bufferBeforeMin * 60;
+        $to = $end + $request->bufferAfterMin * 60;
+        if (!$free->covers($from, $to)) {
+            return null;
+        }
+        $used = self::sessionSeats($sameVariant, $request->variantId, $id, $from, $to);
+        if (null === $used || $used + $request->partySize > $request->capacity) {
+            return null;
+        }
+        $units = self::freeUnits($groups, $request->variantId, $id, $from, $to);
+
+        return null === $units ? null : [new SlotStaff($id, $end, $request->capacity - $used), $units];
     }
 
     /**
@@ -168,26 +248,32 @@ final class AvailabilityCalculator
     }
 
     /**
-     * @param list<array{int, list<array{IntervalSet, list<Occupancy>, int}>}> $groups
+     * The units taken, the first that fit in each group, or null when a
+     * group has too few.
+     *
+     * @param list<array{int, list<array{int, IntervalSet, list<Occupancy>, int}>}> $groups
+     * @return ?list<int>
      */
-    private static function resourcesFit(array $groups, int $variantId, int $staffId, int $from, int $to): bool
+    private static function freeUnits(array $groups, int $variantId, int $staffId, int $from, int $to): ?array
     {
+        $taken = [];
         foreach ($groups as [$quantity, $units]) {
             $free = 0;
-            foreach ($units as [$time, $occupancies, $capacity]) {
+            foreach ($units as [$unitId, $time, $occupancies, $capacity]) {
+                if ($free >= $quantity) {
+                    break;
+                }
                 if (self::unitFits($time, $occupancies, $capacity, $variantId, $staffId, $from, $to)) {
                     ++$free;
-                    if ($free >= $quantity) {
-                        break;
-                    }
+                    $taken[] = $unitId;
                 }
             }
             if ($free < $quantity) {
-                return false;
+                return null;
             }
         }
 
-        return true;
+        return $taken;
     }
 
     /**

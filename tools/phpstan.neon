@@ -14,4 +14,6 @@ parameters:
     scanFiles:
         # WP_UnitTestCase and tests_add_filter() for tests/Integration.
         - ../vendor/php-stubs/wordpress-tests-stubs/wordpress-tests-stubs.php
+        # as_schedule_recurring_action() and the rest of Action Scheduler's API (ADR-005).
+        - ../vendor/woocommerce/action-scheduler/functions.php
     tmpDir: ../.phpstan.cache

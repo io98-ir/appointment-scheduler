@@ -84,6 +84,11 @@
 > - `policies.service_id` برابر `NOT NULL DEFAULT 0` است و **0 یعنی Policy سراسری**. با NULL، قید UNIQUE جلوی دو ردیف سراسری را نمی‌گرفت (یافته reviewer).
 > - `coupons` هیچ ستون `ascii` ندارد، چون کد ممکن است فارسی باشد (تله charset، implementation-notes §4.5). `code` با collation جدول است، پس بزرگی و کوچکی حروف فرقی ندارد.
 > - `appointment_history` مثل `logs` ستون `updated_at` ندارد، چون ردیف فقط نوشته می‌شود.
+>
+> **تغییرات T2.2 نسبت به طرح اولیه:**
+> - `resource_day_locks` در ماژول Booking ساخته شد (migration `CreateResourceDayLocksTable`)، چون `ResourceLocker` تنها کاربر آن است. ستون `local_date` به `day` تغییر کرد و **تاریخ UTC** است: هر دو اشغال هم‌پوشان یک کلید حداقل یک روز UTC مشترک دارند، پس Locker به timezone نیاز ندارد.
+> - جدول `hold_resources` و `appointment_resources` (booking-engine §3) ساخته نمی‌شوند: همان ردیف‌های `occupancies` با `owner_type = hold` این نقش را دارند.
+> - `holds.price_quote` تا T2.3 برابر `{}` است.
 
 ### Customers
 | جدول | ستون‌های کلیدی | ایندکس |

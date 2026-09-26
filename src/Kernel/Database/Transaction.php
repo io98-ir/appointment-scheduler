@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Kernel\Database;
 
+use Vaqtyar\Shared\Domain\TransactionRunner;
+
 /**
  * Runs work inside one InnoDB transaction, retrying on deadlock and lock wait
  * timeout (ADR-004).
  */
-final class Transaction
+final class Transaction implements TransactionRunner
 {
     /** ADR-004: up to 3 retries after the first attempt. */
     private const MAX_RETRIES = 3;

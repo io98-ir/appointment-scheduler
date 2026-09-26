@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vaqtyar\Modules\Scheduling\Application;
+namespace Vaqtyar\Modules\Scheduling\Contracts;
 
 /**
  * What a customer asks availability for (booking-engine §2).

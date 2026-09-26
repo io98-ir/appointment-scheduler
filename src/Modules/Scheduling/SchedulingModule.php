@@ -15,6 +15,7 @@ use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Scheduling\Application\AvailabilityService;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
+use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Modules\Scheduling\Domain\HolidayRepository;
 use Vaqtyar\Modules\Scheduling\Domain\ScheduleExceptionRepository;
 use Vaqtyar\Modules\Scheduling\Domain\ScheduleRuleRepository;
@@ -59,6 +60,7 @@ final class SchedulingModule implements Module
             static fn (Container $c) => new WpdbHolidayRepository($c->get(Db::class), $c->get(Clock::class))
         );
         $container->singleton(WpSlotCache::class, static fn () => new WpSlotCache());
+        $container->singleton(SlotClaims::class, static fn (Container $c) => $c->get(AvailabilityService::class));
         $container->singleton(
             AvailabilityService::class,
             static fn (Container $c) => new AvailabilityService(
@@ -98,6 +100,7 @@ final class SchedulingModule implements Module
         };
         \add_action(Hooks::name('catalog/changed'), $invalidate);
         \add_action(Hooks::name('scheduling/changed'), $invalidate);
+        \add_action(Hooks::name('booking/changed'), $invalidate);
         \add_action('rest_api_init', static function () use ($container): void {
             (new AvailabilityRoutes(
                 $container->get(Router::class),

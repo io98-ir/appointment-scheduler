@@ -8,6 +8,7 @@ use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\KernelException;
 use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\RequestId;
+use Vaqtyar\Shared\Domain\Conflict;
 use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\NotFound;
@@ -34,6 +35,21 @@ final class Router
      */
     public const ANYONE = '__return_true';
 
+    /**
+     * The permission of a public write, e.g. a hold from the booking
+     * widget: a guest has no session, so the REST nonce (wp_rest, sent as
+     * X-WP-Nonce) is the proof the request came from the site's own page
+     * (architecture §12). Use it with a rate limit.
+     *
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     */
+    public static function hasRestNonce(\WP_REST_Request $request): bool
+    {
+        $nonce = $request->get_header('X-WP-Nonce');
+
+        return \is_string($nonce) && false !== \wp_verify_nonce($nonce, 'wp_rest');
+    }
+
     public function __construct(
         private readonly RateLimiter $limiter,
         private readonly RequestId $requestId,
@@ -48,7 +64,7 @@ final class Router
      * @param string $methods One of the WP_REST_Server constants, e.g. WP_REST_Server::READABLE.
      * @param callable(\WP_REST_Request<array<string, mixed>>): mixed $callback Returns the
      *     response data or a WP_REST_Response. Fails by throwing: ApiError,
-     *     InvalidValue (422), NotFound (404), Forbidden (401 or 403), or
+     *     InvalidValue (422), NotFound (404), Conflict (409), Forbidden (401 or 403), or
      *     anything else for a 500. A returned WP_Error is wrapped in the
      *     envelope too.
      * @param callable(\WP_REST_Request<array<string, mixed>>): bool $permission Runs before
@@ -162,6 +178,13 @@ final class Router
         }
         if ($e instanceof NotFound) {
             return $this->error(404, $e->errorCode, \__('The requested item does not exist.', 'vaqtyar'));
+        }
+        if ($e instanceof Conflict) {
+            return $this->error(
+                409,
+                $e->errorCode,
+                \__('The request conflicts with the current state. Please try again.', 'vaqtyar')
+            );
         }
         if ($e instanceof Forbidden) {
             // The same answer as a refused permission callback.
