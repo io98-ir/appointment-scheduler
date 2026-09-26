@@ -21,7 +21,8 @@ final class BookableResource
     /**
      * @param ?int $id null until stored.
      * @param ?int $locationId null for a resource every location shares.
-     * @param int $capacity bookings it can hold at the same time.
+     * @param int $capacity bookings it can hold at the same time; the customers
+     *     of one group session count as one booking (availability).
      */
     public function __construct(
         public readonly ?int $id,

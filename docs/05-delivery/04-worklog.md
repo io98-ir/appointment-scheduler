@@ -16,6 +16,50 @@
 
 ---
 
+## 2026-09-26 — سشن 10 (ادامه) — T1.4 AvailabilityCalculator
+**Taskها:** T1.4
+**انجام شد:**
+- **`Scheduling\Domain\Availability`** (Domain خالص):
+  - `AvailabilityCalculator::slots()`
+  - `SlotRequest`، `StaffCandidate`، `ResourceCandidate`، `ResourceGroup`، `Occupancy`، `Slot`، `SlotStaff` و `StaffChoice`
+  - `LocalDay`: یک تاریخ در یک timezone. دقیقه‌های `DayPlan` را به ثانیه UTC تبدیل می‌کند، با رفتار درست در گپ DST.
+- **تست‌ها:**
+  - `AvailabilityCalculatorTest`: جدول 27 سناریو، به‌علاوه `seatsLeft` و ورودی نامعتبر.
+  - `AvailabilityRandomizedTest`: 300 seed در برابر یک brute force دقیقه‌به‌دقیقه، شامل جلسه‌های قابل پیوستن روی پرسنل و منبع.
+  - `AvailabilityBenchmarkTest`: 10 پرسنل با گام 5 دقیقه، بهترین از 5 اجرا باید کمتر از 50ms باشد.
+  - `LocalDayTest`: تهران، روز DST، و گپ بهار نیویورک.
+- **اسناد:** implementation-notes §4.6، README ماژول، و توضیح ظرفیت در `BookableResource`.
+
+**تصمیم‌ها و فرض‌ها:**
+- **شبکه شروع از نیمه‌شب محلی** با گام، نه از اول هر بازه کاری. همه پرسنل ساعت‌های یکسان پیشنهاد می‌دهند. کار از 09:10 با گام 30 اولین نوبت را 09:30 می‌دهد.
+- **Buffer باید داخل ساعت کاری باشد** (booking-engine §2).
+- **مدل جلسه برای ظرفیت:**
+  - فقط پیوستن به همان جلسه مجاز است (همان Variant، همان پرسنل، دقیقاً همان بازه).
+  - هر هم‌پوشانی دیگر، حتی از همان Variant، مسدود می‌کند.
+  - ظرفیت منبع یعنی جلسه‌های همزمان، و هر جلسه یک‌بار شمرده می‌شود. پس `Occupancy` شناسه `staffId` دارد.
+- **`min_notice` و `max_advance` به دقیقه از «الان»** هستند.
+- **ترتیب پرسنل:** `least_busy` یعنی مجموع زمان اشغال آن روز، بعد priority، بعد id.
+- **«سقف روزانه»** در فهرست T1.4 نبود و به Policy `booking_window` (T2.5) منتقل شد.
+- **ساختن ورودی‌ها** از Catalog و DB (intersect با ساعات شعبه و فیلتر شعبه) کار T1.5 است.
+
+**Review:** subagent `reviewer` چهار مورد پیدا کرد و هر چهار رفع شد:
+1. `LocalDay` روی بازه‌ای که از گپ بهار DST عبور می‌کند exception می‌داد (بازه برعکس می‌شد). حالا زمان داخل گپ همان لحظه جابه‌جایی است.
+2. یک پرسنل می‌توانست دو جلسه گروهی پلکانی هم‌پوشان داشته باشد. حالا فقط پیوستن به همان جلسه مجاز است.
+3. ظرفیت منبع صندلی شمرده می‌شد و با تعریف Catalog («نوبت همزمان») نمی‌خواند. در نتیجه کلاس گروهی در سالن با ظرفیت 1 هیچ‌وقت پر نمی‌شد. حالا جلسه‌ها شمرده می‌شوند.
+4. `seatsLeft` محدودیت منبع را نادیده می‌گرفت. با مدل بند 3، منبع صندلی را محدود نمی‌کند و این مستند شد.
+
+**تأیید:**
+- `composer check` ← lint و PHPStan بدون خطا، deptrac با 0 violation، `OK (580 tests, 12492 assertions)`.
+- `composer test:rename` ← «OK. The renamed copy passed composer check and the JS checks». exit code غیرصفر فقط از هشدارهای rmdir هنگام پاک‌کردن کپی موقت در ویندوز است.
+- **Mutation:** چهار تغییر عمدی در calculator (مقایسه ظرفیت، ترتیب sweep، و دو مسیر پیوستن به جلسه) را تست تصادفی گرفت (seedهای 107، 4، 184 و 37).
+- **بنچمارک:** حدود 3.5 تا 5ms محلی.
+- CI: این Task فقط Unit دارد. push در `/wrap` انجام می‌شود.
+
+**قدم بعدی:** T1.5 — Availability API + Cache.
+**Commitها:** `feat(scheduling): availability calculator (T1.4)`
+
+---
+
 ## 2026-09-26 — سشن 10 — T1.3 Scheduling + تعطیلات
 **Taskها:** T1.3
 **انجام شد:**
