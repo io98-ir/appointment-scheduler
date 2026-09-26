@@ -69,6 +69,8 @@
             <property name="linesCountBeforeDeclare" value="1"/>
             <property name="spacesCountAroundEqualsSign" value="0"/>
         </properties>
+        <!-- Run by wp eval-file, which eval()s it: the declaration is fatal there. -->
+        <exclude-pattern>*/tests/Concurrency/seed\.php$</exclude-pattern>
     </rule>
     <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
     <rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint"/>

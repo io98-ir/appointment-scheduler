@@ -5,10 +5,9 @@
  * requests need, as JSON on a line of its own after "SEED " (wp-env adds
  * lines of its own to the output). Run with `wp eval-file` inside wp-env, so the
  * plugin is loaded; the job then races tests/Concurrency/race.php against
- * it (ADR-004).
+ * it (ADR-004). No strict_types: wp eval-file runs the file through eval(),
+ * where the declaration is a fatal error.
  */
-
-declare(strict_types=1);
 
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Transaction;
