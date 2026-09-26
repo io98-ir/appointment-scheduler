@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Catalog\Domain;
 
+use Vaqtyar\Shared\Domain\Name;
+
 /**
  * Groups services in the booking widget and the admin.
  */

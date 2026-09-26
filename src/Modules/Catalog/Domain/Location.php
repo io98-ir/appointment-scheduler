@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Domain;
 
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\PhoneNumber;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * A branch. Its timezone is where its local dates and working hours are

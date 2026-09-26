@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Domain;
 
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * A service needs this many resources of a group for each appointment.

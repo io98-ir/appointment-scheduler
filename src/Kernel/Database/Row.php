@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vaqtyar\Modules\Catalog\Infrastructure\Persistence;
+namespace Vaqtyar\Kernel\Database;
 
 /**
  * One row as MySQL returns it (every value a string, NULL as null), read

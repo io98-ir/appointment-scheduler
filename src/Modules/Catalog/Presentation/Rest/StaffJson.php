@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Presentation\Rest;
 
 use Vaqtyar\Modules\Catalog\Domain\Color;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\Staff;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Shared\Domain\Email;
+use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\PhoneNumber;
 
 /**

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Infrastructure\Persistence;
 
 use Vaqtyar\Kernel\Database\Db;
+use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Modules\Catalog\Domain\Color;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\Staff;
 use Vaqtyar\Modules\Catalog\Domain\StaffRepository;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\Email;
+use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\PhoneNumber;
 
 final class WpdbStaffRepository implements StaffRepository

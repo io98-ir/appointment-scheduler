@@ -9,13 +9,13 @@ use Vaqtyar\Modules\Catalog\Domain\BookableResource;
 use Vaqtyar\Modules\Catalog\Domain\Color;
 use Vaqtyar\Modules\Catalog\Domain\Extra;
 use Vaqtyar\Modules\Catalog\Domain\Location;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\ServiceCategory;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Staff;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Shared\Domain\Money;
+use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\PhoneNumber;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * The catalog entities other than Service (ServiceTest), which only guard

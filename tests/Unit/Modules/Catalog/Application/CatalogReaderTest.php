@@ -15,17 +15,17 @@ use Vaqtyar\Modules\Catalog\Domain\BookableResourceRepository;
 use Vaqtyar\Modules\Catalog\Domain\Color;
 use Vaqtyar\Modules\Catalog\Domain\Location;
 use Vaqtyar\Modules\Catalog\Domain\LocationRepository;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\ResourceRequirement;
 use Vaqtyar\Modules\Catalog\Domain\Service;
 use Vaqtyar\Modules\Catalog\Domain\ServiceRepository;
 use Vaqtyar\Modules\Catalog\Domain\ServiceStaff;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Staff;
 use Vaqtyar\Modules\Catalog\Domain\StaffRepository;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Modules\Catalog\Domain\Variant;
 use Vaqtyar\Shared\Domain\Money;
+use Vaqtyar\Shared\Domain\Name;
+use Vaqtyar\Shared\Domain\Slug;
 
 final class CatalogReaderTest extends TestCase
 {

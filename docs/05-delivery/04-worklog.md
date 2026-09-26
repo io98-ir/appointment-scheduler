@@ -16,6 +16,44 @@
 
 ---
 
+## 2026-09-26 — سشن 10 — T1.3 Scheduling + تعطیلات
+**Taskها:** T1.3
+**انجام شد:**
+- **کلاس‌های مشترک:** `Name` و `Slug` از Catalog به `Shared\Domain` منتقل شدند و `Row` به `Kernel\Database`، چون Scheduling هم از آن‌ها استفاده می‌کند (قاعده دو مصرف‌کننده).
+- **ماژول `Scheduling`:**
+  - Domain: `Owner` (پرسنل، منبع یا شعبه)، `ScheduleRule` (روز هفته 0 = شنبه، کار یا استراحت)، `ScheduleException` (off، extra و blocked، برای کل روز یا یک بازه)، `Holiday`، و `DayPlan::of()` برای دقیقه‌های کاری و مسدود یک مالک در یک روز محلی. سه interface Repository.
+  - Infrastructure: migration `CreateSchedulingTables` (`schedule_rules`، `schedule_exceptions` و `holidays`)، `HolidayDataset` (JSON با تاریخ شمسی «MM-DD»)، migration `ImportHolidays(1405)` و سه Repository از نوع Wpdb.
+  - `SchedulingModule` در فایل اصلی ثبت شد.
+- **دیتاست:** `assets/holidays/1405.json` با 26 تعطیلی رسمی.
+- **تست‌ها:**
+  - Unit: `EntitiesTest`، `DayPlanTest` و `HolidayDatasetTest` (شامل دیتاست واقعی 1405 و 12 فایل خراب).
+  - Integration: `SchedulingPersistenceTest` (InnoDB و کلید یکتا، جایگزینی برنامه هفتگی، استثناها، upsert تعطیلی، و import دوباره بدون هیچ تغییری).
+- **اسناد:** README ماژول، data-model (یادداشت T1.3)، implementation-notes §4.5.
+
+**تصمیم‌ها و فرض‌ها:**
+- **منطق `DayPlan`:** `working = (کار هفتگی − استراحت، و در تعطیلی هیچ) ∪ ساعات اضافه − مرخصی`. ساعات اضافه انتخاب صریح است، پس تعطیلی و استراحت هفتگی روی آن اثر ندارند. زمان مسدود جدا می‌ماند و در Availability جزو Busy است. شیفت بعد از نیمه‌شب دو قاعده است.
+- **برنامه هفتگی یک‌جا جایگزین می‌شود.** مثل فرم Admin، قاعده تکی update یا delete ندارد.
+- **Application و REST ساخته نشد.** هنوز مصرف‌کننده‌ای ندارند و با UI در T3.2 (برنامه و مرخصی پرسنل) و T3.5 (تعطیلات) ساخته می‌شوند. Repositoryها برای T1.5 و تست Integration لازم بودند.
+- **`resource_day_locks` به T2.2 منتقل شد**، همراه `ResourceLocker` که تنها مصرف‌کننده آن است.
+- **فهرست تقویم‌ها (option) ساخته نشد.** فعلاً فقط `ir` وجود دارد و تقویم سفارشی با UI در T3.5 می‌آید. ستون `holidays.calendar_id` به `calendar` (Slug) تغییر نام داد.
+- **منبع 1405:** تقویم رسمی ژئوفیزیک، به نقل از bahesab.ir و snn.ir (تاسوعا و عاشورا 3 و 4 تیر). chetor.com چند تعطیل قمری را یک روز دیرتر نوشته بود و کنار گذاشته شد. تاریخ قمری پیش‌بینی است و مدیر آن را اصلاح می‌کند. import روزی را که از قبل ثبت شده نگه می‌دارد.
+
+**Review:** subagent `reviewer` مشکل مسدودکننده‌ای پیدا نکرد. سه مورد کم‌اهمیت بود و هر سه رفع شد:
+1. سال داخل فایل دیتاست با سال migration مقایسه نمی‌شد. فایل 1406 که از 1405 کپی شود ولی `year` آن عوض نشود، بی‌صدا تاریخ‌های 1405 را وارد می‌کرد. حالا `parse($json, $year)` آن را رد می‌کند.
+2. comment مربوط به `replace` می‌گفت DELETE دو ذخیره همزمان را پشت سر هم اجرا می‌کند. وقتی مالک ردیفی ندارد این درست نیست: فقط gap lock گرفته می‌شود و deadlock رخ می‌دهد (که `Transaction` دوباره اجرا می‌کند). comment اصلاح شد.
+3. تست، اجرای دوباره خود migration را نمی‌پوشاند. حالا دو بار اجرا می‌شود و مقایسه می‌شود که هیچ ردیفی، حتی timestamp، عوض نشده باشد.
+
+**تأیید:**
+- `composer check` ← lint و PHPStan بدون خطا، deptrac با 0 violation، `OK (546 tests, 12142 assertions)`. `composer test:rename` ← OK.
+- CI run 36220833030 روی شاخه wip ← Integration قرمز. activation با `DbException` (errno 0) در `ImportHolidays` شکست خورد. علت: وقتی جدول هم ستون ascii و هم utf8mb4 دارد، `wpdb::query()` charset جدول را ascii فرض می‌کند و SQL خام با عنوان فارسی را رد می‌کند. همه ستون‌های `holidays` utf8mb4 شدند (implementation-notes §4.5).
+- CI run 36221089129 ← هر 11 job سبز، Integration `114 tests, 357 assertions` در 4 ترکیب.
+
+**مشکلات و باقیمانده:** تا پایان اسفند 1405 باید دیتاست 1406 اضافه شود. شاخه `wip/t1-3-scheduling` روی remote مانده است.
+**قدم بعدی:** T1.4 — AvailabilityCalculator.
+**Commitها:** `feat(scheduling): schedules, exceptions, holidays and the 1405 dataset (T1.3)`
+
+---
+
 ## 2026-09-26 — سشن 9 — T1.2 Catalog REST CRUD + CatalogApi
 **Taskها:** T1.2 (و رفع CI قرمز T1.1)
 **انجام شد:**

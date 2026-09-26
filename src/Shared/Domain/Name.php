@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vaqtyar\Modules\Catalog\Domain;
-
-use Vaqtyar\Shared\Domain\InvalidValue;
+namespace Vaqtyar\Shared\Domain;
 
 /**
  * The display name of a catalog item: one trimmed line. Names reach SMS

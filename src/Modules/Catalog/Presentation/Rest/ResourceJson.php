@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Presentation\Rest;
 
 use Vaqtyar\Modules\Catalog\Domain\BookableResource;
-use Vaqtyar\Modules\Catalog\Domain\Name;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Status;
+use Vaqtyar\Shared\Domain\Name;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * A resource (room, chair, device) in the admin API.

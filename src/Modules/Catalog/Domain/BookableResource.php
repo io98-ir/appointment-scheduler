@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Domain;
 
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\Name;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * A room, chair or device. Services ask for one of a group ("room"), not a

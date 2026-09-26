@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Catalog\Domain;
 
+use Vaqtyar\Shared\Domain\Slug;
+
 /**
  * The stored resources.
  * A deleted row is soft deleted (data-model §1) and no method returns it.

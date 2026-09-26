@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Catalog\Presentation\Rest;
 
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\ResourceRequirement;
 use Vaqtyar\Modules\Catalog\Domain\Service;
 use Vaqtyar\Modules\Catalog\Domain\ServiceStaff;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Modules\Catalog\Domain\Variant;
+use Vaqtyar\Shared\Domain\Name;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * A service with its variants, staff assignments and resource requirements,

@@ -6,8 +6,8 @@ namespace Vaqtyar\Tests\Unit\Modules\Catalog\Domain;
 
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Catalog\Domain\Color;
-use Vaqtyar\Modules\Catalog\Domain\Name;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
+use Vaqtyar\Shared\Domain\Name;
+use Vaqtyar\Shared\Domain\Slug;
 
 final class ValuesTest extends TestCase
 {

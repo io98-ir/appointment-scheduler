@@ -45,10 +45,16 @@
 |---|---|---|
 | `schedule_rules` | `owner_type (staff/resource/location), owner_id, weekday (0=شنبه), start_time, end_time, kind (work/break)` | (owner_type, owner_id) |
 | `schedule_exceptions` | `owner_type, owner_id, local_date, start_time NULL, end_time NULL, kind (off/extra/blocked), note` | (owner_type, owner_id, local_date) |
-| `holidays` | `calendar_id, local_date, title, source (dataset/manual)` | UNIQUE(calendar_id, local_date) |
+| `holidays` | `calendar, local_date, title, source (dataset/manual)` | UNIQUE(calendar, local_date) |
 | `resource_day_locks` | `lock_key (staff:12 / res:4), local_date` | PK(lock_key, local_date) |
 
 > تقویم‌های تعطیلات در option نگه داشته می‌شوند (تعدادشان کم است). جدول `holidays` فقط روزها را دارد.
+>
+> **تغییرات T1.3 نسبت به طرح اولیه:**
+> - `calendar_id` به `calendar` تغییر نام داد و مقدارش Slug است (مثل `ir`)، همانند `locations.holiday_calendar`.
+> - `start_time` و `end_time` از نوع `TIME` هستند و `24:00:00` پایان روز است. `owner_type` و `kind` مثل بقیه وضعیت‌ها `VARCHAR(32)` هستند.
+> - `resource_day_locks` هنوز ساخته نشد. همراه `ResourceLocker` در T2.2 می‌آید، چون تنها مصرف‌کننده آن است.
+> - option فهرست تقویم‌ها هنوز ساخته نشد. تا تقویم سفارشی در UI (T3.5) فقط دیتاست `ir` وجود دارد.
 
 ### Booking
 | جدول | ستون‌های کلیدی | ایندکس |

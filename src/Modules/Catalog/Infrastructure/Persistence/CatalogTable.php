@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Infrastructure\Persistence;
 
 use Vaqtyar\Kernel\Database\Db;
+use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Shared\Domain\Clock;
 

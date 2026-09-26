@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Infrastructure\Persistence;
 
 use Vaqtyar\Kernel\Database\Db;
+use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Kernel\Database\Transaction;
 use Vaqtyar\Kernel\Tables;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\ResourceRequirement;
 use Vaqtyar\Modules\Catalog\Domain\Service;
 use Vaqtyar\Modules\Catalog\Domain\ServiceRepository;
 use Vaqtyar\Modules\Catalog\Domain\ServiceStaff;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Modules\Catalog\Domain\Variant;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\Money;
+use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\NotFound;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * A service and its parts in four tables, written in one transaction so a

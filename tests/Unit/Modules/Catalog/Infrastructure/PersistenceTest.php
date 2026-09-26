@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Tests\Unit\Modules\Catalog\Infrastructure;
 
 use PHPUnit\Framework\TestCase;
-use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\Row;
+use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbStaffRepository;
 
 /**

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Infrastructure\Persistence;
 
 use Vaqtyar\Kernel\Database\Db;
+use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Modules\Catalog\Domain\Color;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\ServiceCategory;
 use Vaqtyar\Modules\Catalog\Domain\ServiceCategoryRepository;
 use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\Domain\Name;
 
 final class WpdbServiceCategoryRepository implements ServiceCategoryRepository
 {

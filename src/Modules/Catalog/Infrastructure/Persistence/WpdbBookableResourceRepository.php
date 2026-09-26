@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Infrastructure\Persistence;
 
 use Vaqtyar\Kernel\Database\Db;
+use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Modules\Catalog\Domain\BookableResource;
 use Vaqtyar\Modules\Catalog\Domain\BookableResourceRepository;
-use Vaqtyar\Modules\Catalog\Domain\Name;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\Domain\Name;
+use Vaqtyar\Shared\Domain\Slug;
 
 final class WpdbBookableResourceRepository implements BookableResourceRepository
 {

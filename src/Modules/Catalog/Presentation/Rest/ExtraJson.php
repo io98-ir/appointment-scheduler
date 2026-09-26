@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Presentation\Rest;
 
 use Vaqtyar\Modules\Catalog\Domain\Extra;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\Status;
+use Vaqtyar\Shared\Domain\Name;
 
 /**
  * An extra in the admin API.

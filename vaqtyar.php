@@ -41,6 +41,7 @@ require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.ph
 $vaqtyar_modules = static function () {
     return array(
         new \Vaqtyar\Modules\Catalog\CatalogModule(),
+        new \Vaqtyar\Modules\Scheduling\SchedulingModule(),
         new \Vaqtyar\Modules\Admin\AdminModule(),
     );
 };

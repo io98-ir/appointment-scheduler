@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Presentation\Rest;
 
 use Vaqtyar\Modules\Catalog\Domain\Color;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\ServiceCategory;
+use Vaqtyar\Shared\Domain\Name;
 
 /**
  * A service category in the admin API.

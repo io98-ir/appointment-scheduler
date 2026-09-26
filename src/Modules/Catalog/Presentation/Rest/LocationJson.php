@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Presentation\Rest;
 
 use Vaqtyar\Modules\Catalog\Domain\Location;
-use Vaqtyar\Modules\Catalog\Domain\Name;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\PhoneNumber;
+use Vaqtyar\Shared\Domain\Slug;
 
 /**
  * A location in the admin API.

@@ -15,20 +15,20 @@ use Vaqtyar\Modules\Catalog\Domain\Extra;
 use Vaqtyar\Modules\Catalog\Domain\ExtraRepository;
 use Vaqtyar\Modules\Catalog\Domain\Location;
 use Vaqtyar\Modules\Catalog\Domain\LocationRepository;
-use Vaqtyar\Modules\Catalog\Domain\Name;
 use Vaqtyar\Modules\Catalog\Domain\Service;
 use Vaqtyar\Modules\Catalog\Domain\ServiceCategory;
 use Vaqtyar\Modules\Catalog\Domain\ServiceCategoryRepository;
 use Vaqtyar\Modules\Catalog\Domain\ServiceRepository;
 use Vaqtyar\Modules\Catalog\Domain\ServiceStaff;
-use Vaqtyar\Modules\Catalog\Domain\Slug;
 use Vaqtyar\Modules\Catalog\Domain\Staff;
 use Vaqtyar\Modules\Catalog\Domain\StaffRepository;
 use Vaqtyar\Modules\Catalog\Domain\Variant;
 use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\Money;
+use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\NotFound;
+use Vaqtyar\Shared\Domain\Slug;
 use Vaqtyar\Tests\Unit\Modules\Catalog\Domain\AssertsInvalidValue;
 
 /**

@@ -6,6 +6,7 @@ namespace Vaqtyar\Modules\Catalog\Domain;
 
 use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\Money;
+use Vaqtyar\Shared\Domain\Name;
 
 /**
  * An add-on a customer picks with a service, adding its price and time per

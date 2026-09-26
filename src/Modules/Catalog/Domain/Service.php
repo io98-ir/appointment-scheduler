@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Domain;
 
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\Name;
 
 /**
  * A bookable service with its variants, the staff who serve it (with their

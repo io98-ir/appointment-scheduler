@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vaqtyar\Modules\Catalog\Domain;
-
-use Vaqtyar\Shared\Domain\InvalidValue;
+namespace Vaqtyar\Shared\Domain;
 
 /**
  * A machine key an admin chooses, such as a resource group ("room") or a
