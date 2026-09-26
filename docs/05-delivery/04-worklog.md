@@ -16,6 +16,18 @@
 
 ---
 
+## 2026-09-27 — سشن 11 — CI برای T2.2 و T2.3
+**Taskها:** T2.2، T2.3 (push و تأیید CI)
+**انجام شد:** هر دو Task روی `main` push شدند و job `concurrency` سه بار رفع شد:
+1. خط آخر خروجی `wp eval-file` پیام خود wp-env بود، نه JSON. حالا seed خط `SEED {…}` چاپ می‌کند.
+2. `wp eval-file` فایل را با `eval()` اجرا می‌کند و `declare(strict_types=1)` آنجا fatal است. برای `seed.php` برداشته شد و در phpcs استثنا شد.
+3. **یافته واقعی:** در حالت «فرقی نمی‌کند»، 7 درخواست از 30 بعد از retryها 500 گرفتند (deadlock). double-booking رخ نداد. علت: `INSERT IGNORE` داخل تراکنش روی ردیف موجود قفل S می‌گیرد و ارتقا به `FOR UPDATE` بین چند تراکنش deadlock می‌شود. رفع: `ResourceLocker::prepare()` ردیف‌ها را بیرون از تراکنش می‌سازد و `lock()` فقط `FOR UPDATE` می‌گیرد (و ردیف گم‌شده را fallback داخل می‌سازد). deadlock باقیمانده بعد از retryها حالا 503 `busy` با `Retry-After` است.
+**تأیید:** CI روی main (run 36278605604) ← همه jobها سبز. Integration ← OK (135 tests, 463 assertions) در 4 ترکیب. concurrency ← `staff: {"201":1,"409 slot_taken":29}`، `any: {"201":2,"409 slot_taken":28}` با پرسنل [3,4].
+**قدم بعدی:** T2.4.
+**Commitها:** `fix(ci): read the concurrency seed from a marked line (T2.2)`، `fix(ci): no strict_types in the eval-file concurrency seed (T2.2)`، `fix(booking): create day-lock rows before the hold transaction (T2.2)`
+
+---
+
 ## 2026-09-27 — سشن 11 — T2.3 PriceCalculator
 **Taskها:** T2.3
 **انجام شد:**
