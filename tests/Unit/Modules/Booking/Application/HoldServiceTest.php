@@ -69,6 +69,7 @@ final class HoldServiceTest extends TestCase
         self::assertSame(
             [
                 'scope',
+                'prepare res:20,res:21,staff:3,staff:4 ' . (self::START - 600) . '-' . (self::START + 7200),
                 'begin',
                 'lock res:20,res:21,staff:3,staff:4 ' . (self::START - 600) . '-' . (self::START + 7200),
                 'claim',
@@ -131,7 +132,7 @@ final class HoldServiceTest extends TestCase
         $this->claim = null;
 
         $this->assertConflict();
-        self::assertSame(['scope', 'begin', 'lock', 'claim', 'rollback'], $this->steps());
+        self::assertSame(['scope', 'prepare', 'begin', 'lock', 'claim', 'rollback'], $this->steps());
     }
 
     /**
@@ -261,6 +262,14 @@ final class HoldServiceTest extends TestCase
         $locker = new class ($test) implements ResourceLocker {
             public function __construct(private readonly HoldServiceTest $test)
             {
+            }
+
+            /**
+             * @param list<string> $keys
+             */
+            public function prepare(array $keys, int $from, int $to): void
+            {
+                $this->test->record('prepare ' . \implode(',', $keys) . " {$from}-{$to}");
             }
 
             /**

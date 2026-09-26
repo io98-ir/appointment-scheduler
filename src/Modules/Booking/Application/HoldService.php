@@ -56,6 +56,7 @@ final class HoldService
         // snapshot the re-check reads (REPEATABLE READ).
         $scope = $this->slots->scope($query, $start);
         $keys = LockKey::sorted($scope->staffIds, $scope->resourceIds);
+        $this->locker->prepare($keys, $scope->from, $scope->to);
         $token = HoldToken::generate();
 
         $work = function () use ($query, $start, $scope, $keys, $token, $couponCode): PlacedHold {

@@ -231,11 +231,14 @@
 ## 4.9 Hold و ResourceLocker (T2.2)
 - **ترتیب در `HoldService::place`** (ADR-004):
   1. بیرون از تراکنش: `SlotClaims::scope()`، یعنی همه پرسنل و منابع کاندید در شعبه و بازه `[start − buffer قبل، start + طولانی‌ترین مدت + extras + buffer بعد)`.
-  2. داخل تراکنش، **اولین دستور قفل است:** `WpdbResourceLocker` روی `resource_day_locks` برای هر کلید × هر روز UTC، به ترتیب `(lock_key, day)`، اول `INSERT IGNORE` و بعد `SELECT … FOR UPDATE`. `innodb_lock_wait_timeout` برای session برابر 5 است.
-  3. `SlotClaims::claim()`: همان calculator (`AvailabilityCalculator::pick`) روی داده تازه DB، **بدون cache**، با پنجره رزرو واقعی.
-  4. اگر claim نبود، یا کلید یا بازه‌ای بیرون از آنچه قفل شد گرفت (کاتالوگ بین دو خواندن عوض شده): `Conflict('slot_taken')` یعنی 409.
-  5. نوشتن `holds` و یک ردیف `occupancies` برای هر کلید، با `expires_at` خود Hold.
-  6. بعد از COMMIT، action `booking/changed`، که SchedulingModule با آن cache را باطل می‌کند.
+  2. هنوز بیرون از تراکنش: `ResourceLocker::prepare()` ردیف‌های `resource_day_locks` (هر کلید × هر روز UTC) را با `INSERT IGNORE` در autocommit می‌سازد.
+  3. داخل تراکنش، **اولین دستور قفل است:** `SELECT … FOR UPDATE` به ترتیب `(lock_key, day)`. اگر ردیفی کم بود (نباید باشد)، همان‌جا `INSERT IGNORE` و دوباره `FOR UPDATE`، تا قفل هیچ‌وقت به gap lock (که کسی را بیرون نگه نمی‌دارد) تبدیل نشود. `innodb_lock_wait_timeout` برای session برابر 5 است.
+  - **چرا `prepare` جداست (یافته job `concurrency`):** `INSERT IGNORE` داخل تراکنش روی ردیف موجود قفل S می‌گیرد. چند تراکنش که هر کدام S دارند نمی‌توانند به X (`FOR UPDATE`) ارتقا بدهند و deadlock می‌شود. در CI، 7 درخواست از 30 بعد از retryها 500 گرفتند (double-booking رخ نداد). با ردیف‌های از قبل موجود، `FOR UPDATE` مرتب فقط صف می‌سازد.
+  - اگر بعد از retryهای `Transaction` هنوز deadlock یا lock wait timeout باشد، Router پاسخ **503 `busy`** با `Retry-After: 2` می‌دهد، نه 500.
+  4. `SlotClaims::claim()`: همان calculator (`AvailabilityCalculator::pick`) روی داده تازه DB، **بدون cache**، با پنجره رزرو واقعی.
+  5. اگر claim نبود، یا کلید یا بازه‌ای بیرون از آنچه قفل شد گرفت (کاتالوگ بین دو خواندن عوض شده): `Conflict('slot_taken')` یعنی 409.
+  6. نوشتن `holds` و یک ردیف `occupancies` برای هر کلید، با `expires_at` خود Hold.
+  7. بعد از COMMIT، action `booking/changed`، که SchedulingModule با آن cache را باطل می‌کند.
 - **تله REPEATABLE READ:** snapshot تراکنش با اولین consistent read ساخته می‌شود. اگر قبل از قفل‌ها چیزی (حتی کاتالوگ یا یک option) در همان تراکنش خوانده شود، بررسی مجدد رزروهایی را که همان لحظه COMMIT شده‌اند نمی‌بیند. **هر کد جدیدی که occupancies می‌نویسد (confirm، reschedule و cancel در T2.4 و T2.5) باید قفل را اولین کار تراکنش کند.** `INSERT IGNORE` و `FOR UPDATE` خواندن‌های قفل‌دار هستند و snapshot نمی‌سازند.
 - هر نوشتن در `occupancies` باید کلیدهای خودش را روی همه روزهای UTC بازه‌اش قفل کند. `LockKey::sorted()` تنها راه ساختن و مرتب کردن کلیدهاست.
 - **تمدید** هم قفل می‌گیرد و بعد Hold را با `FOR UPDATE` دوباره می‌خواند. بدون قفل، Holdی که لحظه‌ای بعد منقضی می‌شد می‌توانست بعد از گرفته شدن زمانش توسط دیگری دوباره زنده شود.

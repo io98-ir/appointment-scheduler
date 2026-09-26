@@ -8,6 +8,7 @@ use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\KernelException;
 use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\RequestId;
+use Vaqtyar\Kernel\Database\DbException;
 use Vaqtyar\Shared\Domain\Conflict;
 use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\InvalidValue;
@@ -34,6 +35,9 @@ final class Router
      * GET route with a rate limit (implementation-notes §6).
      */
     public const ANYONE = '__return_true';
+
+    /** Seconds a client waits after a 503 busy, when locks were still contended after the retries. */
+    private const BUSY_RETRY_SECONDS = 2;
 
     /**
      * The permission of a public write, e.g. a hold from the booking
@@ -161,6 +165,9 @@ final class Router
             if ($e instanceof ApiError && null !== $e->retryAfter) {
                 $response->header('Retry-After', (string) $e->retryAfter);
             }
+            if ($e instanceof DbException && $e->isRetryable()) {
+                $response->header('Retry-After', (string) self::BUSY_RETRY_SECONDS);
+            }
 
             return $response;
         }
@@ -184,6 +191,15 @@ final class Router
                 409,
                 $e->errorCode,
                 \__('The request conflicts with the current state. Please try again.', 'vaqtyar')
+            );
+        }
+        if ($e instanceof DbException && $e->isRetryable()) {
+            // Still locked out after the Transaction's retries: busy, not broken.
+            return $this->error(
+                503,
+                'busy',
+                \__('The server is busy. Please try again in a moment.', 'vaqtyar'),
+                ['retry_after' => self::BUSY_RETRY_SECONDS]
             );
         }
         if ($e instanceof Forbidden) {
