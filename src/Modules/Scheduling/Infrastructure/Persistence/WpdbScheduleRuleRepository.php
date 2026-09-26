@@ -85,6 +85,7 @@ final class WpdbScheduleRuleRepository implements ScheduleRuleRepository
                 ]);
             }
         });
+        Columns::changed();
     }
 
     private static function fromRow(Row $row): ScheduleRule

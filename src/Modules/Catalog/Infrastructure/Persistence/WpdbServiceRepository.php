@@ -101,6 +101,7 @@ final class WpdbServiceRepository implements ServiceRepository
 
             return $id;
         });
+        $this->services->changed();
 
         return $this->find($id) ?? throw new \LogicException('The service just saved is gone.');
     }

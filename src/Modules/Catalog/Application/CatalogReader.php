@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Catalog\Application;
 
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
+use Vaqtyar\Modules\Catalog\Contracts\ExtraOffer;
 use Vaqtyar\Modules\Catalog\Contracts\LocationInfo;
 use Vaqtyar\Modules\Catalog\Contracts\Offer;
 use Vaqtyar\Modules\Catalog\Contracts\ResourceNeed;
 use Vaqtyar\Modules\Catalog\Contracts\ResourceUnit;
 use Vaqtyar\Modules\Catalog\Contracts\StaffOffer;
 use Vaqtyar\Modules\Catalog\Domain\BookableResourceRepository;
+use Vaqtyar\Modules\Catalog\Domain\Extra;
+use Vaqtyar\Modules\Catalog\Domain\ExtraRepository;
 use Vaqtyar\Modules\Catalog\Domain\LocationRepository;
 use Vaqtyar\Modules\Catalog\Domain\ResourceRequirement;
 use Vaqtyar\Modules\Catalog\Domain\ServiceRepository;
@@ -31,6 +34,7 @@ final class CatalogReader implements CatalogApi
         private readonly StaffRepository $staff,
         private readonly BookableResourceRepository $resources,
         private readonly LocationRepository $locations,
+        private readonly ExtraRepository $extras,
     ) {
     }
 
@@ -58,7 +62,8 @@ final class CatalogReader implements CatalogApi
                     $member->id,
                     $member->locationId,
                     $terms->durationMin,
-                    $terms->price
+                    $terms->price,
+                    $member->sort
                 );
             }
         }
@@ -73,6 +78,18 @@ final class CatalogReader implements CatalogApi
             $variant->slotStepMin,
             \array_values($staff),
             \array_map($this->need(...), $service->resources),
+            \array_values(\array_map(
+                static fn (Extra $extra): ExtraOffer => new ExtraOffer(
+                    $extra->id ?? throw new \LogicException('A stored extra has an id.'),
+                    $extra->durationMin,
+                    $extra->price,
+                    $extra->maxQty
+                ),
+                \array_filter(
+                    $this->extras->ofService($service->id),
+                    static fn (Extra $extra): bool => Status::Active === $extra->status
+                )
+            )),
         );
     }
 

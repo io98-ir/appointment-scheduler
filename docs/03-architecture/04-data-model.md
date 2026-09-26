@@ -72,6 +72,11 @@
 | `coupons` | `code, type, value, max_uses, used, valid_from, valid_to, service_ids JSON, status` | UNIQUE(code) |
 
 > **`occupancies`** یک جدول واحد برای اشغال زمان است، چه Hold باشد و چه نوبت. **Buffer در `start_at` و `end_at` آن لحاظ شده است.** کوئری تداخل فقط روی همین جدول و ایندکس `(lock_key, start_at, end_at)` اجرا می‌شود. تبدیل Hold به نوبت فقط `owner_type` و `owner_id` را عوض می‌کند. با لغو نوبت، ردیف‌هایش حذف می‌شود و سابقه در `appointment_history` می‌ماند.
+>
+> **تغییرات T1.5 نسبت به طرح اولیه (`occupancies`):**
+> - جدول در T1.5 ساخته شد (migration `CreateOccupanciesTable` در ماژول Booking)، چون Availability آن را می‌خواند. بقیه جداول Booking در T2.1 می‌آیند.
+> - سه ستون اضافه شد: `variant_id` و `staff_id` (NULL‌پذیر) تا جلسه گروهی بدون join شناخته شود (implementation-notes §4.6)، و `expires_at` (انقضای Hold، برای نوبت NULL) تا شرط `expires_at > now` بدون join به `holds` اجرا شود. **تمدید Hold در T2.2 باید `expires_at` همین ردیف‌ها را هم به‌روز کند، و تبدیل به نوبت آن را NULL کند.**
+> - `lock_key` به شکل `staff:{id}` و `res:{id}` است.
 
 ### Customers
 | جدول | ستون‌های کلیدی | ایندکس |

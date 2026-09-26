@@ -56,6 +56,7 @@ final class WpdbHolidayRepository implements HolidayRepository
             $now,
             $now
         );
+        Columns::changed();
     }
 
     public function delete(Slug $calendar, LocalDate $date): void
@@ -66,6 +67,7 @@ final class WpdbHolidayRepository implements HolidayRepository
             $calendar->value,
             $date->toString()
         );
+        Columns::changed();
     }
 
     /**
@@ -92,6 +94,9 @@ final class WpdbHolidayRepository implements HolidayRepository
                 $now,
                 $now
             );
+        }
+        if ($added > 0) {
+            Columns::changed();
         }
 
         return $added;

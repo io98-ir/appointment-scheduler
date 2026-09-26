@@ -7,10 +7,12 @@ namespace Vaqtyar\Tests\Integration\Modules\Catalog;
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Kernel\Database\Transaction;
 use Vaqtyar\Modules\Catalog\Application\CatalogReader;
+use Vaqtyar\Modules\Catalog\Contracts\ExtraOffer;
 use Vaqtyar\Modules\Catalog\Contracts\ResourceUnit;
 use Vaqtyar\Modules\Catalog\Contracts\StaffOffer;
 use Vaqtyar\Modules\Catalog\Domain\BookableResource;
 use Vaqtyar\Modules\Catalog\Domain\Color;
+use Vaqtyar\Modules\Catalog\Domain\Extra;
 use Vaqtyar\Modules\Catalog\Domain\Location;
 use Vaqtyar\Modules\Catalog\Domain\ResourceRequirement;
 use Vaqtyar\Modules\Catalog\Domain\Service;
@@ -19,6 +21,7 @@ use Vaqtyar\Modules\Catalog\Domain\Staff;
 use Vaqtyar\Modules\Catalog\Domain\Status;
 use Vaqtyar\Modules\Catalog\Domain\Variant;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbBookableResourceRepository;
+use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbExtraRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbLocationRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbServiceRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbStaffRepository;
@@ -44,6 +47,8 @@ final class CatalogApiTest extends TestCase
 
     private WpdbServiceRepository $services;
 
+    private WpdbExtraRepository $extras;
+
     private CatalogReader $api;
 
     protected function setUp(): void
@@ -55,7 +60,14 @@ final class CatalogApiTest extends TestCase
         $this->staff = new WpdbStaffRepository($db, $clock);
         $this->resources = new WpdbBookableResourceRepository($db, $clock);
         $this->services = new WpdbServiceRepository($db, new Transaction($db), $clock);
-        $this->api = new CatalogReader($this->services, $this->staff, $this->resources, $this->locations);
+        $this->extras = new WpdbExtraRepository($db, $clock);
+        $this->api = new CatalogReader(
+            $this->services,
+            $this->staff,
+            $this->resources,
+            $this->locations,
+            $this->extras
+        );
     }
 
     protected function tearDown(): void
@@ -174,6 +186,36 @@ final class CatalogApiTest extends TestCase
         self::assertNotNull($offer);
         self::assertSame([[], []], [$offer->staff, $offer->resources[0]->units]);
         self::assertNull($this->api->location((int) $closed->id));
+    }
+
+    public function testAnOfferHasTheActiveExtrasOfItsServiceAndOfEveryService(): void
+    {
+        $service = $this->services->save(new Service(null, Name::fromInput('A'), [
+            new Variant(null, '', 30, Money::ofRial(1_000_000), true),
+        ]));
+        $other = $this->services->save(new Service(null, Name::fromInput('B'), [
+            new Variant(null, '', 30, Money::ofRial(1_000_000), true),
+        ]));
+        $own = $this->extras->save(
+            new Extra(null, Name::fromInput('X-ray'), Money::ofRial(500_000), 10, $service->id, 3)
+        );
+        $shared = $this->extras->save(new Extra(null, Name::fromInput('Gift'), Money::ofRial(100_000), 0));
+        $this->extras->save(new Extra(null, Name::fromInput('Theirs'), Money::ofRial(1), 5, $other->id));
+        $this->extras->save(
+            new Extra(null, Name::fromInput('Paused'), Money::ofRial(1), 5, $service->id, status: Status::Inactive)
+        );
+        $gone = $this->extras->save(new Extra(null, Name::fromInput('Gone'), Money::ofRial(1), 5, $service->id));
+        $this->extras->delete((int) $gone->id);
+
+        $offer = $this->api->offer((int) $service->variants[0]->id);
+
+        self::assertEquals(
+            [
+                new ExtraOffer((int) $own->id, 10, Money::ofRial(500_000), 3),
+                new ExtraOffer((int) $shared->id, 0, Money::ofRial(100_000), 1),
+            ],
+            $offer?->extras
+        );
     }
 
     public function testALocationIsReadWithItsTimezone(): void

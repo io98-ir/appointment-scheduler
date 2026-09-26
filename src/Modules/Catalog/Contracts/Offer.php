@@ -15,6 +15,7 @@ final class Offer
      * @param ?int $slotStepMin null uses the site setting.
      * @param list<StaffOffer> $staff active staff who serve this variant; may be empty.
      * @param list<ResourceNeed> $resources
+     * @param list<ExtraOffer> $extras the active extras the customer may add, by id.
      */
     public function __construct(
         public readonly int $serviceId,
@@ -25,6 +26,7 @@ final class Offer
         public readonly ?int $slotStepMin,
         public readonly array $staff,
         public readonly array $resources,
+        public readonly array $extras = [],
     ) {
     }
 }

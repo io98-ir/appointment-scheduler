@@ -16,6 +16,55 @@
 
 ---
 
+## 2026-09-26 — سشن 10 (ادامه) — T1.5 Availability API + Cache
+**Taskها:** T1.5
+**انجام شد:**
+- **Scheduling Application:** `AvailabilityService` با سه نما (`day`، `month`، `first`)، `AvailabilityQuery`، `DayAvailability` و `DayStatus` (available، full، closed)، و port `SlotCache`.
+- **Scheduling Contracts:** port `OccupancyReader` و DTO `BusySpan`.
+- **Scheduling Infrastructure و Presentation:** `WpSlotCache`، `AvailabilitySettings`، action `scheduling/changed` از Repositoryها، و `GET /availability` عمومی با rate limit 120 در دقیقه.
+- **ماژول Booking (اسکلت):** migration `CreateOccupanciesTable` و `WpdbOccupancyReader`.
+- **Catalog:** `Offer::extras` (`ExtraOffer`)، `StaffOffer::priority` (= `sort`)، `ExtraRepository::ofService()`، و action `catalog/changed` از Repositoryها.
+- **رفع تله T1.4:** `LocalDay` لحظه جابه‌جایی DST را با جستجوی دودویی روی `getOffset()` پیدا می‌کند (tzdata سیستم لینوکس).
+- **اسناد:** implementation-notes §4.7 و تله tzdata در §4.6، data-model (تغییرات `occupancies`)، architecture §11، `docs/api.md`، `api-types.ts`، و READMEهای Catalog، Scheduling و Booking.
+
+**تصمیم‌ها و فرض‌ها:**
+- **جهت وابستگی:** Busy از port در Scheduling می‌آید و Booking آن را پیاده می‌کند، چون Booking به Scheduling وابسته است. جدول `occupancies` زودتر از T2.1 ساخته شد.
+- **ستون‌های اضافه در `occupancies`:** `variant_id` و `staff_id` برای مدل جلسه، و `expires_at` تا کوئری Busy بدون join به `holds` باشد.
+- **شعبه یا منبع بدون برنامه هفتگی تمام روز باز است.** پرسنل بدون برنامه کار نمی‌کند.
+- **Cache:** نتیجه هر روز بدون پنجره رزرو ذخیره می‌شود. invalidation سراسری است (generation) و TTL پنج دقیقه. طرح «cache برای هر مالک و روز» در architecture §11 با این جایگزین شد.
+- **پیش‌فرض‌های سراسری:** گام 30 دقیقه، min_notice 60 دقیقه، max_advance 60 روز، `least_busy`. Policy خدمت در T2.5 می‌آید.
+- **`closed` در برابر `full`:** `closed` یعنی هیچ پرسنلی آن روز کار نمی‌کند یا روز بیرون از پنجره است. `full` یعنی کار هست ولی شروع آزادی نمانده.
+- **مدت Extra ضرب در تعداد واحد است.** تکرار id در `extras[]` یعنی یک واحد بیشتر.
+
+**Review:** subagent `reviewer` شش مورد پیدا کرد و هر شش رفع شد:
+1. منبع بدون برنامه هیچ‌وقت آزاد نبود. پس خدمتی که اتاق لازم داشت همیشه «پر» نشان داده می‌شد.
+2. race در cache: نتیجه‌ای که قبل از invalidation محاسبه شده بود زیر generation جدید ذخیره می‌شد. حالا generation یک‌بار برای هر درخواست خوانده می‌شود.
+3. کوئری occupancies کران پایین نداشت و کل تاریخچه هر کلید را می‌خواند. حالا `start_at > from − 7 روز`.
+4. p95 در واقع بیشینه 10 نمونه بود و bootstrap سرور REST را هم می‌شمرد. حالا یک درخواست گرم‌کننده و 30 نمونه برای هر نما.
+5. قواعد هفتگی برای هر هفته دوباره خوانده می‌شدند. حالا یک‌بار برای هر درخواست.
+6. `catalog/changed` در لایه REST فرستاده می‌شد و WP-CLI یا import آن را دور می‌زد. حالا از Repositoryها و بعد از COMMIT فرستاده می‌شود، و architecture §11 به‌روز شد.
+
+**تأیید:**
+- `composer check` ← lint و PHPStan بدون خطا، deptrac با 0 violation، `OK (609 tests, 12534 assertions)`.
+- `pnpm lint` و `pnpm test` ← 38 تست سبز.
+- `composer test:rename` ← «OK. The renamed copy passed composer check and the JS checks». هشدارهای rmdir فقط از پاک‌کردن کپی موقت در ویندوز است.
+- **Mutation:** حذف فیلتر notice دو تست را شکست داد، و حذف پیش‌فرض «شعبه بدون برنامه» 12 تست را.
+- **CI (شاخه `wip/t1.5-availability`):**
+  - run 36263620890 قرمز بود و دو مشکل داشت:
+    - `LocalDayTest` از T1.4: `getTransitions()` با tzdata سیستم لینوکس. T1.4 هیچ‌وقت روی CI نرفته بود.
+    - فرض کهنه در تست cache، بعد از رفع مورد 6 reviewer.
+  - run 36264007776 سبز است: هر 11 job سبز، Integration 125 تست در 4 ترکیب. p95 نمای روز حدود 5ms و نمای ماه 28 تا 39ms، در برابر بودجه 300ms.
+
+**مشکلات و باقیمانده:**
+- invalidation روی نوشتن در `occupancies` در T2.2 وصل می‌شود.
+- UI تنظیمات Availability در T6.1 ساخته می‌شود.
+- شاخه `wip/t1.5-availability` روی origin مانده است.
+
+**قدم بعدی:** T2.1 — Booking Migrations.
+**Commitها:** `feat(scheduling): availability api and cache (T1.5)`
+
+---
+
 ## 2026-09-26 — سشن 10 (ادامه) — T1.4 AvailabilityCalculator
 **Taskها:** T1.4
 **انجام شد:**

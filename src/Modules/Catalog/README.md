@@ -21,7 +21,8 @@ price or duration) and resource requirements, and extras.
   `/service-categories`, `/services`, `/extras`, each with list, create, read,
   replace (PUT) and delete (docs/api.md).
 - **Capabilities:** `manage_catalog` (administrator).
-- **Events:** none yet.
+- **Events:** the action `catalog/changed` after every repository write,
+  after COMMIT (the availability cache listens to it).
 - **Tables:** `locations`, `staff`, `resources`, `service_categories`,
   `services`, `service_variants`, `service_staff`, `service_resources`,
   `extras` (data-model §2, migration `CreateCatalogTables`).

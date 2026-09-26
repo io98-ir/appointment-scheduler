@@ -136,3 +136,35 @@ export interface Extra {
 	max_qty: number;
 	status: CatalogStatus;
 }
+
+/** GET /availability: a day of the location. */
+export type DayStatus = 'available' | 'full' | 'closed';
+
+export interface AvailabilitySlot {
+	/** ISO-8601 with the location's offset. */
+	start: string;
+	/** The end for the first staff member, who is assigned at hold time. */
+	end: string;
+	/** In assignment order. */
+	staff_ids: number[];
+	seats_left: number;
+}
+
+export interface AvailabilityDay {
+	timezone: string;
+	date: string;
+	status: DayStatus;
+	slots: AvailabilitySlot[];
+}
+
+export interface AvailabilityMonth {
+	timezone: string;
+	days: { date: string; status: DayStatus }[];
+}
+
+export interface AvailabilityFirst {
+	timezone: string;
+	/** Null when no day within `days` has a free start. */
+	date: string | null;
+	slots: AvailabilitySlot[];
+}

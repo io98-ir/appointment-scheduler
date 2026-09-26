@@ -14,12 +14,14 @@ final class StaffOffer
 {
     /**
      * @param ?int $locationId their location; null serves every location.
+     * @param int $priority the admin's order (lower first) when the business picks the staff member.
      */
     public function __construct(
         public readonly int $staffId,
         public readonly ?int $locationId,
         public readonly int $durationMin,
         public readonly Money $price,
+        public readonly int $priority = 0,
     ) {
     }
 }

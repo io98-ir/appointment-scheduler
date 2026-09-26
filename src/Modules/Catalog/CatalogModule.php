@@ -85,7 +85,8 @@ final class CatalogModule implements Module
             $c->get(ServiceRepository::class),
             $c->get(StaffRepository::class),
             $c->get(BookableResourceRepository::class),
-            $c->get(LocationRepository::class)
+            $c->get(LocationRepository::class),
+            $c->get(ExtraRepository::class)
         ));
     }
 

@@ -31,3 +31,24 @@
 - مرجع‌ها بررسی می‌شوند: `unknown_location`، `unknown_category`، `unknown_staff`، `unknown_service`. حساب وردپرس (`unknown_user`) و تصویر (`invalid_image`، فقط attachment تصویری) هم بررسی می‌شوند.
 - شعبه‌ای که پرسنل یا منبع حذف‌نشده دارد حذف نمی‌شود (`location_in_use`)، چون ساعات کاری آن‌ها در منطقه زمانی همان شعبه حساب می‌شود.
 - حذف دسته، خدمت یا پرسنل آبشاری نیست. ارجاع به آیتم حذف‌شده می‌ماند و `CatalogApi` آن را نادیده می‌گیرد.
+
+## Availability (عمومی)
+`GET /availability` بدون ورود در دسترس است (`permission_callback` عمومی فقط برای GET) و rate limit دارد: 120 درخواست در دقیقه برای هر کلاینت. پاسخ فقط **پیشنهاد** است و Hold در T2.2 دوباره زیر قفل از DB بررسی می‌کند (ADR-004).
+
+| پارامتر | نوع | توضیح |
+|---|---|---|
+| `variant` | int، الزامی | Variant قابل رزرو. در غیر این صورت 404 `variant_not_found` |
+| `location` | int، الزامی | شعبه فعال. در غیر این صورت 404 `location_not_found`. پرسنل و منبع شعبه‌های دیگر کنار گذاشته می‌شوند |
+| `view` | `day` (پیش‌فرض)، `month`، `first` | |
+| `date` | `YYYY-MM-DD` | روز (یا شروع بازه) به تقویم میلادی و در منطقه زمانی شعبه. پیش‌فرض: امروزِ شعبه |
+| `days` | 1 تا 62، پیش‌فرض 31 | طول بازه `month`، یا افق جستجوی `first` |
+| `staff` | int | پرسنل انتخابی. اگر این خدمت را در این شعبه ارائه ندهد: 422 `unknown_staff` |
+| `extras[]` | int[] | Extraها. تکرار یک id یعنی یک واحد بیشتر. Extra خارج از خدمت یا بیشتر از `max_qty`: 422 `invalid_extra` |
+| `party_size` | 1 تا 1000، پیش‌فرض 1 | بیشتر از ظرفیت خدمت: 422 `party_too_large` |
+
+پاسخ‌ها (نوع‌ها در `api-types.ts`):
+- **day:** `{timezone, date, status, slots: [{start, end, staff_ids, seats_left}]}`. `staff_ids` به ترتیب تخصیص است (`least_busy` یا `priority`) و `end` و `seats_left` مال اولین پرسنل است.
+- **month:** `{timezone, days: [{date, status}]}`.
+- **first:** `{timezone, date | null, slots}`.
+
+`status` یکی از این‌هاست: `available` (شروع آزاد دارد)، `full` (کسی کار می‌کند ولی جایی نمانده، یا شروع‌های باقیمانده از مهلت گذشته‌اند)، `closed` (کسی کار نمی‌کند: تعطیل، مرخصی، یا بیرون از بازه رزرو).

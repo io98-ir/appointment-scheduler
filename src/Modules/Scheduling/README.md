@@ -28,9 +28,20 @@ one date, and holiday calendars with the shipped Iranian dataset.
   `HolidayDataset` and imported by the migration `ImportHolidays(year)`.
   Each new year is a new migration. Import keeps a day already stored, so a
   day the admin corrected wins.
+- **Availability API (`Application/AvailabilityService`):** day, month and
+  first views of one variant at one location. It reads the catalog offer,
+  the schedules of the staff, resources and location, the location's
+  holidays, and what is booked through `Contracts\OccupancyReader`, which
+  the Booking module implements. A location without a weekly schedule does
+  not bound its staff's hours. Computed days are cached (`WpSlotCache`)
+  without the booking window, which is applied on each read. Public route:
+  `GET /availability` (docs/api.md).
+- **Settings:** `AvailabilitySettings` (slot step, minimum notice, maximum
+  advance, staff choice).
 - **Not yet:** Application and REST for editing schedules (with the admin
-  UI, T3.2 and T3.5), the list of holiday calendars (only `ir` for now), and
-  the availability query, cache and REST built on the calculator (T1.5).
-- **Capabilities, events:** none yet.
+  UI, T3.2 and T3.5) and the list of holiday calendars (only `ir` for now).
+- **Capabilities:** none. **Events:** fires `scheduling/changed` on every
+  schedule, exception or holiday write; listens to it and to
+  `catalog/changed` to invalidate the availability cache.
 - **Tables:** `schedule_rules`, `schedule_exceptions`, `holidays`
   (data-model §2, migration `CreateSchedulingTables`).

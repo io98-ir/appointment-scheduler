@@ -65,10 +65,36 @@ final class LocalDay
         if ($instant->format('H:i') === $wallClock) {
             return $instant->getTimestamp();
         }
-        $transitions = $this->zone->getTransitions($instant->getTimestamp() - 86_400, $instant->getTimestamp());
 
-        return [] === $transitions
-            ? $instant->getTimestamp()
-            : $transitions[\count($transitions) - 1]['ts'];
+        return $this->transitionBefore($instant->getTimestamp());
+    }
+
+    /**
+     * The first second with the offset $after has, searched in the day
+     * before it: the transition that the skipped wall-clock time falls in.
+     * A search on offsets, because getTransitions() lists nothing for
+     * recent years with the slim system tzdata that Linux PHP builds read
+     * (future rules live in the file's POSIX footer), CI run 36263620890.
+     */
+    private function transitionBefore(int $after): int
+    {
+        $offset = $this->offsetAt($after);
+        $low = $after - 86_400;
+        $high = $after;
+        while ($high - $low > 1) {
+            $middle = \intdiv($low + $high, 2);
+            if ($this->offsetAt($middle) === $offset) {
+                $high = $middle;
+            } else {
+                $low = $middle;
+            }
+        }
+
+        return $high;
+    }
+
+    private function offsetAt(int $timestamp): int
+    {
+        return $this->zone->getOffset(new DateTimeImmutable('@' . $timestamp));
     }
 }

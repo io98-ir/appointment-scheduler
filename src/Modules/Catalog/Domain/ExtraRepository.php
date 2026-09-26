@@ -20,6 +20,13 @@ interface ExtraRepository
     public function count(): int;
 
     /**
+     * The extras of a service and those of every service, active or not.
+     *
+     * @return list<Extra> By id.
+     */
+    public function ofService(int $serviceId): array;
+
+    /**
      * Inserts when the id is null, else updates the stored row, which the
      * caller has checked exists.
      *

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Scheduling\Infrastructure\Persistence;
 
 use Vaqtyar\Kernel\Database\Row;
+use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Modules\Scheduling\Domain\Owner;
 use Vaqtyar\Modules\Scheduling\Domain\OwnerType;
 use Vaqtyar\Shared\Domain\Clock;
@@ -15,6 +16,15 @@ use Vaqtyar\Shared\Domain\LocalTime;
  */
 final class Columns
 {
+    /**
+     * Tells listeners, such as the availability cache, that a schedule,
+     * exception or holiday changed.
+     */
+    public static function changed(): void
+    {
+        \do_action(Hooks::name('scheduling/changed'));
+    }
+
     /**
      * A TIME column value: "09:30:00", or "24:00:00" for the end of a day.
      */

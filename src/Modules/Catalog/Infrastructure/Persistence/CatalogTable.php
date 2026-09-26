@@ -6,6 +6,7 @@ namespace Vaqtyar\Modules\Catalog\Infrastructure\Persistence;
 
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Row;
+use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Shared\Domain\Clock;
 
@@ -73,8 +74,10 @@ final class CatalogTable
     public function insert(array $columns): int
     {
         $now = $this->now();
+        $id = $this->db->insert($this->table(), $columns + ['created_at' => $now, 'updated_at' => $now]);
+        $this->changed();
 
-        return $this->db->insert($this->table(), $columns + ['created_at' => $now, 'updated_at' => $now]);
+        return $id;
     }
 
     /**
@@ -87,6 +90,7 @@ final class CatalogTable
             $columns + ['updated_at' => $this->now()],
             ['id' => $id, 'deleted_at' => null]
         );
+        $this->changed();
     }
 
     public function delete(int $id): void
@@ -97,6 +101,20 @@ final class CatalogTable
             ['deleted_at' => $now, 'updated_at' => $now],
             ['id' => $id, 'deleted_at' => null]
         );
+        $this->changed();
+    }
+
+    /**
+     * Tells listeners, such as the availability cache, that the catalog
+     * changed: the action Hooks::name('catalog/changed'). Inside a
+     * transaction the caller fires it after COMMIT instead, so no one reads
+     * the old rows into a fresh cache.
+     */
+    public function changed(): void
+    {
+        if (!$this->db->inTransaction()) {
+            \do_action(Hooks::name('catalog/changed'));
+        }
     }
 
     /**

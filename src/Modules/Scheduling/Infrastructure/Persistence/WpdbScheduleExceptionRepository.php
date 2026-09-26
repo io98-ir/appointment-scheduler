@@ -78,6 +78,7 @@ final class WpdbScheduleExceptionRepository implements ScheduleExceptionReposito
         } else {
             $this->db->update($table, $columns, ['id' => $id]);
         }
+        Columns::changed();
 
         return $this->find($id) ?? throw new \LogicException('The exception just saved is gone.');
     }
@@ -85,6 +86,7 @@ final class WpdbScheduleExceptionRepository implements ScheduleExceptionReposito
     public function delete(int $id): void
     {
         $this->db->execute('DELETE FROM %i WHERE id = %d', Tables::name('schedule_exceptions'), $id);
+        Columns::changed();
     }
 
     private static function fromRow(Row $row): ScheduleException

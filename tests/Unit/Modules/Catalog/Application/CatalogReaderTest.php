@@ -8,11 +8,14 @@ use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Catalog\Application\CatalogReader;
+use Vaqtyar\Modules\Catalog\Contracts\ExtraOffer;
 use Vaqtyar\Modules\Catalog\Contracts\ResourceUnit;
 use Vaqtyar\Modules\Catalog\Contracts\StaffOffer;
 use Vaqtyar\Modules\Catalog\Domain\BookableResource;
 use Vaqtyar\Modules\Catalog\Domain\BookableResourceRepository;
 use Vaqtyar\Modules\Catalog\Domain\Color;
+use Vaqtyar\Modules\Catalog\Domain\Extra;
+use Vaqtyar\Modules\Catalog\Domain\ExtraRepository;
 use Vaqtyar\Modules\Catalog\Domain\Location;
 use Vaqtyar\Modules\Catalog\Domain\LocationRepository;
 use Vaqtyar\Modules\Catalog\Domain\ResourceRequirement;
@@ -40,6 +43,8 @@ final class CatalogReaderTest extends TestCase
 
     private LocationRepository&MockInterface $locations;
 
+    private ExtraRepository&MockInterface $extras;
+
     private CatalogReader $reader;
 
     protected function setUp(): void
@@ -49,7 +54,15 @@ final class CatalogReaderTest extends TestCase
         $this->staff = self::mock(StaffRepository::class);
         $this->resources = self::mock(BookableResourceRepository::class);
         $this->locations = self::mock(LocationRepository::class);
-        $this->reader = new CatalogReader($this->services, $this->staff, $this->resources, $this->locations);
+        $this->extras = self::mock(ExtraRepository::class);
+        $this->extras->shouldReceive('ofService')->andReturn([])->byDefault();
+        $this->reader = new CatalogReader(
+            $this->services,
+            $this->staff,
+            $this->resources,
+            $this->locations,
+            $this->extras
+        );
     }
 
     protected function tearDown(): void
@@ -98,7 +111,29 @@ final class CatalogReaderTest extends TestCase
             ]
         );
         // 3 has their own price for the long variant; 4 only serves the short one.
-        self::assertEquals([new StaffOffer(3, 1, 60, Money::ofRial(3_000_000))], $offer->staff);
+        self::assertEquals([new StaffOffer(3, 1, 60, Money::ofRial(3_000_000), 30)], $offer->staff);
+    }
+
+    public function testTheOfferHasTheActiveExtrasOfTheServiceAndOfEveryService(): void
+    {
+        $this->services->shouldReceive('findByVariant')->with(self::SHORT)->andReturn(self::service());
+        $this->staff->shouldReceive('findMany')->andReturn([]);
+        $this->extras->shouldReceive('ofService')->with(7)->andReturn([
+            new Extra(40, Name::fromInput('X-ray'), Money::ofRial(500_000), 10, 7, 2),
+            new Extra(41, Name::fromInput('Gift'), Money::ofRial(100_000), 0),
+            new Extra(42, Name::fromInput('Old'), Money::ofRial(1), 5, 7, status: Status::Inactive),
+        ]);
+
+        $offer = $this->reader->offer(self::SHORT);
+
+        self::assertNotNull($offer);
+        self::assertEquals(
+            [
+                new ExtraOffer(40, 10, Money::ofRial(500_000), 2),
+                new ExtraOffer(41, 0, Money::ofRial(100_000), 1),
+            ],
+            $offer->extras
+        );
     }
 
     public function testTheOfferListsTheActiveResourcesOfEachGroup(): void
@@ -205,7 +240,8 @@ final class CatalogReaderTest extends TestCase
             Name::fromInput("Staff {$id}"),
             Color::fromInput('#112233'),
             locationId: $locationId,
-            status: $status
+            status: $status,
+            sort: $id * 10
         );
     }
 

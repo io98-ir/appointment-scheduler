@@ -42,6 +42,21 @@ final class WpdbExtraRepository implements ExtraRepository
         return $this->table->count();
     }
 
+    /**
+     * @return list<Extra>
+     */
+    public function ofService(int $serviceId): array
+    {
+        return \array_map(
+            static fn (array $row): Extra => self::fromRow(new Row($row)),
+            $this->db->getResults(
+                'SELECT * FROM %i WHERE (service_id = %d OR service_id IS NULL) AND deleted_at IS NULL ORDER BY id',
+                $this->table->table(),
+                $serviceId
+            )
+        );
+    }
+
     public function save(Extra $extra): Extra
     {
         $columns = [
@@ -75,6 +90,7 @@ final class WpdbExtraRepository implements ExtraRepository
             ['deleted_at' => $now, 'updated_at' => $now],
             ['service_id' => $serviceId, 'deleted_at' => null]
         );
+        $this->table->changed();
     }
 
     private static function fromRow(Row $row): Extra
