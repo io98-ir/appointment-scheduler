@@ -16,6 +16,23 @@
 
 ---
 
+## 2026-09-26 — سشن 10 (ادامه) — T2.1 Booking Migrations
+**Taskها:** T2.1
+**انجام شد:**
+- migration دوم Booking، `CreateBookingTables`، با ده جدول data-model §2 و ثبت آن در `BookingModule::migrations()`.
+- تست Integration `CreateBookingTablesTest`: InnoDB بودن هر 11 جدول Booking، idempotent بودن، نوع ستون پول، قیدهای UNIQUE، متن فارسی در TEXT و JSON، و کد تخفیف فارسی با SQL خام.
+**تصمیم‌ها و فرض‌ها:**
+- `fields.key` به `field_key` و `condition` به `show_if` تغییر نام داد (کلمه رزرو MySQL).
+- `holds.location_id` اضافه شد (تأیید Hold لازمش دارد).
+- یافته‌های reviewer: (1) Policy سراسری `service_id = 0` است، نه NULL، تا UNIQUE واقعاً کار کند. (2) `coupons` ستون ascii ندارد تا کد فارسی با SQL خام پیدا شود (تله §4.5). هشدار مشابه برای جستجوی `appointments` در T2.7 در implementation-notes §4.8 ثبت شد.
+- ستون `meta` اضافه نشد (principles §0).
+**تأیید:** `composer check` ← OK (609 tests)، `composer test:rename` ← OK. CI روی `wip/t2.1` ← همه jobها سبز، Integration ← OK (129 tests, 444 assertions) در 4 ترکیب (run 36266758573).
+**مشکلات و باقیمانده:** —
+**قدم بعدی:** T2.2 — ResourceLocker، Hold و `POST /holds` با تست همزمانی.
+**Commitها:** `feat(booking): booking tables migration (T2.1)`
+
+---
+
 ## 2026-09-26 — سشن 10 (ادامه) — T1.5 Availability API + Cache
 **Taskها:** T1.5
 **انجام شد:**

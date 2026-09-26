@@ -8,14 +8,15 @@ use Vaqtyar\Kernel\Container;
 use Vaqtyar\Kernel\Context;
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Module;
+use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateBookingTables;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateOccupanciesTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbOccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Shared\Domain\Clock;
 
 /**
- * Holds, appointments and their state (architecture §3). For now only the
- * occupancies that availability reads; holds and appointments come in M2.
+ * Holds, appointments and their state (architecture §3). The tables for all
+ * of it; for now only the occupancies reader that availability uses.
  */
 final class BookingModule implements Module
 {
@@ -37,7 +38,7 @@ final class BookingModule implements Module
      */
     public function migrations(): array
     {
-        return [new CreateOccupanciesTable()];
+        return [new CreateOccupanciesTable(), new CreateBookingTables()];
     }
 
     /**

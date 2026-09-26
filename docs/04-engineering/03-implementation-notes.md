@@ -223,6 +223,11 @@
 - **REST:** `GET /availability` عمومی با `Router::ANYONE` و rate limit 120 در دقیقه (docs/api.md). زمان‌ها ISO-8601 با offset شعبه‌اند.
 - **تست:** Unit برای Service با fakeها (شامل mutation روی فیلتر notice و شعبه بدون برنامه). Integration روی CI: `WpdbOccupancyReaderTest`، `WpSlotCacheTest`، و `AvailabilityRestTest` (REST واقعی، cache و invalidation، و **p95 کمتر از 300ms** برای نمای روز و ماه، هر کدام 30 نمونه با cache سرد بعد از یک درخواست گرم‌کننده، روی fixture با 10 پرسنل و حدود 1100 اشغال). تاریخ fixture از امروزِ تهران حساب می‌شود، چون مسیر REST ساعت سیستم را دارد.
 
+## 4.8 جداول Booking (T2.1)
+- migration دوم Booking (`CreateBookingTables`) ده جدول را می‌سازد. انحراف‌ها از data-model در همان سند (تغییرات T2.1) آمده است.
+- **Policy سراسری `service_id = 0` است، نه NULL.** T2.5 باید upsert را روی UNIQUE(type, service_id) انجام دهد.
+- **تله charset برای T2.7:** `appointments` ستون `ascii` دارد، پس جستجوی SQL خام با متن فارسی (مثلاً `LIKE` روی `customer_note`) رد می‌شود. جستجوی متنی را روی `customers.search_name` بزن (§4.5).
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

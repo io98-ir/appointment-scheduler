@@ -77,6 +77,13 @@
 > - جدول در T1.5 ساخته شد (migration `CreateOccupanciesTable` در ماژول Booking)، چون Availability آن را می‌خواند. بقیه جداول Booking در T2.1 می‌آیند.
 > - سه ستون اضافه شد: `variant_id` و `staff_id` (NULL‌پذیر) تا جلسه گروهی بدون join شناخته شود (implementation-notes §4.6)، و `expires_at` (انقضای Hold، برای نوبت NULL) تا شرط `expires_at > now` بدون join به `holds` اجرا شود. **تمدید Hold در T2.2 باید `expires_at` همین ردیف‌ها را هم به‌روز کند، و تبدیل به نوبت آن را NULL کند.**
 > - `lock_key` به شکل `staff:{id}` و `res:{id}` است.
+>
+> **تغییرات T2.1 نسبت به طرح اولیه (بقیه جداول Booking، migration `CreateBookingTables`):**
+> - `fields.key` به `field_key` و `fields.condition` به `show_if` تغییر نام داد، چون `KEY` و `CONDITION` در MySQL کلمه رزرو هستند.
+> - `holds` ستون `location_id` دارد، چون تأیید Hold آن را برای نوبت لازم دارد.
+> - `policies.service_id` برابر `NOT NULL DEFAULT 0` است و **0 یعنی Policy سراسری**. با NULL، قید UNIQUE جلوی دو ردیف سراسری را نمی‌گرفت (یافته reviewer).
+> - `coupons` هیچ ستون `ascii` ندارد، چون کد ممکن است فارسی باشد (تله charset، implementation-notes §4.5). `code` با collation جدول است، پس بزرگی و کوچکی حروف فرقی ندارد.
+> - `appointment_history` مثل `logs` ستون `updated_at` ندارد، چون ردیف فقط نوشته می‌شود.
 
 ### Customers
 | جدول | ستون‌های کلیدی | ایندکس |
