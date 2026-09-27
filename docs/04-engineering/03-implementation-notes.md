@@ -311,6 +311,16 @@
 - **COUNT(*)** بدون فیلتر کل ایندکس را می‌شمارد. برای حجم یک کسب‌وکار (ده‌ها هزار نوبت) مشکلی نیست. اگر روزی مشکل شد، شمارش تقریبی یا cache جایگزین می‌شود.
 - **خارج از دامنه:** UI لیست و تقویم (T3.3، T3.4)، ویرایش یادداشت داخلی، و برچسب‌ها (`label_id`).
 
+## 4.16 Admin Shell (T3.1)
+- **پیکربندی:** `AdminPage::render()` مقدار `restUrl` (`rest_url()` فضای‌نام) و nonce `wp_rest` را به‌صورت JSON در `data-config` روی عنصر mount می‌گذارد. هیچ متغیر سراسری ساخته نمی‌شود، پس تغییر نام به ویرایش JS نیاز ندارد. `config.ts` آن را می‌خواند و در صورت نامعتبر بودن خطا می‌دهد.
+- **ناوبری:** فهرست `SECTIONS` در `App.tsx` ترتیب منو را تعیین می‌کند. هر بخش مالک مسیر خودش و همه مسیرهای زیرش است (`/services/7` زیر `/services`). صفحه‌های T3.2 تا T3.6 جایگزین `Placeholder` می‌شوند. زیرمنوی wp-admin ساخته نشد: route در hash است و منوی داخل اپ کافی است.
+- **Server state:** `createQueryClient` (TanStack Query، طبق ADR-007). خطای 4xx دوباره تلاش نمی‌شود و بقیه خطاها حداکثر دو بار تکرار می‌شوند. `refetchOnWindowFocus` خاموش است. **خطای هر mutation به‌صورت خودکار یک snackbar نشان می‌دهد** (`MutationCache.onError` ← store `core/notices`). خطای query را خود صفحه به‌جای داده نمایش می‌دهد. `useApi()` کلاینت REST را از context برمی‌گرداند.
+- **پیام خطا:** `errorMessage()` پیام سرور را نمایش می‌دهد (که سمت سرور ترجمه شده است)، و برای `network_error`، `invalid_response` و خطاهای غیر API یک پیام ترجمه‌شده سمت کلاینت دارد. متن خام Exception هرگز به کاربر نشان داده نمی‌شود.
+- **ErrorBoundary** هر صفحه را جدا نگه می‌دارد (با `key={route}`، پس رفتن به صفحه دیگر خطا را پاک می‌کند). منو سالم می‌ماند.
+- **حالت تاریک:** بدون هیچ رنگ ثابت (stylelint رنگ hex و تابع‌های رنگ را ممنوع کرده است). از `color-scheme` و رنگ‌های سیستمی (`Canvas`، `CanvasText`، `LinkText`، `GrayText`) استفاده می‌شود. مقدار `data-theme` یکی از `auto`، `light` یا `dark` است. انتخاب کاربر فقط در localStorage همین مرورگر (کلید `vqy-admin-theme`) ذخیره می‌شود و دسترسی به storage داخل try/catch است. رنگ تأکید از `--wp-admin-theme-color` گرفته می‌شود.
+- **وابستگی‌ها:** `@wordpress/components`، `data` و `notices` external هسته‌اند (در bundle صفر KB) و `admin.asset.php` آن‌ها را اعلام می‌کند. **stylesheet `wp-components` خودکار بارگذاری نمی‌شود**، پس style ما وابستگی `wp-components` دارد. فقط TanStack Query در bundle است: admin حدود 9.9KB gz.
+- **i18n JS:** همه متن‌ها با `__()` و text-domain نوشته شده‌اند و `wp_set_script_translations` از قبل وصل بود.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

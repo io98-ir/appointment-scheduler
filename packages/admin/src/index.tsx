@@ -1,13 +1,29 @@
+import { ApiClient, SLUG } from '@vaqtyar/shared';
+import { dispatch } from '@wordpress/data';
 import { createRoot } from '@wordpress/element';
-import { SLUG } from '@vaqtyar/shared';
+import { store as noticesStore } from '@wordpress/notices';
 
 import { App } from './App';
+import { readConfig } from './config';
+import { createQueryClient } from './query';
 import './admin.css';
 
 /**
  * Mounts the app into the element the admin page renders (AdminPage.php).
  */
-const root = document.getElementById( `${ SLUG }-admin` );
-if ( root ) {
-	createRoot( root ).render( <App /> );
+const element = document.getElementById( `${ SLUG }-admin` );
+if ( element ) {
+	const { restUrl, nonce } = readConfig( element );
+	const queryClient = createQueryClient( ( message ) =>
+		dispatch( noticesStore ).createErrorNotice( message, {
+			type: 'snackbar',
+		} )
+	);
+
+	createRoot( element ).render(
+		<App
+			api={ new ApiClient( { baseUrl: restUrl, nonce } ) }
+			queryClient={ queryClient }
+		/>
+	);
 }

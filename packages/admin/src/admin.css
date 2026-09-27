@@ -1,12 +1,76 @@
 /*
- * Logical properties only (principles §5): the same rules serve RTL and LTR.
- * wp-admin's own colors come from its stylesheet; nothing is hard-coded here.
+ * Logical properties only and no hard-coded colors (principles §5). Dark
+ * mode is the browser's: color-scheme picks the light or dark system colors
+ * (Canvas, CanvasText, …) from data-theme (theme.ts), and "auto" lets the
+ * system decide.
  */
 .vqy-admin {
+	--vqy-accent: var(--wp-admin-theme-color, currentcolor);
+
+	color-scheme: light dark;
 	margin-inline-end: 20px;
-	padding-block-start: 10px;
+	margin-block-start: 10px;
+	padding-block: 16px;
+	padding-inline: 20px;
+	background: Canvas;
+	color: CanvasText;
+	border: 1px solid GrayText;
+	border-radius: 4px;
+}
+
+.vqy-admin[data-theme="light"] {
+	color-scheme: light;
+}
+
+.vqy-admin[data-theme="dark"] {
+	color-scheme: dark;
+}
+
+.vqy-admin a {
+	color: LinkText;
+}
+
+.vqy-admin__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	justify-content: space-between;
+	gap: 12px;
+	padding-block-end: 12px;
+	border-block-end: 1px solid GrayText;
+}
+
+.vqy-admin__nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.vqy-admin .vqy-admin__link {
+	padding-block: 6px;
+	padding-inline: 10px;
+	border-block-end: 2px solid transparent;
+	color: CanvasText;
+	text-decoration: none;
+}
+
+.vqy-admin .vqy-admin__link[aria-current="page"] {
+	border-block-end-color: var(--vqy-accent);
+	font-weight: 600;
+}
+
+.vqy-admin__main {
+	padding-block-start: 16px;
 }
 
 .vqy-admin__title {
 	margin-block-end: 1em;
+	color: inherit;
+}
+
+.vqy-admin__snackbars {
+	position: fixed;
+	inset-block-end: 24px;
+	inset-inline-start: 180px;
+	z-index: 100000;
 }

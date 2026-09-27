@@ -1,7 +1,7 @@
 /**
  * The WordPress defaults of wp-scripts, plus: tests import their tools
- * (vitest, react-dom) from the workspace root's devDependencies, not from the
- * package they test.
+ * (vitest, react-dom) from the workspace root's devDependencies, and the rest
+ * from the package they test.
  */
 const defaultConfig = require( '@wordpress/scripts/config/eslint.config.cjs' );
 
@@ -12,7 +12,15 @@ module.exports = [
 		rules: {
 			'import/no-extraneous-dependencies': [
 				'error',
-				{ devDependencies: true, packageDir: [ __dirname ] },
+				{
+					devDependencies: true,
+					packageDir: [
+						__dirname,
+						...[ 'admin', 'shared', 'widget' ].map(
+							( name ) => `${ __dirname }/packages/${ name }`
+						),
+					],
+				},
 			],
 		},
 	},

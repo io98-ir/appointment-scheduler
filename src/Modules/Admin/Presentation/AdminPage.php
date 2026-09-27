@@ -68,10 +68,11 @@ final class AdminPage
         );
         \wp_set_script_translations($handle, 'vaqtyar', \dirname($this->pluginFile) . '/languages');
         // Logical properties only, so one stylesheet serves RTL and LTR.
+        // wp-components: the script loads its JS, not its stylesheet.
         \wp_enqueue_style(
             $handle,
             \plugins_url('build/' . self::ENTRY . '.css', $this->pluginFile),
-            [],
+            ['wp-components'],
             $asset['version']
         );
     }
@@ -94,7 +95,16 @@ final class AdminPage
             return;
         }
 
-        \printf('<div class="wrap"><div id="%s"></div></div>', \esc_attr(Identity::SLUG . '-admin'));
+        // What packages/admin/src/config.ts reads: JSON in an attribute, no global.
+        $config = [
+            'restUrl' => \rest_url(Identity::REST_NAMESPACE . '/'),
+            'nonce' => \wp_create_nonce('wp_rest'),
+        ];
+        \printf(
+            '<div class="wrap"><div id="%s" data-config="%s"></div></div>',
+            \esc_attr(Identity::SLUG . '-admin'),
+            \esc_attr((string) \wp_json_encode($config))
+        );
     }
 
     /**

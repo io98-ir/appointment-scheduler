@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-28 — سشن 16 — T3.1 Admin Shell
+**Taskها:** T3.1
+**انجام شد:** `packages/admin`: `App.tsx` (منوی `SECTIONS` با `aria-current`، هدر، ErrorBoundary برای هر صفحه، `Snackbars` روی store `core/notices`، و `useApi()` از context)، `query.ts` (`createQueryClient`، `shouldRetry`، `errorMessage`)، `config.ts` (خواندن `data-config`)، `theme.ts` (auto، light، dark در localStorage)، و `admin.css` (`color-scheme` با رنگ‌های سیستمی). PHP: `AdminPage` مقدار `data-config` (restUrl و nonce) را render می‌کند و style آن به `wp-components` وابسته است. وابستگی‌ها: `@tanstack/react-query`، `@wordpress/components`، `data` و `notices`. در `eslint.config.cjs` تست‌ها حالا وابستگی‌های پکیج خودشان را هم می‌بینند.
+**تصمیم‌ها و فرض‌ها:** (1) منو داخل اپ است و زیرمنوی wp-admin ساخته نشد (route در hash است). (2) صفحه‌های M3 فعلاً `Placeholder` هستند. (3) خطای mutation به‌صورت سراسری snackbar می‌شود، ولی خطای query را خود صفحه نمایش می‌دهد. (4) حالت تاریک فقط محیط اپ را تغییر می‌دهد، نه کل wp-admin را. انتخاب کاربر برای هر مرورگر جداست (تنظیم سراسری White-label در T6.1). (5) روی WP 6.6، propهای `__next*` نادیده گرفته می‌شوند و فقط ظاهر کمی فرق می‌کند.
+**تأیید:** `pnpm lint` (eslint، stylelint، tsc) ← سبز. `pnpm test` ← 67 passed. `pnpm build` ← OK. `pnpm size` ← admin 9.92KB gz و widget 4.99KB gz. Reviewer (agent `reviewer` بارگذاری نشد، پس همان تعریف با general-purpose اجرا شد) ← دو یافته، هر دو رفع شد: یک بایت CR به‌جای `\r` در `\rest_url` (خطای ویرایش اسکریپتی که باعث fatal می‌شد)، و نبودن stylesheet `wp-components`. **`composer check` اجرا نشد: PHP و Composer روی این دستگاه نیستند.** تغییر PHP و `AdminPageTest` باید روی CI تأیید شوند.
+**مشکلات و باقیمانده:** نصب PHP 8.3 و Composer روی دستگاه جدید (dev-environment §). E2E ناوبری در T3.2 همراه اولین صفحه CRUD اضافه می‌شود.
+**قدم بعدی:** push و دیدن CI، بعد T3.2.
+**Commitها:** `feat(admin): app shell with navigation, notices, query client and dark mode (T3.1)`
+
+---
+
 ## 2026-09-27 — سشن 15 — T2.8 Queryهای Admin نوبت
 **Taskها:** T2.8
 **انجام شد:** Read side نوبت‌ها: `AppointmentBrowser` (Application)، port `AppointmentQuery`، DTOهای `AppointmentRow`، `AppointmentDetail`، `AppointmentFilter`، `AppointmentSearch` و `AppointmentSort`، و `Infrastructure\Query\WpdbAppointmentQuery`. REST: `GET /appointments`، `GET /appointments/{id}` و `GET /calendar` (`AppointmentListRoutes`، `AppointmentJson::row` و `detail`). ماژول Customers: Contract `CustomerDirectory` (`summaries` و `matching`) با `WpdbCustomerDirectory`. migration `AddAppointmentStartIndex`. مستندات: api.md، implementation-notes §4.15، data-model، README دو ماژول، `api-types.ts`.

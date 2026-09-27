@@ -50,7 +50,28 @@ final class AdminPageTest extends \WP_UnitTestCase
         $page->render();
         $html = (string) \ob_get_clean();
 
-        self::assertStringContainsString('<div id="' . Identity::SLUG . '-admin"></div>', $html);
+        self::assertMatchesRegularExpression(
+            '/<div id="' . Identity::SLUG . '-admin" data-config="[^"]*"><\/div>/',
+            $html
+        );
+    }
+
+    public function testHandsTheAppTheRestBaseAndANonce(): void
+    {
+        \wp_set_current_user(self::userWithRole('administrator'));
+        $page = new AdminPage(self::BUILT);
+
+        \ob_start();
+        $page->render();
+        $html = (string) \ob_get_clean();
+
+        self::assertSame(1, \preg_match('/data-config="([^"]*)"/', $html, $match));
+        $config = \json_decode(\html_entity_decode($match[1], \ENT_QUOTES), true);
+        self::assertIsArray($config);
+        self::assertSame(\rest_url(Identity::REST_NAMESPACE . '/'), $config['restUrl'] ?? null);
+        $nonce = $config['nonce'] ?? null;
+        self::assertIsString($nonce);
+        self::assertSame(1, \wp_verify_nonce($nonce, 'wp_rest'));
     }
 
     public function testLoadsTheBuildOnItsOwnPageOnly(): void
@@ -70,6 +91,9 @@ final class AdminPageTest extends \WP_UnitTestCase
         self::assertInstanceOf(\_WP_Dependency::class, $script);
         self::assertSame(['react-jsx-runtime', 'wp-element', 'wp-i18n'], $script->deps);
         self::assertSame('abc123', $script->ver);
+        $style = \wp_styles()->registered[AdminPage::handle()] ?? null;
+        self::assertInstanceOf(\_WP_Dependency::class, $style);
+        self::assertSame(['wp-components'], $style->deps);
     }
 
     public function testWithoutABuildItSaysSoInsteadOfABlankPage(): void

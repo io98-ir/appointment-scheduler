@@ -6,8 +6,12 @@
 	"type": "module",
 	"main": "src/index.tsx",
 	"dependencies": {
+		"@tanstack/react-query": "^5",
 		"@vaqtyar/shared": "workspace:^",
+		"@wordpress/components": "^41.0.0",
+		"@wordpress/data": "^10.56.0",
 		"@wordpress/element": "^8",
-		"@wordpress/i18n": "^6"
+		"@wordpress/i18n": "^6",
+		"@wordpress/notices": "^5.56.0"
 	}
 }
