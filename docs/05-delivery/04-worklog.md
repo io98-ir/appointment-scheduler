@@ -22,8 +22,9 @@
 **تصمیم‌ها و فرض‌ها:** (1) منو داخل اپ است و زیرمنوی wp-admin ساخته نشد (route در hash است). (2) صفحه‌های M3 فعلاً `Placeholder` هستند. (3) خطای mutation به‌صورت سراسری snackbar می‌شود، ولی خطای query را خود صفحه نمایش می‌دهد. (4) حالت تاریک فقط محیط اپ را تغییر می‌دهد، نه کل wp-admin را. انتخاب کاربر برای هر مرورگر جداست (تنظیم سراسری White-label در T6.1). (5) روی WP 6.6، propهای `__next*` نادیده گرفته می‌شوند و فقط ظاهر کمی فرق می‌کند.
 **تأیید:** `pnpm lint` (eslint، stylelint، tsc) ← سبز. `pnpm test` ← 67 passed. `pnpm build` ← OK. `pnpm size` ← admin 9.92KB gz و widget 4.99KB gz. Reviewer (agent `reviewer` بارگذاری نشد، پس همان تعریف با general-purpose اجرا شد) ← دو یافته، هر دو رفع شد: یک بایت CR به‌جای `\r` در `\rest_url` (خطای ویرایش اسکریپتی که باعث fatal می‌شد)، و نبودن stylesheet `wp-components`. **`composer check` اجرا نشد: PHP و Composer روی این دستگاه نیستند.** تغییر PHP و `AdminPageTest` باید روی CI تأیید شوند.
 **مشکلات و باقیمانده:** نصب PHP 8.3 و Composer روی دستگاه جدید (dev-environment §). E2E ناوبری در T3.2 همراه اولین صفحه CRUD اضافه می‌شود.
-**قدم بعدی:** push و دیدن CI، بعد T3.2.
-**Commitها:** `feat(admin): app shell with navigation, notices, query client and dark mode (T3.1)`
+**CI:** run اول (36351300935) در PHPStan شکست خورد: `$match[1]` بعد از `preg_match` در `AdminPageTest`. Integration در 4 ترکیب از همان ابتدا سبز بود. بعد از رفع، **CI سبز (run 36352743077).**
+**قدم بعدی:** T3.2.
+**Commitها:** `feat(admin): app shell with navigation, notices, query client and dark mode (T3.1)`، `test(admin): narrow the preg_match group for PHPStan (T3.1)`
 
 ---
 
