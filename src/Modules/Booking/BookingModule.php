@@ -11,22 +11,27 @@ use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldService;
+use Vaqtyar\Modules\Booking\Infrastructure\Jobs\ActionSchedulerBookingJobs;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateBookingTables;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateOccupanciesTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateResourceDayLocksTable;
+use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbAppointmentRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbHoldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbOccupancyReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPricingReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbResourceLocker;
 use Vaqtyar\Modules\Booking\Infrastructure\PricingSettings;
+use Vaqtyar\Modules\Booking\Presentation\Rest\BookingRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\TransactionRunner;
+use Vaqtyar\Shared\WpAuthorizer;
 
 /**
  * Holds, appointments and their state (architecture §3). Every write to the
@@ -63,9 +68,22 @@ final class BookingModule implements Module
                 new WpdbHoldRepository($c->get(Db::class)),
                 $c->get(TransactionRunner::class),
                 $c->get(Clock::class),
-                static function (): void {
-                    \do_action(Hooks::name('booking/changed'));
-                }
+                self::changed(...)
+            )
+        );
+        $container->singleton(
+            BookingService::class,
+            static fn (Container $c) => new BookingService(
+                $c->get(CatalogApi::class),
+                new WpdbPricingReader($c->get(Db::class)),
+                new WpdbResourceLocker($c->get(Db::class)),
+                new WpdbHoldRepository($c->get(Db::class)),
+                new WpdbAppointmentRepository($c->get(Db::class)),
+                new ActionSchedulerBookingJobs(),
+                $c->get(TransactionRunner::class),
+                $c->get(Clock::class),
+                new WpAuthorizer(),
+                self::changed(...)
             )
         );
     }
@@ -83,7 +101,7 @@ final class BookingModule implements Module
      */
     public function capabilities(): array
     {
-        return [];
+        return [BookingService::CAPABILITY => ['administrator']];
     }
 
     public function boot(Context $context): void
@@ -104,6 +122,18 @@ final class BookingModule implements Module
                 $container->get(Router::class),
                 static fn (): HoldService => $container->get(HoldService::class)
             ))->register();
+            (new BookingRoutes(
+                $container->get(Router::class),
+                static fn (): BookingService => $container->get(BookingService::class)
+            ))->register();
         });
+    }
+
+    /**
+     * Tells availability the occupancies changed, after a commit.
+     */
+    private static function changed(): void
+    {
+        \do_action(Hooks::name('booking/changed'));
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Booking\Domain\Pricing;
 
+use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\Money;
 
 /**
@@ -23,6 +24,41 @@ final class PriceQuote
     public static function empty(): self
     {
         return new self([]);
+    }
+
+    /**
+     * A quote read back, e.g. from a hold: its lines as toArray() gave them.
+     *
+     * @param array<mixed> $data
+     * @throws InvalidValue invalid_price_line
+     */
+    public static function fromArray(array $data): self
+    {
+        $lines = $data['lines'] ?? null;
+        if (!\is_array($lines)) {
+            throw new InvalidValue('invalid_price_line', 'A quote needs its lines.');
+        }
+
+        return new self(\array_values(\array_map(
+            static fn (mixed $line): PriceLine => \is_array($line)
+                ? PriceLine::fromArray($line)
+                : throw new InvalidValue('invalid_price_line', 'A price line is an object.'),
+            $lines
+        )));
+    }
+
+    /**
+     * The first line with $code, e.g. the coupon's.
+     */
+    public function lineOf(string $code): ?PriceLine
+    {
+        foreach ($this->lines as $line) {
+            if ($code === $line->code) {
+                return $line;
+            }
+        }
+
+        return null;
     }
 
     public function with(PriceLine $line): self

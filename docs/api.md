@@ -67,3 +67,18 @@
 - **201:** `{token, expires_at, staff_id, start, end, price}`. زمان‌ها با offset همان `start` درخواست هستند. `price` برابر `{total, lines: [{code, amount, ref, qty}]}` است؛ `code` یکی از `base`، `time_rule`، `extra`، `party`، `coupon` و `rounding` است و `ref` شناسه Extra، Price rule یا کوپن. تخفیف منفی است. این قیمت با Hold ذخیره می‌شود و تغییر تعرفه بعد از آن اثری ندارد. `token` فقط همین‌جا برمی‌گردد (فقط هش آن ذخیره می‌شود) و برای تأیید نوبت (T2.4) لازم است.
 - **409 `slot_taken`:** شروع دیگر آزاد نیست، روی شبکه اسلات نیست، یا بیرون از بازه رزرو است. کلاینت باید availability را دوباره بگیرد.
 - Hold بعد از 10 دقیقه منقضی می‌شود. تمدید (موقع رفتن به درگاه) هر بار 10 دقیقه است و از 20 دقیقه بعد از ساخت جلوتر نمی‌رود.
+
+## ثبت نوبت (Admin)
+`POST /bookings` یک Hold را به نوبت تبدیل می‌کند (booking-engine §3). فعلاً فقط برای کاربر با capability `manage_bookings` است (پیش‌فرض: administrator). رزرو خود مشتری از ویجت در T4.2 اضافه می‌شود.
+
+| پارامتر | نوع | توضیح |
+|---|---|---|
+| `hold_token` | string، 43 کاراکتر، الزامی | `token` پاسخ `POST /holds` |
+| `customer_id` | integer، الزامی | شناسه مشتری. تا T2.7 وجودش بررسی نمی‌شود |
+| `customer_note` | string، تا 2000 کاراکتر | یادداشت مشتری |
+
+- **201:** `{id, uuid, code, status, payment_status, staff_id, start, end, price}`. `code` کد پیگیری 8 کاراکتری است. `status` فعلاً همیشه `confirmed` است و `payment_status` برابر `unpaid`. زمان‌ها با offset شعبه هستند. `price` همان قیمت Hold است.
+- **404 `hold_not_found`:** توکن ناشناخته، منقضی، یا قبلاً تأییدشده است. هر توکن فقط یک‌بار کار می‌کند.
+- **409 `service_unavailable`:** خدمت یا شعبه بعد از Hold غیرفعال یا حذف شده است.
+- **422 `coupon_*`:** کوپن Hold دیگر قابل استفاده نیست، مثلاً ظرفیتش در این فاصله تمام شده است.
+- **401/403:** بدون ورود یا بدون capability.

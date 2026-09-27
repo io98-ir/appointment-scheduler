@@ -16,6 +16,15 @@
 
 ---
 
+## 2026-09-27 — سشن 12 — T2.4 نوبت و Confirm
+**Taskها:** T2.4
+**انجام شد:** `Appointment` با ماشین وضعیت (همه گذارهای booking-engine §4 و رد بقیه)، `TrackingCode`، `PriceQuote::fromArray`، `BookingService::confirm`، `WpdbAppointmentRepository`، `WpdbHoldRepository::details` و `handOver`، `WpdbPricingReader::couponForUse` و `countUse`، `ActionSchedulerBookingJobs`، `POST /bookings`، capability `manage_bookings`. مستندات: api.md، implementation-notes §4.11، README ماژول.
+**تصمیم‌ها و فرض‌ها:** (1) `POST /bookings` فعلاً فقط برای Admin است و `customer_id` را مستقیم می‌گیرد، چون ماژول Customers در T2.7 و نشست مشتری در T4.3 می‌آید. وجود مشتری بررسی نمی‌شود. (2) وضعیت اولیه همیشه `confirmed` است. `pending_payment` با M5 می‌آید و تأیید دستی با تنظیمات بعدی. (3) `needs_attention` به M5 موکول شد. (4) Job بدون `unique` ثبت می‌شود (Action Scheduler آرگومان‌ها را مقایسه نمی‌کند). (5) برخورد کد پیگیری retry نمی‌شود (احتمال ناچیز، یافته reviewer).
+**تأیید:** `composer check` ← lint، stan، deptrac سبز و Unit OK (684 tests). `composer test:rename` ← OK. Reviewer ← بدون یافته مسدودکننده. سه یافته جزئی در implementation-notes §4.11 ثبت شد.
+**مشکلات و باقیمانده:** Integration جدید در `HoldsTest` فقط روی CI اجرا می‌شود و هنوز push نشده.
+**قدم بعدی:** push و دیدن CI، بعد T2.5.
+**Commitها:** `feat(booking): appointment state machine and confirm (T2.4)`
+
 ## 2026-09-27 — سشن 11 — CI برای T2.2 و T2.3
 **Taskها:** T2.2، T2.3 (push و تأیید CI)
 **انجام شد:** هر دو Task روی `main` push شدند و job `concurrency` سه بار رفع شد:

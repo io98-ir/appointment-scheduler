@@ -9,7 +9,7 @@ use Vaqtyar\Modules\Booking\Domain\Pricing\TimeRule;
 
 /**
  * What prices read besides the catalog: the price rules and the coupons
- * (data-model §2).
+ * (data-model §2), and a coupon's uses, which confirming a booking counts.
  */
 interface PricingReader
 {
@@ -24,4 +24,15 @@ interface PricingReader
      * The coupon with this code, whatever its state; null when there is none.
      */
     public function coupon(string $code): ?Coupon;
+
+    /**
+     * The coupon with this id, locked until the transaction ends, so two
+     * bookings cannot both take its last use; null when there is none.
+     */
+    public function couponForUse(int $id): ?Coupon;
+
+    /**
+     * Counts one more use of the coupon.
+     */
+    public function countUse(int $id): void;
 }

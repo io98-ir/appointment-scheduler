@@ -11,6 +11,7 @@ use Vaqtyar\Modules\Booking\Domain\Pricing\CouponType;
 use Vaqtyar\Modules\Booking\Domain\Pricing\PriceCalculator;
 use Vaqtyar\Modules\Booking\Domain\Pricing\PriceContext;
 use Vaqtyar\Modules\Booking\Domain\Pricing\PriceLine;
+use Vaqtyar\Modules\Booking\Domain\Pricing\PriceQuote;
 use Vaqtyar\Modules\Booking\Domain\Pricing\TimeRule;
 use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\LocalDate;
@@ -212,6 +213,14 @@ final class PriceCalculatorTest extends TestCase
             ],
             $quote->toArray()
         );
+        $stored = \json_decode((string) \json_encode($quote->toArray()), true);
+        self::assertIsArray($stored);
+        $read = PriceQuote::fromArray($stored);
+        self::assertEquals($quote, $read);
+        self::assertSame(40, $read->lineOf('extra')?->ref);
+        self::assertNull($read->lineOf('coupon'));
+        $this->expectException(InvalidValue::class);
+        PriceQuote::fromArray(['lines' => [['code' => 'base']]]);
     }
 
     /**

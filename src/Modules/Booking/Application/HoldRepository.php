@@ -28,6 +28,17 @@ interface HoldRepository
     public function find(string $tokenHash, bool $forUpdate = false): ?StoredHold;
 
     /**
+     * What the hold keeps for its booking.
+     */
+    public function details(int $id): HeldBooking;
+
+    /**
+     * Gives the hold's occupancies to the appointment, for good, and
+     * deletes the hold: the time stays taken without a gap.
+     */
+    public function handOver(int $holdId, int $appointmentId): void;
+
+    /**
      * Moves the expiry of the hold and of its occupancies.
      */
     public function extend(int $id, int $expiresAt): void;

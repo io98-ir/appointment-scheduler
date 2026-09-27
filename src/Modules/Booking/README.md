@@ -1,7 +1,7 @@
 # Booking
 
 Holds, appointments, their state machine and policies (architecture §3).
-Built in M2; for now only what availability needs.
+Built in M2.
 
 - **Tables:** `occupancies` (data-model §2, migration
   `CreateOccupanciesTable`): the time each staff member (`staff:{id}`) and
@@ -9,6 +9,11 @@ Built in M2; for now only what availability needs.
   buffers, plus `variant_id`, `staff_id` and a hold's `expires_at`.
 - **Implements** `Scheduling\Contracts\OccupancyReader`
   (`WpdbOccupancyReader`): one indexed query, expired holds left out.
-- **Not yet:** holds, the locker and appointments (T2.1 to T2.5). Each write
-  to `occupancies` must fire an action that the availability cache listens
-  to (implementation-notes §4.7).
+- **Holds** (T2.2, T2.3): `HoldService`, `POST /holds`, priced by
+  `HoldPricing`.
+- **Appointments** (T2.4): `Domain\Appointment\Appointment` is the state
+  machine of booking-engine §4. `BookingService::confirm` and
+  `POST /bookings` (staff only for now) turn a hold into an appointment in one
+  transaction; the job `booking/appointment_booked` is queued in it.
+- Each write to `occupancies` fires `booking/changed`, which the availability
+  cache listens to (implementation-notes §4.7).

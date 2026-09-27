@@ -27,6 +27,8 @@ final class WpdbPricingReader implements PricingReader
     private const TYPE_TIME = 'time';
     private const ACTIVE = 'active';
 
+    private const COUPON_COLUMNS = 'id, code, type, value, status, valid_from, valid_to, max_uses, used, service_ids';
+
     public function __construct(private readonly Db $db)
     {
     }
@@ -59,12 +61,35 @@ final class WpdbPricingReader implements PricingReader
     public function coupon(string $code): ?Coupon
     {
         // The table's collation compares codes without regard to case.
-        $rows = $this->db->getResults(
-            'SELECT id, code, type, value, status, valid_from, valid_to, max_uses, used, service_ids FROM %i
-            WHERE code = %s',
+        return self::toCoupon($this->db->getResults(
+            'SELECT ' . self::COUPON_COLUMNS . ' FROM %i WHERE code = %s',
             Tables::name('coupons'),
             $code
-        );
+        ));
+    }
+
+    public function couponForUse(int $id): ?Coupon
+    {
+        return self::toCoupon($this->db->getResults(
+            'SELECT ' . self::COUPON_COLUMNS . ' FROM %i WHERE id = %d FOR UPDATE',
+            Tables::name('coupons'),
+            $id
+        ));
+    }
+
+    /**
+     * Leaves updated_at alone: it tells when an admin last edited the coupon.
+     */
+    public function countUse(int $id): void
+    {
+        $this->db->execute('UPDATE %i SET used = used + 1 WHERE id = %d', Tables::name('coupons'), $id);
+    }
+
+    /**
+     * @param list<array<string, string|null>> $rows
+     */
+    private static function toCoupon(array $rows): ?Coupon
+    {
         if ([] === $rows) {
             return null;
         }

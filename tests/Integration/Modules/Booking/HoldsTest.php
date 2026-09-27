@@ -44,7 +44,8 @@ use Vaqtyar\Tests\Integration\Modules\Catalog\CatalogTables;
 
 /**
  * Holds on the real database: POST /holds as a guest, the conflict on a
- * taken start, extension and purge. One staff member works 09:00-17:00 in
+ * taken start, extension and purge, and POST /bookings, which confirms a
+ * hold as an appointment (T2.4). One staff member works 09:00-17:00 in
  * Tehran every day; the variant takes 60 minutes. The parallel case is the
  * CI job "concurrency" (tests/Concurrency).
  */
@@ -63,7 +64,13 @@ final class HoldsTest extends TestCase
         'rate_limits',
         'price_rules',
         'coupons',
+        'appointments',
+        'appointment_extras',
+        'appointment_history',
     ];
+
+    /** @var list<int> */
+    private array $users = [];
 
     private int $variant;
 
@@ -83,6 +90,11 @@ final class HoldsTest extends TestCase
 
     protected function tearDown(): void
     {
+        \wp_set_current_user(0);
+        require_once \ABSPATH . 'wp-admin/includes/user.php';
+        foreach ($this->users as $user) {
+            \wp_delete_user($user);
+        }
         $this->emptyCatalogTables();
         $this->emptyOwnTables();
         \do_action(Hooks::name('scheduling/changed'));
@@ -196,6 +208,93 @@ final class HoldsTest extends TestCase
         self::assertSame(['coupon', $coupon], [$price['lines'][1]['code'], $price['lines'][1]['ref']]);
     }
 
+    /**
+     * Staff confirm a hold: the appointment takes the hold's time and quote,
+     * the occupancy is handed over for good, the coupon's use is counted and
+     * the notification job is queued. The token works once.
+     */
+    public function testStaffConfirmAHoldAsAnAppointment(): void
+    {
+        $db = $this->realDb();
+        $coupon = $db->insert(Tables::name('coupons'), [
+            'code' => 'ONCE',
+            'type' => 'percent',
+            'value' => 10,
+            'max_uses' => 1,
+            'status' => 'active',
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+        $day = self::inDays(2);
+        $hold = $this->post($day, '10:00', true, 'ONCE');
+        $token = $hold['body']['token'] ?? null;
+        self::assertIsString($token, (string) \wp_json_encode($hold['body']));
+        $jobs = self::bookedJobs();
+
+        $guest = $this->book($token);
+        $this->logInAs('administrator');
+        $booked = $this->book($token);
+        $again = $this->book($token);
+
+        self::assertSame(401, $guest['status']);
+        self::assertSame(201, $booked['status'], (string) \wp_json_encode($booked['body']));
+        $body = $booked['body'];
+        /** @var array{total: array{amount: int}} $price */
+        $price = $body['price'] ?? [];
+        self::assertSame(
+            ['confirmed', 'unpaid', $day->toString() . 'T10:00:00+03:30', 900_000],
+            [
+                $body['status'] ?? null,
+                $body['payment_status'] ?? null,
+                $body['start'] ?? null,
+                $price['total']['amount'],
+            ]
+        );
+        $code = $body['code'] ?? null;
+        self::assertIsString($code);
+        self::assertMatchesRegularExpression('/^[0-9A-HJKMNP-TV-Z]{8}$/D', $code);
+        self::assertSame([404, 'hold_not_found'], [$again['status'], $again['body']['code'] ?? null]);
+
+        $id = $body['id'] ?? null;
+        self::assertIsInt($id);
+        self::assertSame(
+            [[
+                'customer_id' => '9',
+                'staff_id' => (string) $this->staff,
+                'status' => 'confirmed',
+                'source' => 'admin',
+                'price_total' => '900000',
+                'local_date' => $day->toString(),
+                'customer_note' => 'Aisle',
+            ]],
+            $db->getResults(
+                'SELECT customer_id, staff_id, status, source, price_total, local_date, customer_note FROM %i',
+                Tables::name('appointments')
+            )
+        );
+        self::assertSame(
+            [['owner_type' => 'appointment', 'owner_id' => (string) $id, 'expires_at' => null]],
+            $db->getResults('SELECT owner_type, owner_id, expires_at FROM %i', Tables::name('occupancies'))
+        );
+        self::assertSame(
+            ['0', '1', '1'],
+            [
+                $db->getVar('SELECT COUNT(*) FROM %i', Tables::name('holds')),
+                $db->getVar('SELECT used FROM %i WHERE id = %d', Tables::name('coupons'), $coupon),
+                $db->getVar(
+                    'SELECT COUNT(*) FROM %i WHERE appointment_id = %d AND action = %s AND to_status = %s',
+                    Tables::name('appointment_history'),
+                    $id,
+                    'created',
+                    'confirmed'
+                ),
+            ]
+        );
+        self::assertSame($jobs + 1, self::bookedJobs());
+        // Still taken, now by the appointment, which never expires.
+        self::assertNotContains('10:00', $this->starts($day));
+    }
+
     public function testTheSameStartTwiceIsAConflict(): void
     {
         $day = self::inDays(2);
@@ -286,6 +385,39 @@ final class HoldsTest extends TestCase
         $body = $response->get_data();
 
         return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
+    }
+
+    /**
+     * @return array{status: int, body: array<string, mixed>}
+     */
+    private function book(string $token): array
+    {
+        $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . '/bookings');
+        $request->set_body_params(['hold_token' => $token, 'customer_id' => 9, 'customer_note' => 'Aisle']);
+        $response = \rest_do_request($request);
+        $body = $response->get_data();
+
+        return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
+    }
+
+    private static function bookedJobs(): int
+    {
+        $query = ['hook' => Hooks::name('booking/appointment_booked'), 'per_page' => -1];
+
+        return \count(\as_get_scheduled_actions($query, 'ids'));
+    }
+
+    private function logInAs(string $role): void
+    {
+        $id = \wp_insert_user([
+            'user_login' => 'booking_' . $role . '_' . \count($this->users),
+            'user_pass' => \wp_generate_password(),
+            'user_email' => 'booking_' . $role . \count($this->users) . '@example.com',
+            'role' => $role,
+        ]);
+        self::assertIsInt($id);
+        $this->users[] = $id;
+        \wp_set_current_user($id);
     }
 
     /**

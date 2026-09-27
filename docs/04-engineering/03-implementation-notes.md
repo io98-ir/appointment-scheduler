@@ -258,6 +258,16 @@
 - **Total منفی** (که فقط از Rule یک Add-on ممکن است) با `negative_price` رد می‌شود.
 - **`HoldPricing`** (Application) داخل تراکنش Hold و **بعد از قفل‌ها** اجرا می‌شود، پس کاتالوگ و price_rules از همان snapshot خوانده می‌شوند. اگر پرسنل یا Variant بین claim و قیمت‌گذاری ناپدید شود: `slot_taken`.
 
+## 4.11 نوبت و Confirm (T2.4)
+- **ماشین وضعیت** در `Booking\Domain\Appointment\Appointment`: گذار فقط با `approve()`، `paid(bool $needsApproval)`، `expire()`، `complete()`، `markNoShow()` و `cancel()`. هر کدام یک `StatusChange` برای `appointment_history` برمی‌گرداند. گذار غیرمجاز `Conflict('invalid_transition')` است و چیزی را عوض نمی‌کند. نوبت فقط با `confirmed` یا `pending_*` ساخته می‌شود. `reschedule` در T2.5 می‌آید.
+- **`BookingService::confirm`** همان الگوی §4.9 را دارد: `find` بیرون از تراکنش فقط برای دانستن کلیدهای قفل. داخل تراکنش اول `lock()`، بعد `find(..., forUpdate: true)` و بررسی انقضا با `Clock`، بعد کاتالوگ، کوپن، درج نوبت، `handOver` و Job. تأیید دوباره همان توکن پشت قفل‌ها منتظر می‌ماند و بعد Hold را پیدا نمی‌کند: 404 `hold_not_found`.
+- **`handOver`** فقط `owner_type` و `owner_id` ردیف‌های `occupancies` را عوض می‌کند و `expires_at` را NULL می‌کند، بعد Hold را حذف می‌کند. پس زمان هیچ لحظه‌ای آزاد نمی‌شود و به `prepare()` تازه نیازی نیست.
+- **کوپن:** `PricingReader::couponForUse()` با `FOR UPDATE`، دوباره `assertUsable`، بعد `countUse()` (`used = used + 1`، بدون تغییر `updated_at`). قفل کوپن همیشه بعد از قفل روزها گرفته می‌شود و Hold کوپن را قفل نمی‌کند، پس چرخه قفل تازه‌ای ساخته نمی‌شود.
+- **Job:** `ActionSchedulerBookingJobs` در همان تراکنش `booking/appointment_booked` را با `as_enqueue_async_action` ثبت می‌کند (ADR-005). **پرچم `unique` استفاده نمی‌شود،** چون Action Scheduler فقط hook را مقایسه می‌کند و آرگومان‌ها را نه، و Job نوبت دوم دور ریخته می‌شد. Listener این Job در M5 می‌آید و خودش dedupe می‌کند.
+- **دامنه فعلی:** `POST /bookings` فقط برای `manage_bookings` است و `customer_id` را مستقیم می‌گیرد. وجود مشتری تا T2.7 بررسی نمی‌شود. وضعیت اولیه همیشه `confirmed` است و `pending_payment` با M5 می‌آید. `needs_attention` (booking-engine §3) هم با پرداخت (M5) می‌آید.
+- **کد پیگیری** 8 کاراکتر Crockford (40 بیت) و `UNIQUE` است. برخورد (حدود یک در میلیون در یک میلیون نوبت) فعلاً خطای 500 می‌دهد و retry نمی‌شود (یافته reviewer، پذیرفته شد).
+- `appointment_extras.price` قیمت واحد است: مبلغ خط Extra تقسیم بر `qty`. `ExtrasPrice` همیشه قیمت واحد × تعداد می‌سازد، پس تقسیم باقیمانده ندارد.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

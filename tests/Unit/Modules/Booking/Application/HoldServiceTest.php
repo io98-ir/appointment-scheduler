@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Tests\Unit\Modules\Booking\Application;
 
 use PHPUnit\Framework\TestCase;
+use Vaqtyar\Modules\Booking\Application\HeldBooking;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldRepository;
 use Vaqtyar\Modules\Booking\Application\HoldService;
@@ -347,6 +348,15 @@ final class HoldServiceTest extends TestCase
             {
                 return 'NOWRUZ' === $code ? new Coupon(8, $code, CouponType::Percent, 10, true) : null;
             }
+
+            public function couponForUse(int $id): ?Coupon
+            {
+                return null;
+            }
+
+            public function countUse(int $id): void
+            {
+            }
         };
     }
 
@@ -367,6 +377,15 @@ final class HoldServiceTest extends TestCase
             public function find(string $tokenHash, bool $forUpdate = false): ?StoredHold
             {
                 return $this->test->found($tokenHash, $forUpdate);
+            }
+
+            public function details(int $id): HeldBooking
+            {
+                throw new \LogicException('Not used.');
+            }
+
+            public function handOver(int $holdId, int $appointmentId): void
+            {
             }
 
             public function extend(int $id, int $expiresAt): void

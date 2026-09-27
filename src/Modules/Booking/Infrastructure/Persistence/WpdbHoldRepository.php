@@ -7,20 +7,25 @@ namespace Vaqtyar\Modules\Booking\Infrastructure\Persistence;
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Kernel\Tables;
+use Vaqtyar\Modules\Booking\Application\HeldBooking;
 use Vaqtyar\Modules\Booking\Application\HoldRepository;
 use Vaqtyar\Modules\Booking\Application\StoredHold;
 use Vaqtyar\Modules\Booking\Domain\Hold;
+use Vaqtyar\Modules\Booking\Domain\Pricing\PriceQuote;
 
 /**
  * HoldRepository on the holds and occupancies tables (data-model §2). An
  * occupancy of a hold has owner_type "hold" and the hold's expiry, so the
- * occupancy reader skips it once expired without a join.
+ * occupancy reader skips it once expired without a join. Confirming hands
+ * the rows to the appointment, with no expiry.
  */
 final class WpdbHoldRepository implements HoldRepository
 {
     private const UTC_FORMAT = 'Y-m-d H:i:s';
 
     private const OWNER_TYPE = 'hold';
+
+    private const APPOINTMENT_OWNER_TYPE = 'appointment';
 
     public function __construct(private readonly Db $db)
     {
@@ -97,6 +102,46 @@ final class WpdbHoldRepository implements HoldRepository
             self::timestamp($hold->string('created_at')),
             self::timestamp($hold->string('expires_at'))
         );
+    }
+
+    public function details(int $id): HeldBooking
+    {
+        $rows = $this->db->getResults(
+            'SELECT location_id, variant_id, staff_id, start_at, end_at, party_size, extras, price_quote FROM %i
+            WHERE id = %d',
+            Tables::name('holds'),
+            $id
+        );
+        if ([] === $rows) {
+            throw new \UnexpectedValueException('The hold is gone.');
+        }
+        $row = new Row($rows[0]);
+        $extras = \json_decode($row->string('extras'), true);
+        $quote = \json_decode($row->string('price_quote'), true);
+
+        return new HeldBooking(
+            $row->int('location_id'),
+            $row->int('variant_id'),
+            $row->int('staff_id'),
+            self::timestamp($row->string('start_at')),
+            self::timestamp($row->string('end_at')),
+            $row->int('party_size'),
+            \is_array($extras) ? \array_values(\array_filter($extras, 'is_int')) : [],
+            PriceQuote::fromArray(\is_array($quote) ? $quote : [])
+        );
+    }
+
+    public function handOver(int $holdId, int $appointmentId): void
+    {
+        $this->db->execute(
+            'UPDATE %i SET owner_type = %s, owner_id = %d, expires_at = NULL WHERE owner_type = %s AND owner_id = %d',
+            Tables::name('occupancies'),
+            self::APPOINTMENT_OWNER_TYPE,
+            $appointmentId,
+            self::OWNER_TYPE,
+            $holdId
+        );
+        $this->db->execute('DELETE FROM %i WHERE id = %d', Tables::name('holds'), $holdId);
     }
 
     public function extend(int $id, int $expiresAt): void

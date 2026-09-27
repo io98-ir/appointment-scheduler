@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Booking\Domain\Pricing;
 
+use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\Money;
 
 /**
@@ -30,6 +31,23 @@ final class PriceLine
         public readonly ?int $ref = null,
         public readonly int $qty = 1,
     ) {
+    }
+
+    /**
+     * @param array<mixed> $data as toArray() gives it.
+     * @throws InvalidValue invalid_price_line
+     */
+    public static function fromArray(array $data): self
+    {
+        $code = $data['code'] ?? null;
+        $amount = $data['amount'] ?? null;
+        $ref = $data['ref'] ?? null;
+        $qty = $data['qty'] ?? 1;
+        if (!\is_string($code) || !\is_array($amount) || !(null === $ref || \is_int($ref)) || !\is_int($qty)) {
+            throw new InvalidValue('invalid_price_line', 'A price line needs a code, an amount and a quantity.');
+        }
+
+        return new self($code, Money::fromArray($amount), $ref, $qty);
     }
 
     /**
