@@ -25,5 +25,11 @@ Built in M2.
   plus the service's own, additive unlike a policy). `BookingService::confirm`
   validates `answers` inside the transaction and `AppointmentRepository::
   saveAnswers` writes `appointment_answers`. Admin CRUD for `fields` is T3.5.
+- **Admin reads** (T2.8): `AppointmentBrowser` over the `AppointmentQuery`
+  port (`Infrastructure\Query\WpdbAppointmentQuery`: direct SQL, no
+  entities). `GET /appointments` (filters, order, pages, search by tracking
+  code or customer), `GET /appointments/{id}` and `GET /calendar`.
+  Customers are named through `Customers\Contracts\CustomerDirectory`, never
+  a JOIN. Migration `AddAppointmentStartIndex`.
 - Each write to `occupancies` fires `booking/changed`, which the availability
   cache listens to (implementation-notes §4.7).

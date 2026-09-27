@@ -21,7 +21,7 @@ final class Hold
     /** No extension keeps a hold past this long after it was placed (booking-engine §3). */
     public const MAX_LIFETIME_SECONDS = 1200;
 
-    /** The occupancy reader relies on this bound (WpdbOccupancyReader::MAX_SPAN_SECONDS). */
+    /** The occupancy reader and the calendar query rely on this bound (WpdbOccupancyReader, WpdbAppointmentQuery). */
     public const MAX_SPAN_SECONDS = 7 * 86_400;
 
     /**

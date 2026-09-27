@@ -105,6 +105,22 @@
 
 فیلدهای هر خدمت، فیلدهای سراسری به‌علاوه فیلدهای همان خدمت‌اند (`fields`، data-model §2). هر فیلد `type` (`text`، `textarea`، `number`، `select`، `checkbox`)، `required` و یک شرط ساده اختیاری `show_if: {field, equals}` دارد: فقط وقتی پاسخ validate‌شده یک فیلد نمایان **قبلی** برابر مقدار باشد نمایش داده و بررسی می‌شود (checkbox به `"1"` یا `"0"` و عدد با ارقام لاتین مقایسه می‌شود)؛ در غیر این صورت نه الزامی است و نه ذخیره می‌شود. مدیریت (ایجاد/ویرایش) فیلدها در T3.5 می‌آید؛ فعلاً فقط از دیتابیس خوانده می‌شوند.
 
+## خواندن نوبت‌ها (Admin)
+هر سه route برای `manage_bookings` هستند (T2.8). زمان‌ها با offset شعبه و پول به‌صورت `{amount, currency}` است. شکل‌ها در `api-types.ts` (`AppointmentListItem` و `AppointmentDetail`) است.
+
+| Route | پارامترها |
+|---|---|
+| `GET /appointments` | `page`، `per_page`؛ `status` (آرایه)، `staff` (آرایه id)، `service`، `location`، `customer`؛ `from` و `to` (`YYYY-MM-DD`، تاریخ محلی شعبه، هر دو شامل)؛ `search` (تا 100)؛ `orderby` (`start` یا `created`، پیش‌فرض `start`)؛ `order` (`asc` یا `desc`، پیش‌فرض `desc`) |
+| `GET /appointments/{id}` | — |
+| `GET /calendar` | `from` و `to` (ISO با offset یا `Z`، با یا بدون کسر ثانیه مثل خروجی `toISOString()`، الزامی)، `staff` (آرایه id)، `location` |
+
+- **لیست:** یک صفحه با `X-WP-Total` و `X-WP-TotalPages`. همه فیلترها با هم (AND) اعمال می‌شوند. آرایه‌ها به‌صورت `status[]=confirmed&status[]=completed` یا `status=confirmed,completed` فرستاده می‌شوند.
+- **`search`:** کد پیگیری (بزرگ و کوچک و ارقام فارسی مهم نیست)، یا بخشی از نام، ایمیل یا تلفن مشتری، همانند `GET /customers`. فقط جدیدترین 200 مشتری مطابق در نظر گرفته می‌شوند.
+- **هر آیتم:** `{id, code, status, payment_status, customer_id, customer, location_id, service_id, variant_id, staff_id, start, end, party_size, total}`. `customer` برابر `{id, name, phone, deleted}` است. برای مشتری حذف‌شده `deleted: true` و `phone: null` است.
+- **جزئیات:** همان آیتم به‌علاوه `uuid`، `source`، `price` (همان `PriceQuote`)، `customer_note`، `internal_note`، `extras` (`{extra_id, qty, unit_price}`)، `answers` (شیء `field_key: value`)، `history` (قدیمی‌ترین اول: `{action, from, to, changes, actor_type, actor_id, reason, at}`)، `created_by`، `created_at`، `cancelled_at` و `cancel_reason`. 404 `appointment_not_found`.
+- **تقویم:** همه نوبت‌هایی که با `[from, to)` تداخل دارند و وقت می‌گیرند (لغوشده و منقضی نه)، به ترتیب شروع و بدون صفحه‌بندی، حداکثر 2000 آیتم. هر آیتم همان شکل لیست را دارد.
+- **422:** `invalid_range` (`from` بعد از `to`)، `invalid_date`، `invalid_time`، `range_too_long` (تقویم بیش از 42 روز)، `too_many_appointments` (بیش از 2000 نوبت در بازه؛ بازه یا پرسنل را محدودتر کنید). **400 `rest_invalid_param`:** وضعیت ناشناخته یا نوع اشتباه.
+
 ## تغییر نوبت (Admin)
 هر سه route برای `manage_bookings` هستند. پاسخ موفق 200 است و همان شکل پاسخ `POST /bookings` را دارد. `cancel` و `reschedule` این‌ها را هم دارند: `decision: {allowed, reason_code, refund_percent, refund}` و `overridden`. `refund` تا M5 صفر است.
 

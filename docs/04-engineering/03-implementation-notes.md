@@ -301,6 +301,16 @@
 - `Page` به `Shared\Domain\Page` منتقل شد (دومین مصرف‌کننده).
 - **خارج از دامنه:** `otp_codes` و `customer_sessions` با T4.3، و سوابق نوبت مشتری و UI با T3.5 می‌آیند.
 
+## 4.15 Queryهای Admin نوبت (T2.8)
+- **Read side جدا** (architecture §1): `AppointmentBrowser` (Application، با بررسی دوباره `manage_bookings`) روی port `AppointmentQuery`، که `Infrastructure\Query\WpdbAppointmentQuery` با SQL مستقیم پیاده می‌کند. Entity ساخته نمی‌شود و خروجی DTOهای `AppointmentRow` و `AppointmentDetail` است.
+- **بدون JOIN بین ماژول‌ها:** نام مشتری از Contract جدید `Customers\Contracts\CustomerDirectory` می‌آید: `summaries(ids)` برای کل صفحه یک کوئری است (مشتری حذف‌شده هم با `deleted: true` و بدون تلفن برمی‌گردد)، و `matching(query, limit)` همان جستجوی `/customers` را برای idها اجرا می‌کند. نام پرسنل و خدمت را UI از لیست‌های کاتالوگ (کوچک و cache‌شده در TanStack Query) می‌گیرد.
+- **جستجو:** اگر متن (با ارقام فارسی) یک کد پیگیری معتبر باشد، `code = …` هم بررسی می‌شود. در کنارش `customer_id IN (…)` برای **جدیدترین 200 مشتری** مطابق (`AppointmentBrowser::SEARCH_CUSTOMERS`) می‌آید. متن کوتاهی که بیش از 200 مشتری را بگیرد، فقط نوبت‌های همان 200 نفر را نشان می‌دهد؛ با متن بلندتر یا شماره تلفن دقیق‌تر می‌شود. جستجویی که هیچ چیز نگیرد اصلاً به جدول نوبت‌ها نمی‌رود.
+- **فیلتر تاریخ روی `local_date`** (تاریخ محلی شعبه) است، نه روز UTC، تا «نوبت‌های 10 مهر» در هر timezone درست باشد (00:30 تهران هنوز روز قبل در UTC است). برای استفاده از ایندکس، یک کران `start_at` با یک روز حاشیه در هر طرف هم اضافه می‌شود که همه offsetها (UTC−12 تا UTC+14) را می‌پوشاند.
+- **تقویم:** نوبت‌هایی که با `[from, to)` تداخل دارند (`start_at < to AND end_at > from`)، با کران پایین `start_at > from − 7 روز` (`Hold::MAX_SPAN_SECONDS`، همان تکنیک §4.7). فقط وضعیت‌هایی که وقت می‌گیرند (pending_approval، pending_payment، confirmed، completed، no_show). بازه حداکثر 42 روز (`range_too_long`). صفحه‌بندی ندارد، چون تقویم کل بازه را یک‌جا لازم دارد. به‌جای آن سقف `MAX_CALENDAR_ITEMS` = 2000 دارد (یافته reviewer، principles §8): کوئری `LIMIT 2001` می‌خواند و اگر بیشتر بود 422 `too_many_appointments` برمی‌گردد تا UI بازه یا پرسنل را محدود کند، به‌جای یک پاسخ بزرگ که روی هاست اشتراکی به 500 برسد. زمان‌ها با کسر ثانیه و `Z` (خروجی `toISOString()`) هم پذیرفته می‌شوند.
+- **ایندکس:** migration `AddAppointmentStartIndex` ایندکس `start_at` را اضافه می‌کند (با بررسی `information_schema`، idempotent). لیست بدون فیلتر (مرتب با شروع) و تقویم همه پرسنل از آن استفاده می‌کنند؛ فیلتر پرسنل و مشتری از `staff_start` و `customer_start`. مرتب‌سازی همیشه id را به‌عنوان tie-breaker دارد تا صفحه‌ها هم‌پوشانی نداشته باشند. InnoDB کلید اصلی را ته هر ایندکس ثانویه دارد، پس `ORDER BY start_at DESC, id DESC` هم از ایندکس می‌آید. `AppointmentQueriesTest::testTheReadsUseTheIndexes` این را با EXPLAIN روی 2000 ردیف بررسی می‌کند.
+- **COUNT(*)** بدون فیلتر کل ایندکس را می‌شمارد. برای حجم یک کسب‌وکار (ده‌ها هزار نوبت) مشکلی نیست. اگر روزی مشکل شد، شمارش تقریبی یا cache جایگزین می‌شود.
+- **خارج از دامنه:** UI لیست و تقویم (T3.3، T3.4)، ویرایش یادداشت داخلی، و برچسب‌ها (`label_id`).
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

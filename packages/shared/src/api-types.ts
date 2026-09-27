@@ -214,3 +214,69 @@ export interface Customer {
 	tags: string[];
 	status: CustomerStatus;
 }
+
+export type AppointmentStatus =
+	| 'pending_approval'
+	| 'pending_payment'
+	| 'confirmed'
+	| 'completed'
+	| 'no_show'
+	| 'cancelled'
+	| 'expired';
+
+export type PaymentStatus =
+	'unpaid' | 'deposit_paid' | 'paid' | 'refunded' | 'partially_refunded';
+
+/** GET /appointments and GET /calendar (docs/api.md). */
+export interface AppointmentListItem {
+	id: number;
+	/** The 8-character tracking code. */
+	code: string;
+	status: AppointmentStatus;
+	payment_status: PaymentStatus;
+	customer_id: number;
+	/** Null when the customer row is gone. */
+	customer: {
+		id: number;
+		name: string;
+		/** E.164; null once the customer is deleted. */
+		phone: string | null;
+		deleted: boolean;
+	} | null;
+	location_id: number;
+	service_id: number;
+	variant_id: number;
+	staff_id: number;
+	/** ISO 8601 with the location's offset. */
+	start: string;
+	end: string;
+	party_size: number;
+	total: Money;
+}
+
+/** GET /appointments/{id} (docs/api.md). */
+export interface AppointmentDetail extends AppointmentListItem {
+	uuid: string;
+	source: string;
+	price: PriceQuote;
+	customer_note: string;
+	internal_note: string;
+	extras: { extra_id: number; qty: number; unit_price: Money }[];
+	/** By field key. */
+	answers: Record< string, string >;
+	/** Oldest first. */
+	history: {
+		action: string;
+		from: AppointmentStatus | null;
+		to: AppointmentStatus | null;
+		changes: Record< string, unknown > | unknown[];
+		actor_type: string;
+		actor_id: number | null;
+		reason: string | null;
+		at: string;
+	}[];
+	created_by: number | null;
+	created_at: string;
+	cancelled_at: string | null;
+	cancel_reason: string | null;
+}

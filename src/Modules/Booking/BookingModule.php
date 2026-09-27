@@ -11,11 +11,13 @@ use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Modules\Booking\Application\AppointmentBrowser;
 use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldService;
 use Vaqtyar\Modules\Booking\Infrastructure\Jobs\ActionSchedulerBookingJobs;
+use Vaqtyar\Modules\Booking\Infrastructure\Migrations\AddAppointmentStartIndex;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateBookingTables;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateOccupanciesTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateResourceDayLocksTable;
@@ -27,11 +29,14 @@ use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPolicyReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPricingReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbResourceLocker;
 use Vaqtyar\Modules\Booking\Infrastructure\PricingSettings;
+use Vaqtyar\Modules\Booking\Infrastructure\Query\WpdbAppointmentQuery;
+use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentListRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\BookingRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
+use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Shared\Domain\Clock;
@@ -107,6 +112,14 @@ final class BookingModule implements Module
                 self::changed(...)
             )
         );
+        $container->singleton(
+            AppointmentBrowser::class,
+            static fn (Container $c) => new AppointmentBrowser(
+                new WpdbAppointmentQuery($c->get(Db::class)),
+                $c->get(CustomerDirectory::class),
+                new WpAuthorizer()
+            )
+        );
     }
 
     /**
@@ -114,7 +127,12 @@ final class BookingModule implements Module
      */
     public function migrations(): array
     {
-        return [new CreateOccupanciesTable(), new CreateBookingTables(), new CreateResourceDayLocksTable()];
+        return [
+            new CreateOccupanciesTable(),
+            new CreateBookingTables(),
+            new CreateResourceDayLocksTable(),
+            new AddAppointmentStartIndex(),
+        ];
     }
 
     /**
@@ -153,6 +171,10 @@ final class BookingModule implements Module
             (new AppointmentRoutes(
                 $container->get(Router::class),
                 static fn (): AppointmentService => $container->get(AppointmentService::class)
+            ))->register();
+            (new AppointmentListRoutes(
+                $container->get(Router::class),
+                static fn (): AppointmentBrowser => $container->get(AppointmentBrowser::class)
             ))->register();
         });
     }

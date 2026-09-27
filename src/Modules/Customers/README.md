@@ -13,6 +13,10 @@ also the identity of the OTP login (T4.3). A WordPress account is optional.
   implements the contract.
 - **Contracts:** `CustomerApi::canBook($id)`: the customer exists, is not
   deleted and is not blocked. Booking checks it before confirming.
+  `CustomerDirectory` (`Infrastructure\Query\WpdbCustomerDirectory`, T2.8):
+  `summaries($ids)` names customers for a list of appointments in one query,
+  deleted ones included; `matching($query, $limit)` gives the ids the admin
+  customer search would find.
 - **REST (admin):** `/customers` with list (`search`), create, read, replace
   (PUT) and delete (docs/api.md).
 - **WordPress:** on `deleted_user` the account is unlinked; the customer

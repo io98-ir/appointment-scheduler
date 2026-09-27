@@ -12,9 +12,11 @@ use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Customers\Application\CustomerReader;
 use Vaqtyar\Modules\Customers\Application\CustomerService;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
+use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
 use Vaqtyar\Modules\Customers\Domain\CustomerRepository;
 use Vaqtyar\Modules\Customers\Infrastructure\Migrations\CreateCustomersTable;
 use Vaqtyar\Modules\Customers\Infrastructure\Persistence\WpdbCustomerRepository;
+use Vaqtyar\Modules\Customers\Infrastructure\Query\WpdbCustomerDirectory;
 use Vaqtyar\Modules\Customers\Presentation\Rest\CustomerRoutes;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\WpAuthorizer;
@@ -44,6 +46,10 @@ final class CustomersModule implements Module
         $container->singleton(
             CustomerApi::class,
             static fn (Container $c) => new CustomerReader($c->get(CustomerRepository::class))
+        );
+        $container->singleton(
+            CustomerDirectory::class,
+            static fn (Container $c) => new WpdbCustomerDirectory($c->get(Db::class))
         );
     }
 

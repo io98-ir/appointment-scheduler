@@ -60,7 +60,7 @@
 | جدول | ستون‌های کلیدی | ایندکس |
 |---|---|---|
 | `holds` | `token_hash, variant_id, staff_id, start_at, end_at, party_size, extras JSON, price_quote JSON, expires_at` | (expires_at), UNIQUE(token_hash) |
-| `appointments` | `uuid, code, customer_id, location_id, service_id, variant_id, staff_id, status, label_id NULL, payment_status, source, start_at, end_at, local_date, timezone, party_size, price_total, price_lines JSON, deposit_amount, customer_note, internal_note, cancelled_at, cancel_reason, created_by, version` | (status, start_at), (customer_id, start_at), (staff_id, start_at), UNIQUE(uuid), UNIQUE(code) |
+| `appointments` | `uuid, code, customer_id, location_id, service_id, variant_id, staff_id, status, label_id NULL, payment_status, source, start_at, end_at, local_date, timezone, party_size, price_total, price_lines JSON, deposit_amount, customer_note, internal_note, cancelled_at, cancel_reason, created_by, version` | (status, start_at), (customer_id, start_at), (staff_id, start_at), (start_at), UNIQUE(uuid), UNIQUE(code) |
 | `occupancies` | `owner_type (hold/appointment), owner_id, lock_key, start_at, end_at, seats` | **(lock_key, start_at, end_at)**, (owner_type, owner_id) |
 | `appointment_extras` | `appointment_id, extra_id, qty, price` | |
 | `appointment_history` | `appointment_id, action, from_status, to_status, changes JSON, actor_type, actor_id, reason, created_at` | (appointment_id) |
@@ -78,6 +78,8 @@
 > - سه ستون اضافه شد: `variant_id` و `staff_id` (NULL‌پذیر) تا جلسه گروهی بدون join شناخته شود (implementation-notes §4.6)، و `expires_at` (انقضای Hold، برای نوبت NULL) تا شرط `expires_at > now` بدون join به `holds` اجرا شود. **تمدید Hold در T2.2 باید `expires_at` همین ردیف‌ها را هم به‌روز کند، و تبدیل به نوبت آن را NULL کند.**
 > - `lock_key` به شکل `staff:{id}` و `res:{id}` است.
 >
+> **T2.8:** ایندکس `(start_at)` با migration `AddAppointmentStartIndex` اضافه شد، برای لیست Admin بدون فیلتر و تقویم همه پرسنل (implementation-notes §4.15).
+
 > **تغییرات T2.1 نسبت به طرح اولیه (بقیه جداول Booking، migration `CreateBookingTables`):**
 > - `fields.key` به `field_key` و `fields.condition` به `show_if` تغییر نام داد، چون `KEY` و `CONDITION` در MySQL کلمه رزرو هستند.
 > - `holds` ستون `location_id` دارد، چون تأیید Hold آن را برای نوبت لازم دارد.
