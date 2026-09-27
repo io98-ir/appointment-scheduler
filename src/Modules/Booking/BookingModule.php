@@ -20,6 +20,7 @@ use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateBookingTables;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateOccupanciesTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateResourceDayLocksTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbAppointmentRepository;
+use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbFieldReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbHoldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbOccupancyReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPolicyReader;
@@ -79,6 +80,7 @@ final class BookingModule implements Module
             static fn (Container $c) => new BookingService(
                 $c->get(CatalogApi::class),
                 new WpdbPricingReader($c->get(Db::class)),
+                new WpdbFieldReader($c->get(Db::class)),
                 new WpdbResourceLocker($c->get(Db::class)),
                 new WpdbHoldRepository($c->get(Db::class)),
                 new WpdbAppointmentRepository($c->get(Db::class)),

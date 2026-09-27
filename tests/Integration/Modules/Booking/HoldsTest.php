@@ -68,6 +68,8 @@ final class HoldsTest extends TestCase
         'appointments',
         'appointment_extras',
         'appointment_history',
+        'appointment_answers',
+        'fields',
         'policies',
     ];
 
@@ -298,6 +300,74 @@ final class HoldsTest extends TestCase
     }
 
     /**
+     * A global required field is enforced; a conditional field is only
+     * required once its show_if matches; validated answers land in
+     * appointment_answers (T2.6).
+     */
+    public function testCustomFieldAnswersAreValidatedAndStored(): void
+    {
+        $db = $this->realDb();
+        $db->insert(Tables::name('fields'), [
+            'scope' => 'global',
+            'service_id' => null,
+            'field_key' => 'has_car',
+            'type' => 'checkbox',
+            'label' => 'Has a car?',
+            'required' => 0,
+            'options' => null,
+            'show_if' => null,
+            'sort' => 0,
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+        $db->insert(Tables::name('fields'), [
+            'scope' => 'global',
+            'service_id' => null,
+            'field_key' => 'plate',
+            'type' => 'text',
+            'label' => 'Plate number',
+            'required' => 1,
+            'options' => null,
+            'show_if' => (string) \wp_json_encode(['field' => 'has_car', 'equals' => '1']),
+            'sort' => 1,
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+        $day = self::inDays(2);
+        $this->logInAs('administrator');
+
+        // has_car is false: plate is hidden, so it is not required.
+        $tokenA = $this->post($day, '10:00')['body']['token'] ?? null;
+        self::assertIsString($tokenA);
+        $hidden = $this->book($tokenA, ['has_car' => false]);
+        self::assertSame(201, $hidden['status'], (string) \wp_json_encode($hidden['body']));
+
+        // has_car is true this time: plate becomes required.
+        $tokenB = $this->post($day, '11:00')['body']['token'] ?? null;
+        self::assertIsString($tokenB);
+        $missing = $this->book($tokenB, ['has_car' => true]);
+        self::assertSame(
+            [422, 'answer_required'],
+            [$missing['status'], $missing['body']['code'] ?? null]
+        );
+
+        $booked = $this->book($tokenB, ['has_car' => true, 'plate' => '12A345']);
+        self::assertSame(201, $booked['status'], (string) \wp_json_encode($booked['body']));
+
+        self::assertSame(
+            [
+                ['field_key' => 'has_car', 'value' => '0'],
+                ['field_key' => 'has_car', 'value' => '1'],
+                ['field_key' => 'plate', 'value' => '12A345'],
+            ],
+            $db->getResults(
+                'SELECT field_key, value FROM %i ORDER BY appointment_id, field_key',
+                Tables::name('appointment_answers')
+            )
+        );
+    }
+
+    /**
      * Moving frees the old time and takes the new one; cancelling frees it
      * all. A global policy refuses a late cancel unless staff override it
      * with a reason, which history keeps.
@@ -450,12 +520,18 @@ final class HoldsTest extends TestCase
     }
 
     /**
+     * @param array<string, mixed> $answers
      * @return array{status: int, body: array<string, mixed>}
      */
-    private function book(string $token): array
+    private function book(string $token, array $answers = []): array
     {
         $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . '/bookings');
-        $request->set_body_params(['hold_token' => $token, 'customer_id' => 9, 'customer_note' => 'Aisle']);
+        $request->set_body_params([
+            'hold_token' => $token,
+            'customer_id' => 9,
+            'customer_note' => 'Aisle',
+            'answers' => $answers,
+        ]);
         $response = \rest_do_request($request);
         $body = $response->get_data();
 

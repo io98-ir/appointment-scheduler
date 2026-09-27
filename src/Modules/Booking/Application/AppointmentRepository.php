@@ -25,6 +25,15 @@ interface AppointmentRepository
     public function add(Appointment $appointment, StatusChange $change, string $source, ?int $userId, int $now): int;
 
     /**
+     * Writes one appointment_answers row per validated custom field answer
+     * (T2.6). Called right after add(), never for an empty map.
+     *
+     * @param array<string, string> $answers by field_key, already validated.
+     * @param int $now UTC seconds.
+     */
+    public function saveAnswers(int $appointmentId, array $answers, int $now): void;
+
+    /**
      * Null when there is none.
      */
     public function find(int $id, bool $forUpdate = false): ?StoredAppointment;

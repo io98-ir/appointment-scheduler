@@ -11,7 +11,10 @@ use Vaqtyar\Modules\Booking\Domain\HoldToken;
 
 /**
  * POST /bookings (docs/api.md): staff confirm a hold as an appointment for
- * a customer. The customer's own booking from the widget comes with T4.2.
+ * a customer. `answers` are the service's custom field answers by
+ * field_key (T2.6); the WordPress REST schema only shapes the request, so
+ * validation against the fields themselves happens in BookingService.
+ * The customer's own booking from the widget comes with T4.2.
  */
 final class BookingRoutes
 {
@@ -19,6 +22,7 @@ final class BookingRoutes
         'hold_token' => ['type' => 'string', 'pattern' => '^[A-Za-z0-9_-]{43}$', 'required' => true],
         'customer_id' => ['type' => 'integer', 'minimum' => 1, 'required' => true],
         'customer_note' => ['type' => 'string', 'maxLength' => 2000, 'default' => ''],
+        'answers' => ['type' => 'object', 'additionalProperties' => true, 'default' => []],
     ];
 
     /**
@@ -47,11 +51,13 @@ final class BookingRoutes
         $token = $request->get_param('hold_token');
         $customer = $request->get_param('customer_id');
         $note = $request->get_param('customer_note');
+        $answers = $request->get_param('answers');
         $booked = ($this->service)()->confirm(
             HoldToken::fromString(\is_string($token) ? $token : ''),
             \is_int($customer) || \is_numeric($customer) ? (int) $customer : 0,
             \is_string($note) ? \sanitize_textarea_field($note) : '',
-            \get_current_user_id()
+            \get_current_user_id(),
+            \is_array($answers) ? $answers : []
         );
 
         return new \WP_REST_Response(AppointmentJson::of($booked->id, $booked->appointment), 201);

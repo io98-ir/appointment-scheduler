@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Vaqtyar\Modules\Booking\Domain\Appointment\Appointment;
 use Vaqtyar\Modules\Booking\Domain\Appointment\AppointmentStatus;
 use Vaqtyar\Modules\Booking\Domain\Appointment\TrackingCode;
+use Vaqtyar\Modules\Booking\Domain\Field\AnswerValidator;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
 use Vaqtyar\Modules\Booking\Domain\Pricing\PriceLine;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
@@ -26,7 +27,9 @@ use Vaqtyar\Shared\Domain\Ulid;
  * §4.9), the hold is read again under the locks, its coupon is checked
  * again and its use counted, the appointment is written, the hold's
  * occupancies become the appointment's, and the notification job is
- * queued (ADR-005). The time is never free in between.
+ * queued (ADR-005). The time is never free in between. Custom field
+ * answers are validated against the service's fields (T2.6) inside the
+ * same transaction, since only there is the service known.
  *
  * Staff book this way for now; the customer's own booking, with its
  * identity, comes with the widget (T4.2, T4.3).
@@ -45,6 +48,7 @@ final class BookingService
     public function __construct(
         private readonly CatalogApi $catalog,
         private readonly PricingReader $pricing,
+        private readonly FieldReader $fields,
         private readonly ResourceLocker $locker,
         private readonly HoldRepository $holds,
         private readonly AppointmentRepository $appointments,
@@ -58,15 +62,21 @@ final class BookingService
 
     /**
      * @param int $userId the staff member's WordPress user.
+     * @param array<string, mixed> $answers custom field answers by field_key, as the client sent them.
      * @throws Forbidden without the capability.
      * @throws NotFound hold_not_found when the token is unknown, expired or
      *     already confirmed.
      * @throws Conflict service_unavailable when the service or location is
      *     gone since the hold.
-     * @throws InvalidValue why the hold's coupon cannot be used any more.
+     * @throws InvalidValue why the hold's coupon cannot be used any more, or an answer that does not fit its field.
      */
-    public function confirm(HoldToken $token, int $customerId, string $customerNote, int $userId): BookedAppointment
-    {
+    public function confirm(
+        HoldToken $token,
+        int $customerId,
+        string $customerNote,
+        int $userId,
+        array $answers = [],
+    ): BookedAppointment {
         if (!$this->authorizer->allows(self::CAPABILITY)) {
             throw new Forbidden(self::CAPABILITY);
         }
@@ -77,7 +87,7 @@ final class BookingService
             throw self::notFound();
         }
 
-        $work = function () use ($found, $token, $customerId, $customerNote, $userId): BookedAppointment {
+        $work = function () use ($found, $token, $customerId, $customerNote, $userId, $answers): BookedAppointment {
             $this->locker->lock($found->lockKeys, $found->from, $found->to);
             $hold = $this->holds->find($token->hash(), true);
             $now = $this->clock->now();
@@ -91,6 +101,7 @@ final class BookingService
                 throw new Conflict('service_unavailable', 'The service is no longer offered.');
             }
             $this->countCoupon($held, $offer->serviceId, $now->getTimestamp());
+            $validAnswers = AnswerValidator::validate($this->fields->forService($offer->serviceId), $answers);
 
             $appointment = Appointment::book(
                 Ulid::fromParts($now, \random_bytes(10)),
@@ -116,6 +127,9 @@ final class BookingService
                 $userId,
                 $now->getTimestamp()
             );
+            if ([] !== $validAnswers) {
+                $this->appointments->saveAnswers($id, $validAnswers, $now->getTimestamp());
+            }
             $this->holds->handOver($hold->id, $id);
             $this->jobs->appointmentBooked($id);
 

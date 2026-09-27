@@ -336,6 +336,14 @@ final class AppointmentServiceTest extends TestCase
                 throw new \LogicException('Not used.');
             }
 
+            /**
+             * @param array<string, string> $answers
+             */
+            public function saveAnswers(int $appointmentId, array $answers, int $now): void
+            {
+                throw new \LogicException('Not used.');
+            }
+
             public function find(int $id, bool $forUpdate = false): ?StoredAppointment
             {
                 $this->test->record($forUpdate ? 'find for update' : 'find');

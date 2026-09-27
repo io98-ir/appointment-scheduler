@@ -281,6 +281,14 @@
 - **Job:** `booking/appointment_cancelled` و `booking/appointment_rescheduled` در همان تراکنش.
 - **ساخته نشد:** Policyهای `deposit`، `approval` و `booking_window` (سقف نوبت فعال و مقدار خدمتی min_notice و max_advance) و CRUD Admin برای `policies` (upsert روی UNIQUE(type, service_id)). جای طبیعی‌شان به‌ترتیب M5، T4.2 و T3.5 است.
 
+## 4.13 فیلدهای سفارشی (T2.6)
+- **Domain:** `Booking\Domain\Field`: `FieldType` (`text`، `textarea`، `number`، `select`، `checkbox`)، `ShowIf` (شرط ساده `{field, equals}`، فقط تساوی رشته‌ای و بدون AND/OR)، `Field::validate()` که یک پاسخ خام را به رشته `appointment_answers.value` تبدیل می‌کند (checkbox فقط bool، number هر عدد یا رشته عددی، select فقط یکی از `options`، text/textarea با trim و سقف `Field::MAX_ANSWER_LENGTH` مثل `customer_note`)، و `AnswerValidator::validate()` که روی لیست فیلدهای یک خدمت اجرا می‌شود.
+- **مخفی یعنی نه الزامی نه ذخیره:** اگر `show_if` یک فیلد با پاسخ‌های خام (نه پاسخ‌های validate‌شده) نخواند، آن فیلد بررسی نمی‌شود، حتی اگر `required` باشد یا کلاینت چیزی برایش فرستاده باشد.
+- **`FieldReader::forService()`** بر خلاف Policy، جمعی است نه سلسله‌مراتبی: همه فیلدهای سراسری به‌همراه فیلدهای خود خدمت، به ترتیب `sort`. ردیف خراب (`type` ناشناخته، `options` غیر از فهرست رشته، `show_if` غیر از `{field, equals}`) مثل Policy نادیده گرفته می‌شود (`WpdbFieldReader`).
+- **`BookingService::confirm`** پاسخ‌ها را با پارامتر اختیاری `answers` می‌گیرد و **داخل تراکنش، بعد از شناخته‌شدن `offer` و قبل از ساخت نوبت** validate می‌کند، چون `service_id` فقط آن‌جا معلوم است. پاسخ نامعتبر تراکنش را rollback می‌کند و Hold دست‌نخورده باقی می‌ماند (قابل تلاش دوباره با همان توکن).
+- **ذخیره:** `AppointmentRepository::saveAnswers()` بعد از `add()` و قبل از `handOver` صدا زده می‌شود، فقط وقتی پاسخ معتبری هست. یک ردیف در `appointment_answers` به ازای هر پاسخ.
+- **ساخته نشد:** CRUD Admin برای `fields` (upsert، sort، حذف) با UI به T3.5 موکول شد، مثل Policy در T2.5. فرم مشتری در ویجت (T4.2) از همین `answers` استفاده می‌کند.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

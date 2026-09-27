@@ -76,12 +76,17 @@
 | `hold_token` | string، 43 کاراکتر، الزامی | `token` پاسخ `POST /holds` |
 | `customer_id` | integer، الزامی | شناسه مشتری. تا T2.7 وجودش بررسی نمی‌شود |
 | `customer_note` | string، تا 2000 کاراکتر | یادداشت مشتری |
+| `answers` | object | پاسخ فیلدهای سفارشی خدمت، به‌صورت `field_key: value` (T2.6) |
 
 - **201:** `{id, uuid, code, status, payment_status, staff_id, start, end, price}`. `code` کد پیگیری 8 کاراکتری است. `status` فعلاً همیشه `confirmed` است و `payment_status` برابر `unpaid`. زمان‌ها با offset شعبه هستند. `price` همان قیمت Hold است.
 - **404 `hold_not_found`:** توکن ناشناخته، منقضی، یا قبلاً تأییدشده است. هر توکن فقط یک‌بار کار می‌کند.
 - **409 `service_unavailable`:** خدمت یا شعبه بعد از Hold غیرفعال یا حذف شده است.
 - **422 `coupon_*`:** کوپن Hold دیگر قابل استفاده نیست، مثلاً ظرفیتش در این فاصله تمام شده است.
+- **422 `answer_required`:** یک فیلد سفارشی الزامی (که شرط نمایشش هم برقرار است) بی‌پاسخ مانده است.
+- **422 `invalid_answer`:** پاسخ با نوع فیلد (متن، عدد، یکی از گزینه‌های select یا checkbox) نمی‌خواند.
 - **401/403:** بدون ورود یا بدون capability.
+
+فیلدهای هر خدمت، فیلدهای سراسری به‌علاوه فیلدهای همان خدمت‌اند (`fields`، data-model §2). هر فیلد `type` (`text`، `textarea`، `number`، `select`، `checkbox`)، `required` و یک شرط ساده اختیاری `show_if: {field, equals}` دارد: فقط وقتی پاسخ خام فیلد دیگر برابر مقدار باشد نمایش داده و بررسی می‌شود؛ در غیر این صورت نه الزامی است و نه ذخیره می‌شود. مدیریت (ایجاد/ویرایش) فیلدها در T3.5 می‌آید؛ فعلاً فقط از دیتابیس خوانده می‌شوند.
 
 ## تغییر نوبت (Admin)
 هر سه route برای `manage_bookings` هستند. پاسخ موفق 200 است و همان شکل پاسخ `POST /bookings` را دارد. `cancel` و `reschedule` این‌ها را هم دارند: `decision: {allowed, reason_code, refund_percent, refund}` و `overridden`. `refund` تا M5 صفر است.

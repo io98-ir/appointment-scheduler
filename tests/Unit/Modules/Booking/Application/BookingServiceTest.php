@@ -9,6 +9,7 @@ use Vaqtyar\Modules\Booking\Application\Actor;
 use Vaqtyar\Modules\Booking\Application\AppointmentRepository;
 use Vaqtyar\Modules\Booking\Application\BookingJobs;
 use Vaqtyar\Modules\Booking\Application\BookingService;
+use Vaqtyar\Modules\Booking\Application\FieldReader;
 use Vaqtyar\Modules\Booking\Application\HeldBooking;
 use Vaqtyar\Modules\Booking\Application\HoldRepository;
 use Vaqtyar\Modules\Booking\Application\PricingReader;
@@ -18,6 +19,8 @@ use Vaqtyar\Modules\Booking\Application\StoredHold;
 use Vaqtyar\Modules\Booking\Domain\Appointment\Appointment;
 use Vaqtyar\Modules\Booking\Domain\Appointment\AppointmentStatus;
 use Vaqtyar\Modules\Booking\Domain\Appointment\StatusChange;
+use Vaqtyar\Modules\Booking\Domain\Field\Field;
+use Vaqtyar\Modules\Booking\Domain\Field\FieldType;
 use Vaqtyar\Modules\Booking\Domain\Hold;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
 use Vaqtyar\Modules\Booking\Domain\Pricing\Coupon;
@@ -58,6 +61,12 @@ final class BookingServiceTest extends TestCase
     public bool $allowed = true;
 
     public ?Appointment $added = null;
+
+    /** @var list<Field> */
+    public array $fields = [];
+
+    /** @var array<string, string> */
+    public array $savedAnswers = [];
 
     private FixedClock $clock;
 
@@ -142,6 +151,31 @@ final class BookingServiceTest extends TestCase
             self::fail('No exception.');
         } catch (InvalidValue $e) {
             self::assertSame('coupon_used_up', $e->errorCode);
+        }
+        self::assertNull($this->added);
+        self::assertContains('rollback', $this->log);
+        self::assertNotContains('changed', $this->log);
+    }
+
+    public function testValidAnswersAreSavedAfterTheAppointment(): void
+    {
+        $this->fields = [new Field('note', FieldType::Text, 'Note', true, [], null, 0)];
+
+        $this->service()->confirm($this->token, 9, '', 2, ['note' => 'Window seat']);
+
+        self::assertSame(['add admin 2 created', 'answers 77'], \array_slice($this->log, 5, 2));
+        self::assertSame(['note' => 'Window seat'], $this->savedAnswers);
+    }
+
+    public function testAMissingRequiredAnswerRefusesTheBookingAndRollsBack(): void
+    {
+        $this->fields = [new Field('note', FieldType::Text, 'Note', true, [], null, 0)];
+
+        try {
+            $this->service()->confirm($this->token, 9, '', 2);
+            self::fail('No exception.');
+        } catch (InvalidValue $e) {
+            self::assertSame('answer_required', $e->errorCode);
         }
         self::assertNull($this->added);
         self::assertContains('rollback', $this->log);
@@ -329,6 +363,15 @@ final class BookingServiceTest extends TestCase
                 return 77;
             }
 
+            /**
+             * @param array<string, string> $answers
+             */
+            public function saveAnswers(int $appointmentId, array $answers, int $now): void
+            {
+                $this->test->record("answers {$appointmentId}");
+                $this->test->savedAnswers = $answers;
+            }
+
             public function find(int $id, bool $forUpdate = false): ?StoredAppointment
             {
                 return null;
@@ -424,6 +467,19 @@ final class BookingServiceTest extends TestCase
                 return BookingService::CAPABILITY === $capability && $this->test->allowed;
             }
         };
+        $fields = new class ($test) implements FieldReader {
+            public function __construct(private readonly BookingServiceTest $test)
+            {
+            }
+
+            /**
+             * @return list<Field>
+             */
+            public function forService(int $serviceId): array
+            {
+                return $this->test->fields;
+            }
+        };
         $catalog = new class () implements CatalogApi {
             public function offer(int $variantId): ?Offer
             {
@@ -439,6 +495,7 @@ final class BookingServiceTest extends TestCase
         return new BookingService(
             $catalog,
             $pricing,
+            $fields,
             $locker,
             $holds,
             $appointments,

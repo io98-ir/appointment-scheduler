@@ -13,13 +13,6 @@ namespace Vaqtyar\Shared\Domain;
  */
 final class PhoneNumber
 {
-    private const DIGITS = [
-        '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
-        '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
-        '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
-        '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
-    ];
-
     /** Whitespace, separators, and invisible format characters (bidi marks, ZWNJ, …). */
     private const NOISE = '/[\s\x{00A0}().\-\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}-\x{2069}\x{FEFF}]/u';
 
@@ -29,7 +22,7 @@ final class PhoneNumber
 
     public static function fromInput(string $input): self
     {
-        $compact = \preg_replace(self::NOISE, '', \strtr($input, self::DIGITS));
+        $compact = \preg_replace(self::NOISE, '', PersianDigits::toLatin($input));
         if (null === $compact) {
             throw self::invalid(); // Not valid UTF-8.
         }

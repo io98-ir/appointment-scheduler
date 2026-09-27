@@ -19,5 +19,11 @@ Built in M2.
   no-shows under the service's policies (`Domain\Policy`, `WpdbPolicyReader`);
   staff override with `override_policies` and a reason. Staff routes
   `POST /appointments/{id}/cancel|reschedule|no-show`.
+- **Custom fields** (T2.6): `Domain\Field\Field` validates one answer to its
+  type, `ShowIf` is a simple `{field, equals}` condition, `AnswerValidator`
+  runs both over a service's fields (`FieldReader`, `WpdbFieldReader`: global
+  plus the service's own, additive unlike a policy). `BookingService::confirm`
+  validates `answers` inside the transaction and `AppointmentRepository::
+  saveAnswers` writes `appointment_answers`. Admin CRUD for `fields` is T3.5.
 - Each write to `occupancies` fires `booking/changed`, which the availability
   cache listens to (implementation-notes §4.7).

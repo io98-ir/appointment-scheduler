@@ -85,6 +85,23 @@ final class WpdbAppointmentRepository implements AppointmentRepository
         return $id;
     }
 
+    /**
+     * @param array<string, string> $answers
+     */
+    public function saveAnswers(int $appointmentId, array $answers, int $now): void
+    {
+        $at = \gmdate(self::UTC_FORMAT, $now);
+        foreach ($answers as $fieldKey => $value) {
+            $this->db->insert(Tables::name('appointment_answers'), [
+                'appointment_id' => $appointmentId,
+                'field_key' => $fieldKey,
+                'value' => $value,
+                'created_at' => $at,
+                'updated_at' => $at,
+            ]);
+        }
+    }
+
     public function find(int $id, bool $forUpdate = false): ?StoredAppointment
     {
         $sql = 'SELECT uuid, code, customer_id, location_id, service_id, variant_id, staff_id, status, payment_status,
