@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-27 — سشن 13 — T2.6 فیلدهای سفارشی
+**Taskها:** T2.6
+**انجام شد:** بیشتر کد و تست‌ها از قبل در commit `46615c4` (با پیام «next task»، بیرون از روال) بود و tracker به‌روز نشده بود. این سشن آن را کامل کرد: (1) `Field::requiredAnswer()` تعریف نشده بود و PHPStan قرمز بود، و checkbox الزامی با `false` خطای fatal می‌داد. (2) `show_if` روی پاسخ خام بود. حالا به ترتیب و روی پاسخ validate‌شده فیلدهای نمایان قبلی است، پس پاسخ یک فیلد مخفی فیلد دیگری را نمایان نمی‌کند و `equals: "0"` برای checkbox کار می‌کند. (3) سقف طول text به کاراکتر (`mb_strlen`)، و trim ارقام فارسی در number. (4) از یافته‌های reviewer: UTF-8 نامعتبر و number بلند یا `INF`/`NAN` حالا 422 می‌دهند، نه 500.
+**تصمیم‌ها و فرض‌ها:** شرطی که به فیلد بعدی اشاره کند هرگز برقرار نمی‌شود. کلید تکراری سراسری و خدمت، و `field_key` در details خطا به T3.5 و T4.2 موکول شد (implementation-notes §4.13).
+**تأیید:** `composer check` ← lint، stan، deptrac سبز و Unit OK (751 tests). `composer test:rename` ← OK. Reviewer ← بدون یافته مسدودکننده.
+**مشکلات و باقیمانده:** Integration (`HoldsTest`، فیلدها و `appointment_answers`) فقط روی CI اجرا می‌شود.
+**قدم بعدی:** push و دیدن CI، بعد T2.7.
+**Commitها:** `feat(booking): custom fields and booking answers (T2.6)`
+
+---
+
 ## 2026-09-27 — سشن 12 (ادامه) — T2.5 Policy، لغو و جابجایی
 **Taskها:** T2.5
 **انجام شد:** Domain `Policy` (پلکان استرداد، مهلت‌ها، سقف جابجایی)، `Appointment::restore` و `reschedule`، `AppointmentService` (cancel، reschedule، markNoShow)، `Actor`، `WpdbPolicyReader`، `WpdbAppointmentRepository` (find، update، release، occupy)، Jobهای لغو و جابجایی، REST staff، capability `override_policies`. مستندات: implementation-notes §4.12، api.md، README.

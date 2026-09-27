@@ -39,7 +39,8 @@ final class Field
     }
 
     /**
-     * @throws InvalidValue invalid_answer when $value does not fit the type.
+     * @throws InvalidValue invalid_answer when $value does not fit the type,
+     *     answer_required for an unchecked required checkbox.
      */
     public function validate(mixed $value): string
     {
@@ -52,11 +53,9 @@ final class Field
     }
 
     /**
-     * Unlike other types, a checkbox is always "answered" once it is sent
-     * at all, even as false; required only refuses a missing checkbox, not
-     * an unchecked one, EXCEPT here: a required checkbox is a consent gate
-     * (e.g. "I agree to the cancellation policy"), so false fails the same
-     * way as never answering.
+     * A checkbox sent as false is still an answer ('0'), except when it is
+     * required: then it is a consent gate (e.g. "I agree to the
+     * cancellation policy"), and false fails the same way as no answer.
      */
     private function checkbox(mixed $value): string
     {
@@ -72,11 +71,11 @@ final class Field
 
     private function number(mixed $value): string
     {
-        if (\is_int($value) || \is_float($value)) {
+        if (\is_int($value) || (\is_float($value) && \is_finite($value))) {
             return (string) $value;
         }
-        $normalized = \is_string($value) ? PersianDigits::toLatin($value) : null;
-        if (null === $normalized || !\is_numeric($normalized)) {
+        $normalized = \is_string($value) ? \trim(PersianDigits::toLatin($value)) : null;
+        if (null === $normalized || !\is_numeric($normalized) || \strlen($normalized) > self::MAX_ANSWER_LENGTH) {
             throw $this->invalidAnswer();
         }
 
@@ -98,7 +97,7 @@ final class Field
             throw $this->invalidAnswer();
         }
         $text = \trim((string) $value);
-        if ('' === $text || \strlen($text) > self::MAX_ANSWER_LENGTH) {
+        if ('' === $text || !\mb_check_encoding($text, 'UTF-8') || \mb_strlen($text) > self::MAX_ANSWER_LENGTH) {
             throw $this->invalidAnswer();
         }
 
@@ -108,5 +107,10 @@ final class Field
     private function invalidAnswer(): InvalidValue
     {
         return new InvalidValue('invalid_answer', "The answer for \"{$this->label}\" is not valid.");
+    }
+
+    public function requiredAnswer(): InvalidValue
+    {
+        return new InvalidValue('answer_required', "The field \"{$this->label}\" is required.");
     }
 }

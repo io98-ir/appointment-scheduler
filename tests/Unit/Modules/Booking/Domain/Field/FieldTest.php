@@ -105,6 +105,46 @@ final class FieldTest extends TestCase
         self::assertInvalidAnswer(static fn () => self::field(type: FieldType::Checkbox)->validate('1'));
     }
 
+    public function testARequiredCheckboxMustBeChecked(): void
+    {
+        $field = self::field(type: FieldType::Checkbox, required: true);
+
+        self::assertSame('1', $field->validate(true));
+        try {
+            $field->validate(false);
+            self::fail('No exception.');
+        } catch (InvalidValue $e) {
+            self::assertSame('answer_required', $e->errorCode);
+        }
+    }
+
+    public function testNumberNormalizesPersianDigitsAndSpaces(): void
+    {
+        self::assertSame('12', self::field(type: FieldType::Number)->validate(' ۱۲ '));
+    }
+
+    public function testNumberRejectsAnOverlongOrInfiniteValue(): void
+    {
+        $field = self::field(type: FieldType::Number);
+
+        self::assertInvalidAnswer(static fn () => $field->validate('1' . \str_repeat('0', Field::MAX_ANSWER_LENGTH)));
+        self::assertInvalidAnswer(static fn () => $field->validate(\INF));
+        self::assertInvalidAnswer(static fn () => $field->validate(\NAN));
+    }
+
+    public function testTextRejectsInvalidUtf8(): void
+    {
+        self::assertInvalidAnswer(static fn () => self::field()->validate("\xFF\xFE"));
+    }
+
+    public function testTheLengthLimitCountsCharactersNotBytes(): void
+    {
+        self::assertSame(
+            \str_repeat('س', Field::MAX_ANSWER_LENGTH),
+            self::field()->validate(\str_repeat('س', Field::MAX_ANSWER_LENGTH))
+        );
+    }
+
     /**
      * @param \Closure(): mixed $call
      */

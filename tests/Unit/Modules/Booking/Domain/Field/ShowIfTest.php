@@ -45,18 +45,11 @@ final class ShowIfTest extends TestCase
         self::assertFalse($showIf->matches([]));
     }
 
-    public function testItComparesAsAStringSoABooleanOrANumberCanMatch(): void
+    public function testItComparesExactly(): void
     {
-        $showIf = new ShowIf('agrees', '1');
+        $showIf = new ShowIf('has_car', 'yes');
 
-        self::assertTrue($showIf->matches(['agrees' => true]));
-        self::assertTrue($showIf->matches(['agrees' => 1]));
-    }
-
-    public function testANonScalarAnswerNeverMatches(): void
-    {
-        $showIf = new ShowIf('extras', '1');
-
-        self::assertFalse($showIf->matches(['extras' => ['a', 'b']]));
+        self::assertFalse($showIf->matches(['has_car' => 'Yes']));
+        self::assertFalse($showIf->matches(['has_car' => ' yes']));
     }
 }

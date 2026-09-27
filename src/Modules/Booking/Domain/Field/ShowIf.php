@@ -8,8 +8,9 @@ use Vaqtyar\Shared\Domain\InvalidValue;
 
 /**
  * A field's simple condition (data-model §2, `fields.show_if`): it is shown
- * only when another field's raw answer equals a fixed value. No AND/OR
- * trees, by design (roadmap T2.6, "شرط ساده").
+ * only when an earlier visible field's validated answer equals a fixed
+ * value, e.g. '1' or '0' for a checkbox. No AND/OR trees, by design
+ * (roadmap T2.6, "شرط ساده").
  */
 final class ShowIf
 {
@@ -21,12 +22,10 @@ final class ShowIf
     }
 
     /**
-     * @param array<string, mixed> $answers raw, exactly as the client sent them.
+     * @param array<string, string> $answers validated so far, by field_key.
      */
     public function matches(array $answers): bool
     {
-        $value = $answers[$this->fieldKey] ?? null;
-
-        return \is_scalar($value) && (string) $value === $this->equals;
+        return ($answers[$this->fieldKey] ?? null) === $this->equals;
     }
 }

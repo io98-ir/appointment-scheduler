@@ -95,6 +95,58 @@ final class AnswerValidatorTest extends TestCase
         }
     }
 
+    public function testAnUncheckedCheckboxCanRevealAField(): void
+    {
+        $fields = [
+            new Field('has_car', FieldType::Checkbox, 'Has a car?', false, [], null, 0),
+            new Field('how', FieldType::Text, 'How will you come?', true, [], new ShowIf('has_car', '0'), 1),
+        ];
+
+        try {
+            AnswerValidator::validate($fields, ['has_car' => false]);
+            self::fail('No exception.');
+        } catch (InvalidValue $e) {
+            self::assertSame('answer_required', $e->errorCode);
+        }
+    }
+
+    public function testAConditionUsesTheNormalizedAnswer(): void
+    {
+        $fields = [
+            new Field('guests', FieldType::Number, 'Guests', false, [], null, 0),
+            new Field('names', FieldType::Text, 'Names', true, [], new ShowIf('guests', '2'), 1),
+        ];
+
+        self::assertSame(
+            ['guests' => '2', 'names' => 'Sara'],
+            AnswerValidator::validate($fields, ['guests' => '۲', 'names' => 'Sara'])
+        );
+    }
+
+    public function testAHiddenFieldsAnswerRevealsNothing(): void
+    {
+        $fields = [
+            new Field('has_car', FieldType::Checkbox, 'Has a car?', false, [], null, 0),
+            new Field('car', FieldType::Select, 'Car', false, ['suv', 'van'], new ShowIf('has_car', '1'), 1),
+            new Field('seats', FieldType::Number, 'Seats', true, [], new ShowIf('car', 'van'), 2),
+        ];
+
+        self::assertSame(
+            ['has_car' => '0'],
+            AnswerValidator::validate($fields, ['has_car' => false, 'car' => 'van'])
+        );
+    }
+
+    public function testAConditionOnALaterFieldNeverMatches(): void
+    {
+        $fields = [
+            new Field('plate', FieldType::Text, 'Plate', true, [], new ShowIf('has_car', '1'), 0),
+            new Field('has_car', FieldType::Checkbox, 'Has a car?', false, [], null, 1),
+        ];
+
+        self::assertSame(['has_car' => '1'], AnswerValidator::validate($fields, ['has_car' => true]));
+    }
+
     public function testFieldsAreCheckedInOrderSoAConditionCanUseAnEarlierAnswer(): void
     {
         $fields = [
