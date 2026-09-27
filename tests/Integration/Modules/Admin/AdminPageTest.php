@@ -66,7 +66,7 @@ final class AdminPageTest extends \WP_UnitTestCase
         $html = (string) \ob_get_clean();
 
         self::assertSame(1, \preg_match('/data-config="([^"]*)"/', $html, $match));
-        $config = \json_decode(\html_entity_decode($match[1], \ENT_QUOTES), true);
+        $config = \json_decode(\html_entity_decode($match[1] ?? '', \ENT_QUOTES), true);
         self::assertIsArray($config);
         self::assertSame(\rest_url(Identity::REST_NAMESPACE . '/'), $config['restUrl'] ?? null);
         $nonce = $config['nonce'] ?? null;
