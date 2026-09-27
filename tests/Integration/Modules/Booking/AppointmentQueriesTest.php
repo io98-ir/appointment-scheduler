@@ -401,9 +401,8 @@ final class AppointmentQueriesTest extends TestCase
             $start = new \DateTimeImmutable($local, new \DateTimeZone(self::TEHRAN));
             $this->ids[$code] = $this->realDb()->insert(
                 Tables::name('appointments'),
-                self::columns($i, $code, $customer, $staff, $service, $status, $start->getTimestamp()) + [
-                    'customer_note' => 'بدون عطر',
-                ]
+                ['customer_note' => 'بدون عطر']
+                    + self::columns($i, $code, $customer, $staff, $service, $status, $start->getTimestamp())
             );
         }
     }
