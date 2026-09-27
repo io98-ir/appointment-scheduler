@@ -21,9 +21,9 @@
 **انجام شد:** Read side نوبت‌ها: `AppointmentBrowser` (Application)، port `AppointmentQuery`، DTOهای `AppointmentRow`، `AppointmentDetail`، `AppointmentFilter`، `AppointmentSearch` و `AppointmentSort`، و `Infrastructure\Query\WpdbAppointmentQuery`. REST: `GET /appointments`، `GET /appointments/{id}` و `GET /calendar` (`AppointmentListRoutes`، `AppointmentJson::row` و `detail`). ماژول Customers: Contract `CustomerDirectory` (`summaries` و `matching`) با `WpdbCustomerDirectory`. migration `AddAppointmentStartIndex`. مستندات: api.md، implementation-notes §4.15، data-model، README دو ماژول، `api-types.ts`.
 **تصمیم‌ها و فرض‌ها:** (1) بدون JOIN به جدول ماژول دیگر؛ نام مشتری با یک کوئری batch از Contract می‌آید، و نام پرسنل و خدمت را UI از لیست‌های کاتالوگ می‌گیرد. (2) جستجو: کد پیگیری، یا جدیدترین 200 مشتری مطابق. (3) فیلتر تاریخ روی `local_date` شعبه، با کران `start_at` یک روز حاشیه برای ایندکس. (4) تقویم فقط وضعیت‌هایی که وقت می‌گیرند، حداکثر 42 روز و 2000 آیتم. (5) ایندکس جدید `start_at` برای لیست بدون فیلتر و تقویم همه پرسنل.
 **تأیید:** `composer check` ← lint، stan، deptrac سبز و Unit OK (787 tests). `composer test:rename` ← OK. `pnpm lint` ← سبز. Reviewer ← دو یافته، هر دو رفع شد: تقویم سقف ردیف نداشت (حالا 2000 و 422 `too_many_appointments`)، و زمان با میلی‌ثانیه و `Z` (خروجی `toISOString()`) رد می‌شد (حالا پذیرفته می‌شود و تست Integration دارد).
-**مشکلات و باقیمانده:** `AppointmentQueriesTest` (شامل EXPLAIN روی 2000 ردیف) فقط روی CI اجرا می‌شود. محتمل‌ترین نقطه شکست: planهای EXPLAIN روی MariaDB.
-**قدم بعدی:** push و دیدن CI، بعد T3.1.
-**Commitها:** `feat(booking): admin appointment list, detail and calendar queries (T2.8)`
+**مشکلات و باقیمانده:** CI اول (run 36341656620) یک شکست داشت که باگ خود تست بود: در fixture، `+` آرایه `customer_note` خالی `columns()` را نگه داشته بود. بعد از رفع، **CI سبز (run 36341868373): Integration 154 تست در 4 ترکیب، همه planهای EXPLAIN مطابق انتظار، concurrency سبز.**
+**قدم بعدی:** T3.1 (M3 شروع می‌شود).
+**Commitها:** `feat(booking): admin appointment list, detail and calendar queries (T2.8)`، `test(booking): keep the fixture's customer note in the queries test (T2.8)`
 
 ---
 
