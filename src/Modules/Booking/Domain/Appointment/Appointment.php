@@ -102,6 +102,97 @@ final class Appointment
         );
     }
 
+    /**
+     * An appointment as stored; the invariants were checked when it was booked.
+     *
+     * @param ?int $cancelledAt UTC seconds.
+     */
+    public static function restore(
+        Ulid $uuid,
+        TrackingCode $code,
+        int $customerId,
+        int $locationId,
+        int $serviceId,
+        int $variantId,
+        int $staffId,
+        int $start,
+        int $end,
+        string $localDate,
+        string $timezone,
+        int $partySize,
+        PriceQuote $quote,
+        string $customerNote,
+        PaymentStatus $paymentStatus,
+        AppointmentStatus $status,
+        ?int $cancelledAt = null,
+        ?string $cancelReason = null,
+    ): self {
+        $appointment = new self(
+            $uuid,
+            $code,
+            $customerId,
+            $locationId,
+            $serviceId,
+            $variantId,
+            $staffId,
+            $start,
+            $end,
+            $localDate,
+            $timezone,
+            $partySize,
+            $quote,
+            $customerNote,
+            $paymentStatus,
+            $status
+        );
+        $appointment->cancelledAt = $cancelledAt;
+        $appointment->cancelReason = $cancelReason;
+
+        return $appointment;
+    }
+
+    /**
+     * The same appointment at another time, maybe with another staff
+     * member (booking-engine §4): same record, same price.
+     *
+     * @param string $localDate Y-m-d of the new start in the appointment's timezone.
+     * @return array{self, StatusChange}
+     * @throws Conflict invalid_transition unless confirmed.
+     * @throws InvalidValue invalid_interval
+     */
+    public function reschedule(int $start, int $end, int $staffId, string $localDate): array
+    {
+        if (AppointmentStatus::Confirmed !== $this->status) {
+            throw new Conflict(
+                'invalid_transition',
+                \sprintf('An appointment cannot reschedule when %s.', $this->status->value)
+            );
+        }
+        if ($end <= $start) {
+            throw new InvalidValue('invalid_interval', 'An appointment must end after it starts.');
+        }
+        $moved = new self(
+            $this->uuid,
+            $this->code,
+            $this->customerId,
+            $this->locationId,
+            $this->serviceId,
+            $this->variantId,
+            $staffId,
+            $start,
+            $end,
+            $localDate,
+            $this->timezone,
+            $this->partySize,
+            $this->quote,
+            $this->customerNote,
+            $this->paymentStatus,
+            $this->status
+        );
+
+        return [$moved, new StatusChange('reschedule', $this->status, $this->status)];
+    }
+
     public function status(): AppointmentStatus
     {
         return $this->status;

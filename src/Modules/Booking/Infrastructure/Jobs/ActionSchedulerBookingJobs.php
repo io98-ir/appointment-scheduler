@@ -16,8 +16,23 @@ final class ActionSchedulerBookingJobs implements BookingJobs
 {
     public function appointmentBooked(int $appointmentId): void
     {
+        self::enqueue('booking/appointment_booked', $appointmentId);
+    }
+
+    public function appointmentCancelled(int $appointmentId): void
+    {
+        self::enqueue('booking/appointment_cancelled', $appointmentId);
+    }
+
+    public function appointmentRescheduled(int $appointmentId): void
+    {
+        self::enqueue('booking/appointment_rescheduled', $appointmentId);
+    }
+
+    private static function enqueue(string $hook, int $appointmentId): void
+    {
         // Not "unique": Action Scheduler compares the hook only, not the
         // arguments, so it would drop the job of a second appointment.
-        \as_enqueue_async_action(Hooks::name('booking/appointment_booked'), ['appointment_id' => $appointmentId]);
+        \as_enqueue_async_action(Hooks::name($hook), ['appointment_id' => $appointmentId]);
     }
 }

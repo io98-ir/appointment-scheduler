@@ -11,6 +11,7 @@ use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldService;
@@ -21,9 +22,11 @@ use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateResourceDayLocksTabl
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbAppointmentRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbHoldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbOccupancyReader;
+use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPolicyReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPricingReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbResourceLocker;
 use Vaqtyar\Modules\Booking\Infrastructure\PricingSettings;
+use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\BookingRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
@@ -86,6 +89,20 @@ final class BookingModule implements Module
                 self::changed(...)
             )
         );
+        $container->singleton(
+            AppointmentService::class,
+            static fn (Container $c) => new AppointmentService(
+                new WpdbAppointmentRepository($c->get(Db::class)),
+                new WpdbPolicyReader($c->get(Db::class)),
+                $c->get(SlotClaims::class),
+                new WpdbResourceLocker($c->get(Db::class)),
+                new ActionSchedulerBookingJobs(),
+                $c->get(TransactionRunner::class),
+                $c->get(Clock::class),
+                new WpAuthorizer(),
+                self::changed(...)
+            )
+        );
     }
 
     /**
@@ -101,7 +118,10 @@ final class BookingModule implements Module
      */
     public function capabilities(): array
     {
-        return [BookingService::CAPABILITY => ['administrator']];
+        return [
+            BookingService::CAPABILITY => ['administrator'],
+            AppointmentService::OVERRIDE_CAPABILITY => ['administrator'],
+        ];
     }
 
     public function boot(Context $context): void
@@ -125,6 +145,10 @@ final class BookingModule implements Module
             (new BookingRoutes(
                 $container->get(Router::class),
                 static fn (): BookingService => $container->get(BookingService::class)
+            ))->register();
+            (new AppointmentRoutes(
+                $container->get(Router::class),
+                static fn (): AppointmentService => $container->get(AppointmentService::class)
             ))->register();
         });
     }

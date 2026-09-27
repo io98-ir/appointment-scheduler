@@ -45,7 +45,8 @@ use Vaqtyar\Tests\Integration\Modules\Catalog\CatalogTables;
 /**
  * Holds on the real database: POST /holds as a guest, the conflict on a
  * taken start, extension and purge, and POST /bookings, which confirms a
- * hold as an appointment (T2.4). One staff member works 09:00-17:00 in
+ * hold as an appointment (T2.4), then reschedule, cancel and no-show under
+ * the policies (T2.5). One staff member works 09:00-17:00 in
  * Tehran every day; the variant takes 60 minutes. The parallel case is the
  * CI job "concurrency" (tests/Concurrency).
  */
@@ -67,6 +68,7 @@ final class HoldsTest extends TestCase
         'appointments',
         'appointment_extras',
         'appointment_history',
+        'policies',
     ];
 
     /** @var list<int> */
@@ -295,6 +297,66 @@ final class HoldsTest extends TestCase
         self::assertNotContains('10:00', $this->starts($day));
     }
 
+    /**
+     * Moving frees the old time and takes the new one; cancelling frees it
+     * all. A global policy refuses a late cancel unless staff override it
+     * with a reason, which history keeps.
+     */
+    public function testStaffRescheduleAndCancelUnderThePolicies(): void
+    {
+        $db = $this->realDb();
+        $day = self::inDays(2);
+        $this->logInAs('administrator');
+        $id = $this->bookAt($day, '10:00');
+
+        $moved = $this->change($id, 'reschedule', ['start' => $day->toString() . 'T11:00:00+03:30']);
+
+        self::assertSame(200, $moved['status'], (string) \wp_json_encode($moved['body']));
+        self::assertSame($day->toString() . 'T11:00:00+03:30', $moved['body']['start'] ?? null);
+        $starts = $this->starts($day);
+        self::assertContains('10:00', $starts);
+        self::assertNotContains('11:00', $starts);
+        self::assertSame(
+            '1',
+            $db->getVar(
+                'SELECT COUNT(*) FROM %i WHERE appointment_id = %d AND action = %s AND changes IS NOT NULL',
+                Tables::name('appointment_history'),
+                $id,
+                'reschedule'
+            )
+        );
+
+        $db->insert(Tables::name('policies'), [
+            'type' => 'cancellation',
+            'service_id' => 0,
+            'config' => '{"notice_hours": 72, "refund": [{"hours": 72, "percent": 100}]}',
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+        $late = $this->change($id, 'cancel', ['reason' => 'Asked by phone']);
+        $unexplained = $this->change($id, 'cancel', ['override' => true]);
+        $overridden = $this->change($id, 'cancel', ['override' => true, 'reason' => 'Doctor is ill']);
+
+        self::assertSame([409, 'policy.cancel_window_passed'], [$late['status'], $late['body']['code'] ?? null]);
+        self::assertSame([422, 'reason_required'], [$unexplained['status'], $unexplained['body']['code'] ?? null]);
+        self::assertSame(200, $overridden['status'], (string) \wp_json_encode($overridden['body']));
+        $body = $overridden['body'];
+        self::assertSame(['cancelled', true], [$body['status'] ?? null, $body['overridden'] ?? null]);
+        self::assertSame('0', $db->getVar('SELECT COUNT(*) FROM %i', Tables::name('occupancies')));
+        self::assertSame(
+            ['cancelled', 'Doctor is ill'],
+            \array_values($db->getResults(
+                'SELECT status, cancel_reason FROM %i WHERE id = %d',
+                Tables::name('appointments'),
+                $id
+            )[0])
+        );
+        self::assertContains('11:00', $this->starts($day));
+
+        $noShow = $this->change($this->bookAt($day, '12:00'), 'no-show');
+        self::assertSame([409, 'not_started'], [$noShow['status'], $noShow['body']['code'] ?? null]);
+    }
+
     public function testTheSameStartTwiceIsAConflict(): void
     {
         $day = self::inDays(2);
@@ -394,6 +456,34 @@ final class HoldsTest extends TestCase
     {
         $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . '/bookings');
         $request->set_body_params(['hold_token' => $token, 'customer_id' => 9, 'customer_note' => 'Aisle']);
+        $response = \rest_do_request($request);
+        $body = $response->get_data();
+
+        return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
+    }
+
+    /**
+     * A hold and its confirmation, as the logged-in staff member.
+     */
+    private function bookAt(LocalDate $day, string $time): int
+    {
+        $token = $this->post($day, $time)['body']['token'] ?? null;
+        self::assertIsString($token);
+        $id = $this->book($token)['body']['id'] ?? null;
+        self::assertIsInt($id);
+
+        return $id;
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array{status: int, body: array<string, mixed>}
+     */
+    private function change(int $id, string $action, array $params = []): array
+    {
+        $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . "/appointments/{$id}/{$action}");
+        $request->set_header('Content-Type', 'application/json');
+        $request->set_body((string) \wp_json_encode($params));
         $response = \rest_do_request($request);
         $body = $response->get_data();
 

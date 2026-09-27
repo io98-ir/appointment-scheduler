@@ -82,3 +82,15 @@
 - **409 `service_unavailable`:** خدمت یا شعبه بعد از Hold غیرفعال یا حذف شده است.
 - **422 `coupon_*`:** کوپن Hold دیگر قابل استفاده نیست، مثلاً ظرفیتش در این فاصله تمام شده است.
 - **401/403:** بدون ورود یا بدون capability.
+
+## تغییر نوبت (Admin)
+هر سه route برای `manage_bookings` هستند. پاسخ موفق 200 است و همان شکل پاسخ `POST /bookings` را دارد. `cancel` و `reschedule` این‌ها را هم دارند: `decision: {allowed, reason_code, refund_percent, refund}` و `overridden`. `refund` تا M5 صفر است.
+
+| Route | پارامترها | خطاها |
+|---|---|---|
+| `POST /appointments/{id}/cancel` | `reason` (تا 1000)، `override` (bool) | 409 `policy.already_started` یا `policy.cancel_window_passed`؛ 409 `invalid_transition` |
+| `POST /appointments/{id}/reschedule` | `start` (ISO با offset، الزامی)، `staff`، `reason`، `override` | 409 `slot_taken`، `policy.reschedule_window_passed`، `policy.reschedule_limit_reached`، `invalid_transition` (فقط `confirmed` جابجا می‌شود) |
+| `POST /appointments/{id}/no-show` | — | 409 `not_started` (قبل از شروع)؛ 409 `invalid_transition` |
+
+- `override: true` به capability `override_policies` و `reason` غیرخالی نیاز دارد (403، 422 `reason_required`).
+- 404 `appointment_not_found`. 409 `appointment_changed` یعنی نوبت همزمان تغییر کرد و باید دوباره تلاش کرد.

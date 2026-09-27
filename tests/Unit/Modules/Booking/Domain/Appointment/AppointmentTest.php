@@ -123,6 +123,65 @@ final class AppointmentTest extends TestCase
         self::assertSame([self::START - 3600, 'Sick'], [$appointment->cancelledAt(), $appointment->cancelReason()]);
     }
 
+    public function testRescheduleMovesAConfirmedAppointmentAndKeepsTheRest(): void
+    {
+        $appointment = self::book(S::Confirmed);
+
+        [$moved, $change] = $appointment->reschedule(self::START + 86_400, self::START + 90_000, 4, '2027-01-16');
+
+        self::assertSame(
+            [self::START + 86_400, self::START + 90_000, 4, '2027-01-16', S::Confirmed],
+            [$moved->start, $moved->end, $moved->staffId, $moved->localDate, $moved->status()]
+        );
+        self::assertSame($appointment->uuid, $moved->uuid);
+        self::assertSame($appointment->quote, $moved->quote);
+        self::assertSame(['reschedule', S::Confirmed, S::Confirmed], [$change->action, $change->from, $change->to]);
+        self::assertSame(self::START, $appointment->start);
+    }
+
+    public function testOnlyAConfirmedAppointmentIsRescheduled(): void
+    {
+        foreach ([S::PendingPayment, S::Cancelled, S::Completed] as $status) {
+            try {
+                self::reach($status)->reschedule(self::START + 86_400, self::START + 90_000, 3, '2027-01-16');
+                self::fail("Rescheduled when {$status->value}.");
+            } catch (Conflict $e) {
+                self::assertSame('invalid_transition', $e->errorCode);
+            }
+        }
+    }
+
+    public function testRestoreKeepsTheStoredState(): void
+    {
+        $booked = self::book(S::Confirmed);
+
+        $restored = Appointment::restore(
+            $booked->uuid,
+            $booked->code,
+            9,
+            1,
+            7,
+            5,
+            3,
+            self::START,
+            self::START + 3600,
+            '2027-01-15',
+            'Asia/Tehran',
+            1,
+            $booked->quote,
+            '',
+            PaymentStatus::Paid,
+            S::Cancelled,
+            self::START - 60,
+            'Sick'
+        );
+
+        self::assertSame(
+            [S::Cancelled, PaymentStatus::Paid, self::START - 60, 'Sick'],
+            [$restored->status(), $restored->paymentStatus, $restored->cancelledAt(), $restored->cancelReason()]
+        );
+    }
+
     public function testTrackingCodesAreEightUnambiguousCharacters(): void
     {
         for ($i = 0; $i < 50; ++$i) {

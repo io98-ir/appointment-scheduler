@@ -14,4 +14,8 @@ interface BookingJobs
      * Tells the customer and the staff about a new appointment (M5 sends it).
      */
     public function appointmentBooked(int $appointmentId): void;
+
+    public function appointmentCancelled(int $appointmentId): void;
+
+    public function appointmentRescheduled(int $appointmentId): void;
 }

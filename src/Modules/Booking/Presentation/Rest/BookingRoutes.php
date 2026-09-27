@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Booking\Presentation\Rest;
 
-use DateTimeImmutable;
-use DateTimeZone;
 use Vaqtyar\Kernel\Caps;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Booking\Application\BookingService;
@@ -55,22 +53,7 @@ final class BookingRoutes
             \is_string($note) ? \sanitize_textarea_field($note) : '',
             \get_current_user_id()
         );
-        $appointment = $booked->appointment;
-        $zone = new DateTimeZone($appointment->timezone);
-        $time = static fn (int $timestamp): string => (new DateTimeImmutable('@' . $timestamp))
-            ->setTimezone($zone)
-            ->format(\DATE_ATOM);
 
-        return new \WP_REST_Response([
-            'id' => $booked->id,
-            'uuid' => $appointment->uuid->toString(),
-            'code' => $appointment->code->value,
-            'status' => $appointment->status()->value,
-            'payment_status' => $appointment->paymentStatus->value,
-            'staff_id' => $appointment->staffId,
-            'start' => $time($appointment->start),
-            'end' => $time($appointment->end),
-            'price' => $appointment->quote->toArray(),
-        ], 201);
+        return new \WP_REST_Response(AppointmentJson::of($booked->id, $booked->appointment), 201);
     }
 }

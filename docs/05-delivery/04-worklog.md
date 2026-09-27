@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-27 — سشن 12 (ادامه) — T2.5 Policy، لغو و جابجایی
+**Taskها:** T2.5
+**انجام شد:** Domain `Policy` (پلکان استرداد، مهلت‌ها، سقف جابجایی)، `Appointment::restore` و `reschedule`، `AppointmentService` (cancel، reschedule، markNoShow)، `Actor`، `WpdbPolicyReader`، `WpdbAppointmentRepository` (find، update، release، occupy)، Jobهای لغو و جابجایی، REST staff، capability `override_policies`. مستندات: implementation-notes §4.12، api.md، README.
+**تصمیم‌ها و فرض‌ها:** (1) فقط Policyهای `cancellation` و `reschedule`. `deposit` با M5، `approval` و `booking_window` با T4.2، و CRUD Policy با T3.5 می‌آیند. (2) مبلغ استرداد تا M5 روی «پرداخت‌شده = 0» حساب می‌شود و فقط درصد معنا دارد. (3) بدون Policy همه‌چیز تا شروع آزاد است با استرداد 100%. (4) Override دلیل الزامی دارد و مشتری هرگز override نمی‌کند. (5) جابجایی قیمت را عوض نمی‌کند. (6) نوبت مشتری دیگر 404 است، نه 403. (7) no-show فقط بعد از شروع.
+**تأیید:** `composer check` ← lint، stan، deptrac سبز و Unit OK (715 tests). `composer test:rename` ← OK. Reviewer: بدون یافته مسدودکننده. رفع شد: اشغالی که بین خواندن و قفل جابجا شده بود بیرون از قفل حذف می‌شد (حالا `appointment_changed`)، و `local_date` در timezone شعبه حساب می‌شد و ممکن بود با `timezone` خود نوبت نخواند. پذیرفته و مستند شد: بازه قفل در جابجایی‌های دور.
+**مشکلات و باقیمانده:** Integration جدید (`testStaffRescheduleAndCancelUnderThePolicies`) فقط روی CI اجرا می‌شود.
+**قدم بعدی:** push و دیدن CI، بعد T2.6.
+**Commitها:** `feat(booking): policies, cancel, reschedule and no-show (T2.5)`
+
+---
+
 ## 2026-09-27 — سشن 12 — T2.4 نوبت و Confirm
 **Taskها:** T2.4
 **انجام شد:** `Appointment` با ماشین وضعیت (همه گذارهای booking-engine §4 و رد بقیه)، `TrackingCode`، `PriceQuote::fromArray`، `BookingService::confirm`، `WpdbAppointmentRepository`، `WpdbHoldRepository::details` و `handOver`، `WpdbPricingReader::couponForUse` و `countUse`، `ActionSchedulerBookingJobs`، `POST /bookings`، capability `manage_bookings`. مستندات: api.md، implementation-notes §4.11، README ماژول.

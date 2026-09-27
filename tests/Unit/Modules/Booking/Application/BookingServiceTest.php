@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Tests\Unit\Modules\Booking\Application;
 
 use PHPUnit\Framework\TestCase;
+use Vaqtyar\Modules\Booking\Application\Actor;
 use Vaqtyar\Modules\Booking\Application\AppointmentRepository;
 use Vaqtyar\Modules\Booking\Application\BookingJobs;
 use Vaqtyar\Modules\Booking\Application\BookingService;
@@ -12,6 +13,7 @@ use Vaqtyar\Modules\Booking\Application\HeldBooking;
 use Vaqtyar\Modules\Booking\Application\HoldRepository;
 use Vaqtyar\Modules\Booking\Application\PricingReader;
 use Vaqtyar\Modules\Booking\Application\ResourceLocker;
+use Vaqtyar\Modules\Booking\Application\StoredAppointment;
 use Vaqtyar\Modules\Booking\Application\StoredHold;
 use Vaqtyar\Modules\Booking\Domain\Appointment\Appointment;
 use Vaqtyar\Modules\Booking\Domain\Appointment\AppointmentStatus;
@@ -25,6 +27,7 @@ use Vaqtyar\Modules\Booking\Domain\Pricing\PriceQuote;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Catalog\Contracts\LocationInfo;
 use Vaqtyar\Modules\Catalog\Contracts\Offer;
+use Vaqtyar\Modules\Scheduling\Contracts\Claim;
 use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Conflict;
 use Vaqtyar\Shared\Domain\Forbidden;
@@ -325,6 +328,33 @@ final class BookingServiceTest extends TestCase
 
                 return 77;
             }
+
+            public function find(int $id, bool $forUpdate = false): ?StoredAppointment
+            {
+                return null;
+            }
+
+            /**
+             * @param array<string, array{int|string|null, int|string|null}> $changes
+             */
+            public function update(
+                int $id,
+                Appointment $appointment,
+                StatusChange $change,
+                Actor $actor,
+                ?string $reason,
+                array $changes,
+                int $now,
+            ): void {
+            }
+
+            public function release(int $id): void
+            {
+            }
+
+            public function occupy(int $id, Claim $claim, int $variantId, int $partySize): void
+            {
+            }
         };
         $jobs = new class ($test) implements BookingJobs {
             public function __construct(private readonly BookingServiceTest $test)
@@ -334,6 +364,14 @@ final class BookingServiceTest extends TestCase
             public function appointmentBooked(int $appointmentId): void
             {
                 $this->test->record("job {$appointmentId}");
+            }
+
+            public function appointmentCancelled(int $appointmentId): void
+            {
+            }
+
+            public function appointmentRescheduled(int $appointmentId): void
+            {
             }
         };
         $locker = new class ($test) implements ResourceLocker {

@@ -15,5 +15,9 @@ Built in M2.
   machine of booking-engine §4. `BookingService::confirm` and
   `POST /bookings` (staff only for now) turn a hold into an appointment in one
   transaction; the job `booking/appointment_booked` is queued in it.
+- **Changes** (T2.5): `AppointmentService` cancels, reschedules and marks
+  no-shows under the service's policies (`Domain\Policy`, `WpdbPolicyReader`);
+  staff override with `override_policies` and a reason. Staff routes
+  `POST /appointments/{id}/cancel|reschedule|no-show`.
 - Each write to `occupancies` fires `booking/changed`, which the availability
   cache listens to (implementation-notes §4.7).

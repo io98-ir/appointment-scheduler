@@ -268,6 +268,19 @@
 - **کد پیگیری** 8 کاراکتر Crockford (40 بیت) و `UNIQUE` است. برخورد (حدود یک در میلیون در یک میلیون نوبت) فعلاً خطای 500 می‌دهد و retry نمی‌شود (یافته reviewer، پذیرفته شد).
 - `appointment_extras.price` قیمت واحد است: مبلغ خط Extra تقسیم بر `qty`. `ExtrasPrice` همیشه قیمت واحد × تعداد می‌سازد، پس تقسیم باقیمانده ندارد.
 
+## 4.12 Policy، لغو، جابجایی و no-show (T2.5)
+- **Domain:** `Booking\Domain\Policy`: `CancellationPolicy` (مهلت `notice_hours` و پلکان `RefundTier`، که اولین پله‌ای که «ساعت مانده ≥ hours» باشد درصد را تعیین می‌کند)، `ReschedulePolicy` (مهلت و `max_times`) و `PolicyEvaluator`. خروجی `Decision {allowed, reason_code, refund_percent, refund}` است. کدها: `policy.already_started`، `policy.cancel_window_passed`، `policy.reschedule_window_passed`، `policy.reschedule_limit_reached`. استرداد با HalfUp گرد می‌شود.
+- **بدون Policy:** `lenient()`، یعنی لغو و جابجایی تا شروع آزاد است و استرداد 100%. ردیف `policies` خدمت بر سراسری (`service_id = 0`) مقدم است. ردیف خراب نادیده گرفته می‌شود و سطح بعدی اعمال می‌شود (`WpdbPolicyReader`).
+- **مبلغ پرداخت‌شده فعلاً صفر است:** `refund` تا Payments (M5) صفر است و فقط `refund_percent` معنا دارد. M5 باید مبلغ واقعی را به `AppointmentService::cancel` بدهد.
+- **Override:** فقط staff با `manage_bookings` و `override_policies` (پیش‌فرض administrator)، و **دلیل الزامی است** (`reason_required`). مشتری هرگز override نمی‌کند. دلیل در `appointment_history.reason` ثبت می‌شود و پاسخ `overridden: true` دارد.
+- **مشتری** (`Actor::customer`) فقط نوبت خودش را می‌بیند. نوبت دیگران `appointment_not_found` است، نه 403. REST مشتری در T4.4 می‌آید.
+- **قفل:** لغو و جابجایی مثل §4.9 اول قفل می‌گیرند. نوبت بیرون از تراکنش فقط برای دانستن کلیدها خوانده می‌شود. اگر زیر قفل معلوم شود که نوبت در این فاصله جابجا شده و اشغالش بیرون از قفل است، `Conflict('appointment_changed')` برمی‌گردد و کلاینت دوباره تلاش می‌کند (یافته reviewer).
+- **جابجایی:** کلیدهای زمان قدیم و جدید با هم روی بازه `[min from, max to]` قفل می‌شوند. داخل تراکنش اول `release` (حذف اشغال خودش) و بعد `claim` روی داده تازه انجام می‌شود، تا زمان خود نوبت مانع جابجایی نشود. claim ناموفق همه را rollback می‌کند. قیمت عوض نمی‌شود، حتی اگر پرسنل عوض شود. `local_date` در timezone خود نوبت حساب می‌شود.
+- **هزینه شناخته‌شده:** جابجایی دور (مثلاً 10 ماه جلوتر) همه روزهای بین دو زمان را برای آن کلیدها قفل می‌کند و سقف 400 روز دارد. deadlock ندارد (یک SELECT مرتب)، ولی Holdهای آن پرسنل در آن روزها تا COMMIT صف می‌شوند. اگر مشکل شد، `ResourceLocker::lock` چند بازه بگیرد (یافته reviewer، پذیرفته شد).
+- **no-show** فقط بعد از شروع (`not_started`) و فقط staff. اشغال حذف نمی‌شود، چون زمان گذشته است.
+- **Job:** `booking/appointment_cancelled` و `booking/appointment_rescheduled` در همان تراکنش.
+- **ساخته نشد:** Policyهای `deposit`، `approval` و `booking_window` (سقف نوبت فعال و مقدار خدمتی min_notice و max_advance) و CRUD Admin برای `policies` (upsert روی UNIQUE(type, service_id)). جای طبیعی‌شان به‌ترتیب M5، T4.2 و T3.5 است.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).
