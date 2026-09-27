@@ -42,6 +42,7 @@ $vaqtyar_modules = static function () {
     return array(
         new \Vaqtyar\Modules\Catalog\CatalogModule(),
         new \Vaqtyar\Modules\Scheduling\SchedulingModule(),
+        new \Vaqtyar\Modules\Customers\CustomersModule(),
         new \Vaqtyar\Modules\Booking\BookingModule(),
         new \Vaqtyar\Modules\Admin\AdminModule(),
     );

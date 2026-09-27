@@ -30,6 +30,7 @@ use Vaqtyar\Modules\Booking\Domain\Pricing\PriceQuote;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Catalog\Contracts\LocationInfo;
 use Vaqtyar\Modules\Catalog\Contracts\Offer;
+use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Modules\Scheduling\Contracts\Claim;
 use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Conflict;
@@ -59,6 +60,8 @@ final class BookingServiceTest extends TestCase
     public ?Coupon $coupon = null;
 
     public bool $allowed = true;
+
+    public bool $customerCanBook = true;
 
     public ?Appointment $added = null;
 
@@ -236,6 +239,19 @@ final class BookingServiceTest extends TestCase
             $this->service()->confirm($this->token, 9, '', 2);
             self::fail('No exception.');
         } catch (Forbidden) {
+        }
+        self::assertSame([], $this->log);
+    }
+
+    public function testAnUnknownOrBlockedCustomerCannotBook(): void
+    {
+        $this->customerCanBook = false;
+
+        try {
+            $this->service()->confirm($this->token, 9, '', 2);
+            self::fail('No exception.');
+        } catch (InvalidValue $e) {
+            self::assertSame('customer_unavailable', $e->errorCode);
         }
         self::assertSame([], $this->log);
     }
@@ -492,8 +508,20 @@ final class BookingServiceTest extends TestCase
             }
         };
 
+        $customers = new class ($this) implements CustomerApi {
+            public function __construct(private readonly BookingServiceTest $test)
+            {
+            }
+
+            public function canBook(int $customerId): bool
+            {
+                return $this->test->customerCanBook && 9 === $customerId;
+            }
+        };
+
         return new BookingService(
             $catalog,
+            $customers,
             $pricing,
             $fields,
             $locker,

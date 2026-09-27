@@ -14,6 +14,7 @@ use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\Email;
 use Vaqtyar\Shared\Domain\Name;
 use Vaqtyar\Shared\Domain\PhoneNumber;
+use Vaqtyar\Shared\Domain\SearchText;
 
 final class WpdbStaffRepository implements StaffRepository
 {
@@ -50,7 +51,7 @@ final class WpdbStaffRepository implements StaffRepository
             'wp_user_id' => $staff->wpUserId,
             'location_id' => $staff->locationId,
             'name' => $staff->name->value,
-            'search_name' => self::searchName($staff->name->value),
+            'search_name' => SearchText::normalize($staff->name->value),
             'title' => $staff->title,
             'email' => $staff->email?->value,
             'phone' => $staff->phone?->e164,
@@ -93,30 +94,6 @@ final class WpdbStaffRepository implements StaffRepository
         );
 
         return \array_map(static fn (array $row): Staff => self::fromRow(new Row($row)), $rows);
-    }
-
-    /**
-     * The name as a search compares it: Arabic ya and kaf as Persian, no
-     * diacritics or tatweel, a zero-width non-joiner as a space, Latin digits,
-     * lowercase, single spaces. Customers (T2.7) need the same; the two will
-     * share it then (implementation-notes §4.3).
-     */
-    public static function searchName(string $name): string
-    {
-        $name = \strtr($name, [
-            "\u{064A}" => "\u{06CC}",
-            "\u{0649}" => "\u{06CC}",
-            "\u{0643}" => "\u{06A9}",
-            "\u{200C}" => ' ',
-            "\u{0640}" => '',
-        ]);
-        $name = (string) \preg_replace('/[\x{064B}-\x{065F}\x{0670}]/u', '', $name);
-        $name = \strtr($name, \array_combine(
-            [...\mb_str_split('۰۱۲۳۴۵۶۷۸۹'), ...\mb_str_split('٠١٢٣٤٥٦٧٨٩')],
-            [...\str_split('0123456789'), ...\str_split('0123456789')]
-        ));
-
-        return \trim((string) \preg_replace('/\s+/u', ' ', \mb_strtolower($name)));
     }
 
     private static function fromRow(Row $row): Staff

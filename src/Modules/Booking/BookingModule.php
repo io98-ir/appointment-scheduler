@@ -31,6 +31,7 @@ use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\BookingRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
+use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Shared\Domain\Clock;
@@ -79,6 +80,7 @@ final class BookingModule implements Module
             BookingService::class,
             static fn (Container $c) => new BookingService(
                 $c->get(CatalogApi::class),
+                $c->get(CustomerApi::class),
                 new WpdbPricingReader($c->get(Db::class)),
                 new WpdbFieldReader($c->get(Db::class)),
                 new WpdbResourceLocker($c->get(Db::class)),

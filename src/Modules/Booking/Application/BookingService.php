@@ -12,6 +12,7 @@ use Vaqtyar\Modules\Booking\Domain\Field\AnswerValidator;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
 use Vaqtyar\Modules\Booking\Domain\Pricing\PriceLine;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
+use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\Conflict;
@@ -47,6 +48,7 @@ final class BookingService
      */
     public function __construct(
         private readonly CatalogApi $catalog,
+        private readonly CustomerApi $customers,
         private readonly PricingReader $pricing,
         private readonly FieldReader $fields,
         private readonly ResourceLocker $locker,
@@ -68,7 +70,9 @@ final class BookingService
      *     already confirmed.
      * @throws Conflict service_unavailable when the service or location is
      *     gone since the hold.
-     * @throws InvalidValue why the hold's coupon cannot be used any more, or an answer that does not fit its field.
+     * @throws InvalidValue customer_unavailable when the customer is unknown,
+     *     deleted or blocked; why the hold's coupon cannot be used any more,
+     *     or an answer that does not fit its field.
      */
     public function confirm(
         HoldToken $token,
@@ -79,6 +83,11 @@ final class BookingService
     ): BookedAppointment {
         if (!$this->authorizer->allows(self::CAPABILITY)) {
             throw new Forbidden(self::CAPABILITY);
+        }
+        // Not under a lock: a customer deleted or blocked a moment later
+        // keeps this one appointment, as one booked a moment earlier would.
+        if (!$this->customers->canBook($customerId)) {
+            throw new InvalidValue('customer_unavailable', 'The customer does not exist or is blocked.');
         }
         // Outside the transaction, only to learn what to lock: a read in it
         // before the locks would fix a stale snapshot (REPEATABLE READ).

@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-27 — سشن 14 — T2.7 مشتریان
+**Taskها:** T2.7
+**انجام شد:** ماژول `Customers`: Domain (`Customer`، `CustomerStatus`، `CustomerRepository`)، `CustomerService` (CRUD Admin با capability `manage_customers`)، `CustomerReader` و Contract `CustomerApi::canBook`، migration `CreateCustomersTable`، `WpdbCustomerRepository` (جستجوی LIKE روی `search_name`، `email` و `phone`)، REST `/customers`، listener `deleted_user`. `BookingService::confirm` مشتری را از `CustomerApi` بررسی می‌کند. `SearchText` و `Page` به `Shared\Domain` منتقل شدند (دومین مصرف‌کننده). مستندات: api.md، implementation-notes §4.14، README ماژول، `api-types.ts`.
+**تصمیم‌ها و فرض‌ها:** (1) شماره تلفن الزامی و هویت مشتری است (UNIQUE). (2) حذف نرم شماره را NULL می‌کند تا ثبت دوباره ممکن باشد. (3) هر حساب وردپرس مال یک مشتری (بررسی در Application). (4) جستجو contains است و از ایندکس استفاده نمی‌کند؛ برای حجم یک کسب‌وکار کافی است. (5) `otp_codes` و `customer_sessions` با T4.3. (6) بررسی `canBook` زیر قفل نیست.
+**تأیید:** `composer check` ← lint، stan، deptrac سبز و Unit OK (778 tests). `composer test:rename` ← OK. `pnpm lint` و `pnpm test` ← سبز. Reviewer ← بدون یافته مسدودکننده؛ دو یافته جزئی: رقابت PUT و DELETE حالا 404 می‌دهد (نه 500)، و محدودیت multisite در `deleted_user` مستند شد.
+**مشکلات و باقیمانده:** Integration (`CustomersRestTest`، تغییرات `HoldsTest`) فقط روی CI اجرا می‌شود.
+**قدم بعدی:** push و دیدن CI، بعد T2.8.
+**Commitها:** `feat(customers): customers module with admin crud and search (T2.7)`
+
+---
+
 ## 2026-09-27 — سشن 13 — T2.6 فیلدهای سفارشی
 **Taskها:** T2.6
 **انجام شد:** بیشتر کد و تست‌ها از قبل در commit `46615c4` (با پیام «next task»، بیرون از روال) بود و tracker به‌روز نشده بود. این سشن آن را کامل کرد: (1) `Field::requiredAnswer()` تعریف نشده بود و PHPStan قرمز بود، و checkbox الزامی با `false` خطای fatal می‌داد. (2) `show_if` روی پاسخ خام بود. حالا به ترتیب و روی پاسخ validate‌شده فیلدهای نمایان قبلی است، پس پاسخ یک فیلد مخفی فیلد دیگری را نمایان نمی‌کند و `equals: "0"` برای checkbox کار می‌کند. (3) سقف طول text به کاراکتر (`mb_strlen`)، و trim ارقام فارسی در number. (4) از یافته‌های reviewer: UTF-8 نامعتبر و number بلند یا `INF`/`NAN` حالا 422 می‌دهند، نه 500.

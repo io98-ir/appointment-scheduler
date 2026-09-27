@@ -140,7 +140,7 @@
 - **Timezone شعبه** فقط از `DateTimeZone::listIdentifiers()` است (نام‌های منطقه‌ای و `UTC`). offset ثابت (`+03:30`، `Etc/GMT-3`، `EST`) و aliasهای قدیمی (`Iran`) رد می‌شوند.
 - کلاس منبع `BookableResource` نام دارد، چون `resource` در PHP کلمه soft-reserved است و PHPCompatibility آن را رد می‌کند.
 - سقف‌ها: مدت، Buffer و گام اسلات تا 1440 دقیقه. ظرفیت خدمت و منبع تا 1000. تعداد Extra و منبع لازم تا 100. متن‌های TEXT تا 65535 بایت (نه کاراکتر). قیمت منفی در Variant، Extra و قیمت اختصاصی پذیرفته نمی‌شود، چون تخفیف کار Price rule و کوپن است.
-- `search_name` پرسنل را Repository در T1.2 پر می‌کند. نرمال‌سازی فارسی با Customers (T2.7) مشترک است و وقتی دومین مصرف‌کننده آمد جدا می‌شود.
+- `search_name` پرسنل را Repository در T1.2 پر می‌کند. نرمال‌سازی فارسی در T2.7 به `Shared\Domain\SearchText` منتقل شد و Customers هم از آن استفاده می‌کند.
 
 ## 4.4 Catalog: Repository، Application و REST (T1.2)
 - **لایه‌ها:** هر Aggregate یک interface Repository در Domain دارد (`find`، `page`، `count`، `save`، `delete`، که حذف نرم است). `Application\CatalogService` همه Use Caseهای Admin را دارد و `Application\CatalogReader` پیاده‌سازی `Contracts\CatalogApi` است. پیاده‌سازی‌های Wpdb در `Infrastructure/Persistence` هستند و `CatalogTable` کار مشترک پنج جدول ساده را انجام می‌دهد (حذف نرم، `created_at` و `updated_at`، Pagination).
@@ -264,7 +264,7 @@
 - **`handOver`** فقط `owner_type` و `owner_id` ردیف‌های `occupancies` را عوض می‌کند و `expires_at` را NULL می‌کند، بعد Hold را حذف می‌کند. پس زمان هیچ لحظه‌ای آزاد نمی‌شود و به `prepare()` تازه نیازی نیست.
 - **کوپن:** `PricingReader::couponForUse()` با `FOR UPDATE`، دوباره `assertUsable`، بعد `countUse()` (`used = used + 1`، بدون تغییر `updated_at`). قفل کوپن همیشه بعد از قفل روزها گرفته می‌شود و Hold کوپن را قفل نمی‌کند، پس چرخه قفل تازه‌ای ساخته نمی‌شود.
 - **Job:** `ActionSchedulerBookingJobs` در همان تراکنش `booking/appointment_booked` را با `as_enqueue_async_action` ثبت می‌کند (ADR-005). **پرچم `unique` استفاده نمی‌شود،** چون Action Scheduler فقط hook را مقایسه می‌کند و آرگومان‌ها را نه، و Job نوبت دوم دور ریخته می‌شد. Listener این Job در M5 می‌آید و خودش dedupe می‌کند.
-- **دامنه فعلی:** `POST /bookings` فقط برای `manage_bookings` است و `customer_id` را مستقیم می‌گیرد. وجود مشتری تا T2.7 بررسی نمی‌شود. وضعیت اولیه همیشه `confirmed` است و `pending_payment` با M5 می‌آید. `needs_attention` (booking-engine §3) هم با پرداخت (M5) می‌آید.
+- **دامنه فعلی:** `POST /bookings` فقط برای `manage_bookings` است و `customer_id` را مستقیم می‌گیرد. از T2.7، `CustomerApi::canBook()` قبل از تراکنش بررسی می‌کند که مشتری وجود دارد و مسدود نیست (`customer_unavailable`). این بررسی زیر قفل نیست: مشتری‌ای که یک لحظه بعد حذف یا مسدود شود همین یک نوبت را نگه می‌دارد. وضعیت اولیه همیشه `confirmed` است و `pending_payment` با M5 می‌آید. `needs_attention` (booking-engine §3) هم با پرداخت (M5) می‌آید.
 - **کد پیگیری** 8 کاراکتر Crockford (40 بیت) و `UNIQUE` است. برخورد (حدود یک در میلیون در یک میلیون نوبت) فعلاً خطای 500 می‌دهد و retry نمی‌شود (یافته reviewer، پذیرفته شد).
 - `appointment_extras.price` قیمت واحد است: مبلغ خط Extra تقسیم بر `qty`. `ExtrasPrice` همیشه قیمت واحد × تعداد می‌سازد، پس تقسیم باقیمانده ندارد.
 
@@ -291,6 +291,15 @@
 - **مرز ورودی:** پاسخ نامعتبر باید 422 بدهد، نه `DbException` و 500. پس text بدون UTF-8 معتبر و number بلندتر از سقف یا `INF`/`NAN` در Domain رد می‌شوند (یافته reviewer).
 - **برای T3.5:** جدول `fields` روی `field_key` در هر scope یا خدمت UNIQUE ندارد و reader تکراری‌ها را حذف نمی‌کند. اگر یک فیلد سراسری و یک فیلد خدمت یک کلید داشته باشند، هر دو با یک پاسخ بررسی می‌شوند و دومی اولی را بازنویسی می‌کند. Admin باید کلید تکراری و `show_if` به فیلد بعدی یا ناموجود را رد کند.
 - **برای T4.2:** خطای 422 فعلاً فقط `code` دارد و کلید فیلد را برنمی‌گرداند، پس ویجت نمی‌تواند فیلد خطادار را مشخص کند. قبل از T4.2، `field_key` به details خطا اضافه شود. schema `answers` (object با `additionalProperties`) نوع را تبدیل نمی‌کند، پس checkbox فقط در بدنه JSON به‌صورت bool می‌رسد. ویجت باید JSON بفرستد.
+
+## 4.14 مشتریان (T2.7)
+- **هویت:** یک مشتری برای هر شماره تلفن (E.164، UNIQUE). حساب وردپرس اختیاری است و هر حساب فقط مال یک مشتری است (`user_taken`، بررسی در Application، نه ایندکس). با `deleted_user` لینک حساب برداشته می‌شود. **محدودیت شناخته‌شده (multisite):** این listener فقط جدول سایت جاری را پاک می‌کند و مشتری‌های سایت‌های دیگر شبکه `wp_user_id` کهنه نگه می‌دارند. اگر پشتیبانی multisite به roadmap اضافه شد، با `switch_to_blog` روی همه سایت‌ها رفع شود.
+- **حذف نرم** شماره را `NULL` می‌کند تا UNIQUE اجازه ثبت دوباره همان شماره را بدهد. ردیف برای نوبت‌های قدیمی می‌ماند.
+- **رقابت:** بررسی `phone_taken` در Service فقط پیام خوانا می‌دهد؛ تصمیم نهایی با ایندکس UNIQUE است و خطای 1062 در Repository به `Conflict('phone_taken')` تبدیل می‌شود.
+- **جستجو:** `LIKE '%…%'` روی `search_name` و `email`، و اگر query عدد بود روی `phone` بدون صفر اول. `%` و `_` در query escape می‌شوند. این جستجو از ایندکس استفاده نمی‌کند (contains)، که برای حجم مشتری یک کسب‌وکار کافی است. اگر لازم شد، جستجوی prefix یا FULLTEXT جایگزین می‌شود.
+- **جدول بدون ستون ascii** (§4.5)، چون جستجو متن فارسی را در SQL خام می‌فرستد.
+- `Page` به `Shared\Domain\Page` منتقل شد (دومین مصرف‌کننده).
+- **خارج از دامنه:** `otp_codes` و `customer_sessions` با T4.3، و سوابق نوبت مشتری و UI با T3.5 می‌آیند.
 
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).

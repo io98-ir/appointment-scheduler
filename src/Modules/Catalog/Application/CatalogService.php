@@ -20,6 +20,7 @@ use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\NotFound;
+use Vaqtyar\Shared\Domain\Page;
 
 /**
  * The admin's catalog use cases. Each checks the capability again, after

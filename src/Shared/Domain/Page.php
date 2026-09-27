@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vaqtyar\Modules\Catalog\Application;
+namespace Vaqtyar\Shared\Domain;
 
 /**
  * One page of a list and the size of the whole list, for the X-WP-Total

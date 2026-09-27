@@ -8,7 +8,7 @@ use Vaqtyar\Kernel\Caps;
 use Vaqtyar\Kernel\Rest\Pagination;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Catalog\Application\CatalogService;
-use Vaqtyar\Modules\Catalog\Application\Page;
+use Vaqtyar\Shared\Domain\Page;
 
 /**
  * The five admin routes of one catalog resource:

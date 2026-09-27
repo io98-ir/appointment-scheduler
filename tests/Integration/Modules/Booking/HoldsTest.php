@@ -25,6 +25,10 @@ use Vaqtyar\Modules\Catalog\Domain\Variant;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbLocationRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbServiceRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbStaffRepository;
+use Vaqtyar\Modules\Customers\CustomersModule;
+use Vaqtyar\Modules\Customers\Domain\Customer;
+use Vaqtyar\Modules\Customers\Domain\CustomerStatus;
+use Vaqtyar\Modules\Customers\Infrastructure\Persistence\WpdbCustomerRepository;
 use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
 use Vaqtyar\Modules\Scheduling\Domain\Owner;
 use Vaqtyar\Modules\Scheduling\Domain\OwnerType;
@@ -37,6 +41,7 @@ use Vaqtyar\Shared\Domain\LocalDate;
 use Vaqtyar\Shared\Domain\LocalTime;
 use Vaqtyar\Shared\Domain\Money;
 use Vaqtyar\Shared\Domain\Name;
+use Vaqtyar\Shared\Domain\PhoneNumber;
 use Vaqtyar\Shared\Domain\TransactionRunner;
 use Vaqtyar\Shared\SystemClock;
 use Vaqtyar\Tests\Integration\Kernel\Database\RealDatabase;
@@ -71,6 +76,7 @@ final class HoldsTest extends TestCase
         'appointment_answers',
         'fields',
         'policies',
+        'customers',
     ];
 
     /** @var list<int> */
@@ -81,6 +87,8 @@ final class HoldsTest extends TestCase
     private int $location;
 
     private int $staff;
+
+    private int $customer;
 
     protected function setUp(): void
     {
@@ -213,6 +221,25 @@ final class HoldsTest extends TestCase
     }
 
     /**
+     * Only a stored, active customer can be booked (T2.7); the hold stays.
+     */
+    public function testAnUnknownOrBlockedCustomerCannotBeBooked(): void
+    {
+        $token = $this->post(self::inDays(2), '10:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+        $blocked = (int) (new WpdbCustomerRepository($this->realDb(), new SystemClock()))->save(
+            new Customer(null, null, 'Reza', '', PhoneNumber::fromInput('09122222222'), status: CustomerStatus::Blocked)
+        )->id;
+        $this->logInAs('administrator');
+
+        foreach ([$this->customer + 1000, $blocked] as $customer) {
+            $response = $this->book($token, [], $customer);
+            self::assertSame([422, 'customer_unavailable'], [$response['status'], $response['body']['code'] ?? null]);
+        }
+        self::assertSame(201, $this->book($token)['status']);
+    }
+
+    /**
      * Staff confirm a hold: the appointment takes the hold's time and quote,
      * the occupancy is handed over for good, the coupon's use is counted and
      * the notification job is queued. The token works once.
@@ -263,7 +290,7 @@ final class HoldsTest extends TestCase
         self::assertIsInt($id);
         self::assertSame(
             [[
-                'customer_id' => '9',
+                'customer_id' => (string) $this->customer,
                 'staff_id' => (string) $this->staff,
                 'status' => 'confirmed',
                 'source' => 'admin',
@@ -523,12 +550,12 @@ final class HoldsTest extends TestCase
      * @param array<string, mixed> $answers
      * @return array{status: int, body: array<string, mixed>}
      */
-    private function book(string $token, array $answers = []): array
+    private function book(string $token, array $answers = [], ?int $customer = null): array
     {
         $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . '/bookings');
         $request->set_body_params([
             'hold_token' => $token,
-            'customer_id' => 9,
+            'customer_id' => $customer ?? $this->customer,
             'customer_note' => 'Aisle',
             'answers' => $answers,
         ]);
@@ -619,7 +646,7 @@ final class HoldsTest extends TestCase
         );
         $container->singleton(Clock::class, static fn (): Clock => new SystemClock());
         $container->singleton(Settings::class, static fn (): Settings => new Settings());
-        foreach ([new CatalogModule(), new SchedulingModule(), new BookingModule()] as $module) {
+        foreach ([new CatalogModule(), new SchedulingModule(), new CustomersModule(), new BookingModule()] as $module) {
             $module->register($container);
         }
 
@@ -658,6 +685,9 @@ final class HoldsTest extends TestCase
             [new ServiceStaff($this->staff)]
         ));
         $this->variant = (int) $service->variants[0]->id;
+        $this->customer = (int) (new WpdbCustomerRepository($db, $clock))->save(
+            new Customer(null, null, 'Ali', 'Karimi', PhoneNumber::fromInput('09121234567'))
+        )->id;
     }
 
     private static function inDays(int $days): LocalDate

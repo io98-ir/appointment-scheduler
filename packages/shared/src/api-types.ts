@@ -194,3 +194,23 @@ export interface PlacedHold {
 	end: string;
 	price: PriceQuote;
 }
+
+export type CustomerStatus = 'active' | 'blocked';
+
+/** /customers (docs/api.md). */
+export interface Customer {
+	id: number;
+	/** The public id (ULID). */
+	uuid: string;
+	first_name: string;
+	last_name: string;
+	/** E.164, e.g. "+989121234567". */
+	phone: string;
+	email: string | null;
+	wp_user_id: number | null;
+	/** "YYYY-MM-DD", Gregorian. */
+	birth_date: string | null;
+	note: string;
+	tags: string[];
+	status: CustomerStatus;
+}
