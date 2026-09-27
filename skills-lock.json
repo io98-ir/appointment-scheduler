@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "caveman": {
+      "source": "openai/codex",
+      "sourceType": "local",
+      "skillPath": ".claude/skills/caveman/SKILL.md",
+      "computedHash": "6894ae2dc17b4b9dd61636c64f5921c240e0dac4696ffdfb733fedbe4243da69"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",

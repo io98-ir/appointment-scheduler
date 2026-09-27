@@ -29,5 +29,5 @@
 
 ## ابزارهای Agent در Repo
 - `CLAUDE.md`: قوانین پایه که خودکار بارگذاری می‌شوند.
-- `.claude/skills/`: Skillهای `/resume`، `/next-task` و `/wrap`، به‌علاوه 14 Skill نصب‌شده (WordPress، TDD، debugging، frontend). فهرست در `skills-lock.json`.
+- `.claude/skills/`: Skillهای `/resume`، `/next-task` و `/wrap`، به‌علاوه 15 Skill نصب‌شده (WordPress، PHP، React/TypeScript، TDD، debugging، frontend و `/caveman`). فهرست در `skills-lock.json`.
 - `.claude/agents/reviewer.md`: Subagent بازبینی قبل از commit.

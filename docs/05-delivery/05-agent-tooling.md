@@ -10,6 +10,7 @@ Skillهای عمومی برای وردپرس «معمولی» نوشته شده�
 | Skill | منبع | کِی |
 |---|---|---|
 | `resume`، `next-task`، `wrap` | خودمان | شروع سشن، اجرای Task، پایان سشن |
+| `caveman` | OpenAI Codex (نسخه محلی پروژه) | حالت پاسخ کوتاه با `/caveman`؛ سطح‌های lite/full/ultra |
 | `wp-plugin-development` | WordPress/agent-skills | Bootstrap، lifecycle (activation/uninstall)، امنیت، بسته‌بندی |
 | `wp-rest-api` | WordPress/agent-skills | همه Controllerهای REST، schema، permission_callback |
 | `wp-block-development` | WordPress/agent-skills | بلوک فرم رزرو (T4.5) |

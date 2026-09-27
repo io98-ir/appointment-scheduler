@@ -8,7 +8,7 @@ A general-purpose WordPress booking plugin, Iranian market first, built to be so
 - **End:** run `/wrap`. It updates "Resume Here" and the worklog and commits.
 - Full rules are in `docs/05-delivery/03-agent-workflow.md`. The roadmap is `docs/05-delivery/01-roadmap.md`, and the docs index is `docs/README.md`.
 - Before writing code, read `docs/04-engineering/03-implementation-notes.md`, which lists known traps: the main file must not use PHP 8 syntax, composer `config.platform.php` is 8.1, no `__()` before `init`, and no SQL `NOW()`.
-- Installed skills cover WordPress, TDD, debugging, verification and frontend design. **Project docs and ADRs override skill advice.** Known conflicts are listed in `docs/05-delivery/05-agent-tooling.md` §4.
+- Installed skills cover WordPress, TDD, debugging, verification, frontend design and concise communication (`/caveman`). **Project docs and ADRs override skill advice.** Known conflicts are listed in `docs/05-delivery/05-agent-tooling.md` §4.
 - The remote is `origin` on GitHub (io98-ir/appointment-scheduler). Push happens at `/wrap`. Never force-push.
 - The environment is Windows and PowerShell 5.1: no `&&`, and commit messages go through a file with `git commit -F`. Tool status is in `docs/04-engineering/02-dev-environment.md`. PHP 8.3 and Composer are installed as of 2026-09-24. If they aren't found, refresh PATH first. Docker is not used locally by decision: MySQL, integration, concurrency and E2E tests run in GitHub Actions on wp-env.
 
