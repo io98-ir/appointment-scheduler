@@ -50,9 +50,9 @@ final class WpdbCustomerRepository implements CustomerRepository
     /**
      * @return list<Customer>
      */
-    public function search(string $query, int $offset, int $limit): array
+    public function search(string $query, ?CustomerStatus $status, int $offset, int $limit): array
     {
-        [$where, $args] = self::where($query);
+        [$where, $args] = self::where($query, $status);
         $rows = $this->db->getResults(
             'SELECT * FROM %i WHERE ' . $where . ' ORDER BY id DESC LIMIT %d OFFSET %d',
             $this->table(),
@@ -62,9 +62,9 @@ final class WpdbCustomerRepository implements CustomerRepository
         return \array_map(static fn (array $row): Customer => self::fromRow(new Row($row)), $rows);
     }
 
-    public function count(string $query): int
+    public function count(string $query, ?CustomerStatus $status): int
     {
-        [$where, $args] = self::where($query);
+        [$where, $args] = self::where($query, $status);
 
         return (int) $this->db->getVar('SELECT COUNT(*) FROM %i WHERE ' . $where, $this->table(), ...$args);
     }
@@ -130,7 +130,20 @@ final class WpdbCustomerRepository implements CustomerRepository
      * @param string $query Already normalized (SearchText).
      * @return array{literal-string, list<string>} The clause and its arguments.
      */
-    public static function where(string $query): array
+    public static function where(string $query, ?CustomerStatus $status): array
+    {
+        [$where, $args] = self::searchClause($query);
+        if (null === $status) {
+            return [$where, $args];
+        }
+
+        return [$where . ' AND status = %s', [...$args, $status->value]];
+    }
+
+    /**
+     * @return array{literal-string, list<string>}
+     */
+    private static function searchClause(string $query): array
     {
         if ('' === $query) {
             return ['deleted_at IS NULL', []];

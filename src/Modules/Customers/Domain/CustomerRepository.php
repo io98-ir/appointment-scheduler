@@ -23,11 +23,12 @@ interface CustomerRepository
     /**
      * @param string $query Matches part of the name, the email or the phone
      *     number, after SearchText; "" matches everyone.
+     * @param ?CustomerStatus $status null matches every status.
      * @return list<Customer> Newest first.
      */
-    public function search(string $query, int $offset, int $limit): array;
+    public function search(string $query, ?CustomerStatus $status, int $offset, int $limit): array;
 
-    public function count(string $query): int;
+    public function count(string $query, ?CustomerStatus $status): int;
 
     /**
      * Inserts when the id is null, with a new uuid, else updates the stored

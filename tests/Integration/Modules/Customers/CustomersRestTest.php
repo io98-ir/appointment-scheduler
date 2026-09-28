@@ -177,6 +177,28 @@ final class CustomersRestTest extends TestCase
         );
     }
 
+    public function testTheListCanBeFilteredByStatus(): void
+    {
+        $this->logInAs('administrator');
+        $this->request(
+            'POST',
+            '/customers',
+            ['first_name' => 'Active', 'phone' => '09121234567']
+        );
+        $blocked = $this->request(
+            'POST',
+            '/customers',
+            ['first_name' => 'Blocked', 'phone' => '09350000000', 'status' => 'blocked']
+        )['body']['id'];
+
+        $active = $this->request('GET', '/customers', ['status' => 'active']);
+        $inactive = $this->request('GET', '/customers', ['status' => 'blocked']);
+
+        self::assertSame(['Active'], \array_column($active['body'], 'first_name'));
+        self::assertSame(['Blocked'], \array_column($inactive['body'], 'first_name'));
+        self::assertSame($blocked, $inactive['body'][0]['id'] ?? null);
+    }
+
     public function testDeletingTheWordPressAccountUnlinksTheCustomer(): void
     {
         $this->logInAs('administrator');

@@ -62,7 +62,7 @@ final class WpdbCustomerDirectory implements CustomerDirectory
         if ('' === $query) {
             return [];
         }
-        [$where, $args] = WpdbCustomerRepository::where($query);
+        [$where, $args] = WpdbCustomerRepository::where($query, null);
         $rows = $this->db->getResults(
             'SELECT id FROM %i WHERE ' . $where . ' ORDER BY id DESC LIMIT %d',
             Tables::name('customers'),

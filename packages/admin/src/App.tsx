@@ -16,6 +16,7 @@ import {
 	StaffPage,
 } from './catalog/screens';
 import { ServicesPage } from './catalog/ServicesPage';
+import { CustomersPage } from './customers/CustomersPage';
 import { NotFound } from './NotFound';
 import { errorMessage } from './query';
 import { useRoute } from './router';
@@ -50,7 +51,7 @@ const SECTIONS: Section[] = [
 	{
 		path: '/customers',
 		title: () => __( 'Customers', 'vaqtyar' ),
-		Page: Placeholder,
+		Page: CustomersPage,
 	},
 	{
 		path: '/services',

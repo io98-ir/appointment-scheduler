@@ -46,8 +46,10 @@ final class CustomerRoutes
             static function (\WP_REST_Request $request) use ($customers): \WP_REST_Response {
                 $pagination = Pagination::fromRequest($request);
                 $search = $request->get_param('search');
+                $status = $request->get_param('status');
                 $page = $customers->customers(
                     \is_string($search) ? $search : '',
+                    \is_string($status) ? CustomerStatus::from($status) : null,
                     $pagination->offset(),
                     $pagination->perPage
                 );
@@ -55,7 +57,13 @@ final class CustomerRoutes
                 return $pagination->response(\array_map(self::toJson(...), $page->items), $page->total);
             },
             $allowed,
-            Pagination::ARGS + ['search' => ['type' => 'string', 'maxLength' => 100, 'default' => '']]
+            Pagination::ARGS + [
+                'search' => ['type' => 'string', 'maxLength' => 100, 'default' => ''],
+                'status' => [
+                    'type' => 'string',
+                    'enum' => \array_map(static fn (CustomerStatus $s): string => $s->value, CustomerStatus::cases()),
+                ],
+            ]
         );
         $this->router->add(
             '/customers',

@@ -6,6 +6,7 @@ namespace Vaqtyar\Modules\Customers\Application;
 
 use Vaqtyar\Modules\Customers\Domain\Customer;
 use Vaqtyar\Modules\Customers\Domain\CustomerRepository;
+use Vaqtyar\Modules\Customers\Domain\CustomerStatus;
 use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Conflict;
 use Vaqtyar\Shared\Domain\Forbidden;
@@ -43,12 +44,15 @@ final class CustomerService
      * @param string $query as typed; normalized here (SearchText).
      * @return Page<Customer>
      */
-    public function customers(string $query, int $offset, int $limit): Page
+    public function customers(string $query, ?CustomerStatus $status, int $offset, int $limit): Page
     {
         $this->authorize();
         $query = SearchText::normalize($query);
 
-        return new Page($this->customers->search($query, $offset, $limit), $this->customers->count($query));
+        return new Page(
+            $this->customers->search($query, $status, $offset, $limit),
+            $this->customers->count($query, $status)
+        );
     }
 
     /**

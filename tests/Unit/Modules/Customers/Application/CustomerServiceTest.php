@@ -72,16 +72,24 @@ final class CustomerServiceTest extends TestCase
             /**
              * @return list<Customer>
              */
-            public function search(string $query, int $offset, int $limit): array
+            public function search(string $query, ?CustomerStatus $status, int $offset, int $limit): array
             {
                 $this->test->searched = $query;
+                $matching = null === $status
+                    ? $this->test->stored
+                    : \array_filter($this->test->stored, static fn (Customer $c): bool => $c->status === $status);
 
-                return \array_slice(\array_values($this->test->stored), $offset, $limit);
+                return \array_slice(\array_values($matching), $offset, $limit);
             }
 
-            public function count(string $query): int
+            public function count(string $query, ?CustomerStatus $status): int
             {
-                return \count($this->test->stored);
+                return null === $status
+                    ? \count($this->test->stored)
+                    : \count(\array_filter(
+                        $this->test->stored,
+                        static fn (Customer $c): bool => $c->status === $status
+                    ));
             }
 
             public function save(Customer $customer): Customer
@@ -178,11 +186,29 @@ final class CustomerServiceTest extends TestCase
     {
         $this->service->save(self::customer(null, '09121234567'));
 
-        $page = $this->service->customers(" \u{0639}\u{0644}\u{064A}  ۰۹۱۲ ", 0, 20);
+        $page = $this->service->customers(" \u{0639}\u{0644}\u{064A}  ۰۹۱۲ ", null, 0, 20);
 
         self::assertSame('علی 0912', $this->searched);
         self::assertSame(1, $page->total);
         self::assertCount(1, $page->items);
+    }
+
+    public function testCustomersCanBeFilteredByStatus(): void
+    {
+        $this->service->save(self::customer(null, '09121234567'));
+        $this->service->save(new Customer(
+            null,
+            null,
+            'Sara',
+            'Karimi',
+            PhoneNumber::fromInput('09121234568'),
+            status: CustomerStatus::Blocked
+        ));
+
+        $blocked = $this->service->customers('', CustomerStatus::Blocked, 0, 20);
+
+        self::assertSame(1, $blocked->total);
+        self::assertSame('Sara', $blocked->items[0]->firstName);
     }
 
     public function testEveryUseCaseNeedsTheCapability(): void
@@ -191,7 +217,7 @@ final class CustomerServiceTest extends TestCase
         foreach (
             [
             fn () => $this->service->save(self::customer(null, '09121234567')),
-            fn () => $this->service->customers('', 0, 20),
+            fn () => $this->service->customers('', null, 0, 20),
             fn () => $this->service->customer(1),
             fn () => $this->service->delete(1),
             ] as $call

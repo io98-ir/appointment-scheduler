@@ -16,6 +16,16 @@
 
 ---
 
+## 2026-09-28 — سشن 20 — T3.5 (بخش ۱): صفحه مشتریان در Admin
+**Taskها:** T3.5 (در حال انجام؛ فقط بخش مشتریان)
+**انجام شد:** صفحه Admin مشتریان در `packages/admin/src/customers/`: `CustomerList` (جستجو و فیلتر وضعیت، هر دو سمت سرور، روی `GET /customers`)، فرم ایجاد/ویرایش با `ItemEditor` موجود (بدون کد تکراری، چون `Customer` با `{id}` سازگار است)، و `CustomerHistory` (سوابق نوبت هر مشتری روی `GET /appointments?customer=`, از T2.8). تست `customers.test.tsx` (رندر کامل `<App>` روی سرور fake، مثل الگوی `screens.test.tsx`) و E2E `tests/e2e/specs/customers.spec.ts`. علاوه بر این، `GET /customers` یک پارامتر `status` گرفت (`CustomerRoutes`، `CustomerService::customers`، `CustomerRepository::search/count`، `WpdbCustomerRepository::where`) چون Subagent `reviewer` درست گفت فیلتر وضعیت نباید فقط سمت کلاینت روی یک صفحه از سرور باشد (Page X از Y نادرست می‌شد). این یک تغییر واقعی PHP بود، کوچک و با الگوی دقیقاً همان `search` موجود، پس نوشته شد؛ Unit (`CustomerSearchTest`، `CustomerServiceTest`) و Integration (`CustomersRestTest`) به‌روز/اضافه شدند اما هیچ‌کدام محلی اجرا نشدند (PHP نیست)، فقط با CI تأیید می‌شوند.
+**تصمیم‌ها و فرض‌ها:** **پروژه به دستگاه جدید منتقل شده و PHP/Composer روی آن نصب نیست؛ کاربر تصمیم گرفت فعلاً نصب نکند** (dev-environment §1 به‌روز شد). به همین دلیل کار مشتریان را عمداً اول انجام دادم چون کاملاً JS بود و محلی قابل تأیید، تا وقتی یک بازبینی (reviewer) یک تغییر واقعی PHP را لازم کرد. `Customer.uuid` را چون سرور نادیده می‌گیرد (خارج از `CustomerRoutes::fields()`) با مقدار خالی در `empty` گذاشتم، چون `ItemEditor`'s `Draft<T>` فقط `id` را کم می‌کند نه `uuid`. فیلترهای لیست مشتریان (جستجو، وضعیت) برخلاف Appointments در hash نگه داشته نشدند؛ ساده‌سازی عمدی چون این لیست معمولاً برای پیدا کردن سریع یک مشتری است نه اشتراک‌گذاری یک نمای فیلترشده.
+**تأیید:** `pnpm lint` (js، style، typecheck) سبز. `pnpm test` ← 104 passed (13 فایل). `pnpm build` سبز. `pnpm size` ← admin 28.82KB gz (بودجه 150KB)، widget بدون تغییر. **`composer check` تأیید نشد** (PHP نصب نیست)؛ تغییرات PHP فقط با CI تأیید می‌شوند، نه محلی. E2E فقط با CI اجرا می‌شود (Docker محلی نیست). reviewer یک مشکل واقعی پیدا کرد (بالا) و رفع شد؛ بقیه‌اش تأیید شد.
+**مشکلات و باقیمانده:** بقیه T3.5 باقی است: Admin CRUD برای Policy، فیلدهای سفارشی، Price rule و کوپن (Domain، Repository و REST جدید در ماژول Booking لازم دارند) و تعطیلات (Domain از T1.3 آماده، فقط REST admin و UI). جزئیات و نکات طراحی در `02-progress.md` («نکته برای سشن بعد»). CI این commit هنوز دیده نشده (بعد از push بررسی شود).
+**قدم بعدی:** ادامه T3.5: Policy admin (`PolicyAdminService` + `PolicyRoutes`، با `fromConfig`/`toConfig` روی `CancellationPolicy`/`ReschedulePolicy`).
+
+---
+
 ## 2026-09-28 — سشن 19 — T3.4 لیست و جزئیات نوبت
 **Taskها:** T3.4
 **انجام شد:** Backend شامل `AppointmentService::approve`، `complete` و `saveNote`، `AppointmentRepository::saveNote`، و routeهای `POST /appointments/{id}/approve|complete` و `PUT /appointments/{id}/note`. Admin در `packages/admin/src/appointments/` (لیست با فیلتر و صفحه‌بندی، جزئیات با تغییر وضعیت، لغو و override، یادداشت و history). لینک Details در تقویم. E2E `appointments.spec.ts`.
