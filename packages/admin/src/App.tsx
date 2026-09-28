@@ -2,10 +2,19 @@ import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '@vaqtyar/shared';
 import { SelectControl, SnackbarList } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
-import { Component, createContext, useContext } from '@wordpress/element';
+import { Component } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
 
+import { ApiContext } from './api';
+import {
+	CategoriesPage,
+	LocationsPage,
+	ResourcesPage,
+	StaffPage,
+} from './catalog/screens';
+import { ServicesPage } from './catalog/ServicesPage';
+import { NotFound } from './NotFound';
 import { errorMessage } from './query';
 import { useRoute } from './router';
 import { useTheme, type ThemeChoice } from './theme';
@@ -15,6 +24,8 @@ interface Section {
 	path: string;
 	title: () => string;
 	Page: () => ReactNode;
+	/** False for a screen reached from another one, e.g. categories. */
+	menu?: false;
 }
 
 /**
@@ -42,12 +53,28 @@ const SECTIONS: Section[] = [
 	{
 		path: '/services',
 		title: () => __( 'Services', 'vaqtyar' ),
-		Page: Placeholder,
+		Page: ServicesPage,
+	},
+	{
+		path: '/service-categories',
+		title: () => __( 'Service categories', 'vaqtyar' ),
+		Page: CategoriesPage,
+		menu: false,
 	},
 	{
 		path: '/staff',
 		title: () => __( 'Staff', 'vaqtyar' ),
-		Page: Placeholder,
+		Page: StaffPage,
+	},
+	{
+		path: '/resources',
+		title: () => __( 'Resources', 'vaqtyar' ),
+		Page: ResourcesPage,
+	},
+	{
+		path: '/locations',
+		title: () => __( 'Locations', 'vaqtyar' ),
+		Page: LocationsPage,
 	},
 	{
 		path: '/settings',
@@ -67,20 +94,6 @@ export function sectionOf( route: string ): Section | undefined {
 			? route === '/'
 			: route === path || route.startsWith( path + '/' )
 	);
-}
-
-const ApiContext = createContext< ApiClient | null >( null );
-
-/**
- * The REST client, for the screens' queries and mutations.
- */
-export function useApi(): ApiClient {
-	const api = useContext( ApiContext );
-	if ( api === null ) {
-		throw new Error( 'useApi() outside of <App>.' );
-	}
-
-	return api;
 }
 
 export function App( {
@@ -103,7 +116,9 @@ export function App( {
 							className="vqy-admin__nav"
 							aria-label={ __( 'Sections', 'vaqtyar' ) }
 						>
-							{ SECTIONS.map( ( item ) => (
+							{ SECTIONS.filter(
+								( item ) => item.menu !== false
+							).map( ( item ) => (
 								<a
 									key={ item.path }
 									href={ '#' + item.path }
@@ -164,19 +179,6 @@ export function App( {
 
 function Placeholder() {
 	return <p>{ __( 'This screen is not built yet.', 'vaqtyar' ) }</p>;
-}
-
-function NotFound() {
-	return (
-		<>
-			<h1 className="vqy-admin__title">
-				{ __( 'Page not found', 'vaqtyar' ) }
-			</h1>
-			<p>
-				<a href="#/">{ __( 'Back to the dashboard', 'vaqtyar' ) }</a>
-			</p>
-		</>
-	);
 }
 
 /**

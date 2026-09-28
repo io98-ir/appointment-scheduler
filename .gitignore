@@ -13,3 +13,4 @@ Thumbs.db
 .claude/settings.local.json
 /.phpstan.cache/
 /.deptrac.cache
+/artifacts/

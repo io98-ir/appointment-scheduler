@@ -178,3 +178,33 @@ jobs:
           }
           php tests/Concurrency/race.php http://localhost:8888 "$(seed)" staff
           php tests/Concurrency/race.php http://localhost:8888 "$(seed)" any
+
+  # The admin screens against the real REST API, with the build the plugin
+  # ships (tests/e2e). The playwright config logs in as the wp-env admin.
+  e2e:
+    name: E2E (admin)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring
+          coverage: none
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: composer install --no-interaction --no-progress --no-dev
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: npx --yes @wordpress/env@11 start
+      - run: pnpm test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: artifacts/
+          retention-days: 7

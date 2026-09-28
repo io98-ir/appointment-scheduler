@@ -16,14 +16,17 @@
 		"format": "wp-scripts format packages",
 		"typecheck": "tsc -p packages/shared && tsc -p packages/admin && tsc -p packages/widget",
 		"test": "vitest run",
+		"test:e2e": "wp-scripts test-playwright --config tests/e2e/playwright.config.cjs",
 		"size": "size-limit"
 	},
 	"devDependencies": {
 		"@babel/plugin-transform-react-jsx": "^7",
+		"@playwright/test": "1.63.0",
 		"@size-limit/file": "^14.0.1",
 		"@types/react": "^18",
 		"@types/react-dom": "^18",
 		"@wordpress/babel-preset-default": "^8",
+		"@wordpress/e2e-test-utils-playwright": "^2.1.0",
 		"@wordpress/scripts": "^35.0.0",
 		"@wordpress/stylelint-config": "^26.0.0",
 		"jsdom": "^30.1.1",

@@ -74,3 +74,118 @@
 	inset-inline-start: 180px;
 	z-index: 100000;
 }
+
+.vqy-admin__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	margin-block-end: 16px;
+}
+
+.vqy-admin__toolbar .components-search-control {
+	margin-inline-start: auto;
+	min-inline-size: 220px;
+}
+
+.vqy-admin .vqy-admin__table {
+	background: Canvas;
+	color: CanvasText;
+}
+
+.vqy-admin .vqy-admin__table th,
+.vqy-admin .vqy-admin__table td {
+	color: inherit;
+	text-align: start;
+}
+
+.vqy-admin__actions {
+	text-align: end;
+}
+
+.vqy-admin__form,
+.vqy-admin__panel {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	max-inline-size: 720px;
+}
+
+.vqy-admin__panel {
+	margin-block-start: 24px;
+	padding-block: 16px;
+	padding-inline: 16px;
+	border: 1px solid GrayText;
+	border-radius: 4px;
+}
+
+.vqy-admin__panel > h2,
+.vqy-admin__panel > legend {
+	margin: 0;
+	padding-inline: 4px;
+	color: inherit;
+	font-size: 1.1em;
+	font-weight: 600;
+}
+
+.vqy-admin__row,
+.vqy-admin__range,
+.vqy-admin__inline-form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: 8px;
+}
+
+.vqy-admin__row > .components-base-control {
+	flex: 1 1 120px;
+}
+
+.vqy-admin__buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.vqy-admin__week {
+	border-collapse: collapse;
+	inline-size: 100%;
+}
+
+.vqy-admin .vqy-admin__week th,
+.vqy-admin .vqy-admin__week td {
+	padding-block: 8px;
+	border-block-end: 1px solid GrayText;
+	text-align: start;
+	vertical-align: top;
+}
+
+.vqy-admin .vqy-admin__week td {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.vqy-admin__muted {
+	color: GrayText;
+}
+
+.vqy-admin__swatch {
+	display: inline-block;
+	inline-size: 16px;
+	block-size: 16px;
+	border: 1px solid GrayText;
+	border-radius: 50%;
+	vertical-align: middle;
+}
+
+.vqy-admin__color {
+	inline-size: 64px;
+	block-size: 40px;
+	padding: 2px;
+}
+
+.vqy-admin__exceptions {
+	margin: 0;
+	padding-inline-start: 1.2em;
+}

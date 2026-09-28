@@ -11,6 +11,9 @@ importers:
       '@babel/plugin-transform-react-jsx':
         specifier: ^7
         version: 7.29.7(@babel/core@7.29.7)
+      '@playwright/test':
+        specifier: 1.63.0
+        version: 1.63.0
       '@size-limit/file':
         specifier: ^14.0.1
         version: 14.0.1(size-limit@14.0.1)
@@ -23,6 +26,9 @@ importers:
       '@wordpress/babel-preset-default':
         specifier: ^8
         version: 8.56.0
+      '@wordpress/e2e-test-utils-playwright':
+        specifier: ^2.1.0
+        version: 2.1.0(@opentelemetry/core@2.11.0(@opentelemetry/api@1.9.1))(@playwright/test@1.63.0)(@types/node@26.6.2)
       '@wordpress/scripts':
         specifier: ^35.0.0
         version: 35.0.0(@opentelemetry/core@2.11.0(@opentelemetry/api@1.9.1))(@playwright/test@1.63.0)(@types/node@26.6.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint@10.11.0)(typescript@5.9.3))(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(babel-plugin-macros@3.1.0)(lightningcss@1.33.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(stylelint-scss@7.3.0(stylelint@17.15.0(typescript@5.9.3)))(type-fest@4.41.0)(typescript@5.9.3)(vite@8.3.1(@types/node@26.6.2)(sass@1.105.0)(terser@5.51.2))
@@ -3992,7 +3998,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   global-modules@2.0.0:
     resolution: {integrity: sha512-NGbfmJBp9x8IxyJSd1P+otYK8vonoJactOogrVfFRIAEY1ukil8RSKDz2Yo7wh1oihl51l/r6W4epkeKJHqL8A==}
@@ -9856,7 +9862,7 @@ snapshots:
       eslint: 10.11.0
       eslint-config-prettier: 10.1.8(eslint@10.11.0)
       eslint-import-resolver-typescript: 4.4.5(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint@10.11.0))(eslint@10.11.0)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint@10.11.0))(eslint@10.11.0))(eslint@10.11.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5)(eslint@10.11.0)
       eslint-plugin-jest: 29.16.6(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint@10.11.0)(typescript@5.9.3))(eslint@10.11.0)(jest@30.5.2(@types/node@26.6.2)(babel-plugin-macros@3.1.0))(typescript@5.9.3)
       eslint-plugin-jsdoc: 50.8.0(eslint@10.11.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@10.11.0)
@@ -11344,7 +11350,7 @@ snapshots:
       tinyglobby: 0.2.17
       unrs-resolver: 1.12.2
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint@10.11.0))(eslint@10.11.0))(eslint@10.11.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5)(eslint@10.11.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -11359,7 +11365,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint@10.11.0))(eslint@10.11.0))(eslint@10.11.0):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.70.1(eslint@10.11.0)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5)(eslint@10.11.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.2.0
