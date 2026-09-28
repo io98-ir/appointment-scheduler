@@ -264,3 +264,50 @@
 .vqy-calendar__item--done {
 	cursor: pointer;
 }
+
+.vqy-status {
+	display: inline-block;
+	padding-block: 1px;
+	padding-inline: 8px;
+	border: 1px solid GrayText;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 400;
+}
+
+.vqy-status--confirmed {
+	border-color: var(--vqy-accent);
+}
+
+.vqy-status--pending-approval,
+.vqy-status--pending-payment {
+	border-style: dashed;
+}
+
+.vqy-status--cancelled,
+.vqy-status--expired,
+.vqy-status--no-show {
+	color: GrayText;
+}
+
+.vqy-appointment {
+	max-inline-size: 60em;
+}
+
+.vqy-appointment__facts {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 6px 16px;
+}
+
+.vqy-appointment__facts > div {
+	display: contents;
+}
+
+.vqy-appointment__facts dd {
+	margin: 0;
+}
+
+.vqy-appointment__history {
+	padding-inline-start: 1.5em;
+}

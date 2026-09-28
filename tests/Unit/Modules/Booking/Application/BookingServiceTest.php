@@ -414,6 +414,10 @@ final class BookingServiceTest extends TestCase
             public function occupy(int $id, Claim $claim, int $variantId, int $partySize): void
             {
             }
+
+            public function saveNote(int $id, Appointment $appointment, string $note, Actor $actor, int $now): void
+            {
+            }
         };
         $jobs = new class ($test) implements BookingJobs {
             public function __construct(private readonly BookingServiceTest $test)

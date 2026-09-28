@@ -63,4 +63,12 @@ interface AppointmentRepository
      * member and unit, with no expiry.
      */
     public function occupy(int $id, Claim $claim, int $variantId, int $partySize): void;
+
+    /**
+     * Replaces the staff-only note and adds a "note" entry, without the
+     * text, to the history.
+     *
+     * @param int $now UTC seconds.
+     */
+    public function saveNote(int $id, Appointment $appointment, string $note, Actor $actor, int $now): void;
 }

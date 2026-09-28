@@ -6,6 +6,7 @@ namespace Vaqtyar\Modules\Booking\Application;
 
 use DateTimeImmutable;
 use Vaqtyar\Modules\Booking\Domain\Appointment\Appointment;
+use Vaqtyar\Modules\Booking\Domain\Appointment\StatusChange;
 use Vaqtyar\Modules\Booking\Domain\LockKey;
 use Vaqtyar\Modules\Booking\Domain\Policy\Decision;
 use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
@@ -183,17 +184,65 @@ final class AppointmentService
      */
     public function markNoShow(int $id, int $userId): Appointment
     {
+        return $this->staffMove($id, $userId, true, static fn (Appointment $a): StatusChange => $a->markNoShow());
+    }
+
+    /**
+     * Staff record that the appointment took place, once it has started.
+     *
+     * @throws Conflict not_started before the start, or invalid_transition.
+     */
+    public function complete(int $id, int $userId): Appointment
+    {
+        return $this->staffMove($id, $userId, true, static fn (Appointment $a): StatusChange => $a->complete());
+    }
+
+    /**
+     * Staff accept a booking that waits for approval. Its time is already
+     * taken, so nothing is locked.
+     *
+     * @throws Conflict invalid_transition unless pending approval.
+     */
+    public function approve(int $id, int $userId): Appointment
+    {
+        return $this->staffMove($id, $userId, false, static fn (Appointment $a): StatusChange => $a->approve());
+    }
+
+    /**
+     * Replaces the note only staff see.
+     *
+     * @throws NotFound appointment_not_found
+     * @throws Forbidden without manage_bookings.
+     */
+    public function saveNote(int $id, int $userId, string $note): void
+    {
+        $actor = Actor::user($userId);
+        $this->authorize($actor, false, null);
+        $this->transaction->run(function () use ($id, $actor, $note): void {
+            $stored = $this->find($id, $actor, true);
+            $now = $this->clock->now()->getTimestamp();
+            $this->appointments->saveNote($id, $stored->appointment, \trim($note), $actor, $now);
+        });
+    }
+
+    /**
+     * A status change by staff that leaves occupancies as they are.
+     *
+     * @param \Closure(Appointment): StatusChange $move
+     * @throws Conflict not_started when $afterStart and before the start.
+     */
+    private function staffMove(int $id, int $userId, bool $afterStart, \Closure $move): Appointment
+    {
         $actor = Actor::user($userId);
         $this->authorize($actor, false, null);
 
-        return $this->transaction->run(function () use ($id, $actor): Appointment {
-            $stored = $this->find($id, $actor, true);
-            $appointment = $stored->appointment;
+        return $this->transaction->run(function () use ($id, $actor, $afterStart, $move): Appointment {
+            $appointment = $this->find($id, $actor, true)->appointment;
             $now = $this->clock->now()->getTimestamp();
-            if ($now < $appointment->start) {
-                throw new Conflict('not_started', 'A no-show is recorded once the appointment has started.');
+            if ($afterStart && $now < $appointment->start) {
+                throw new Conflict('not_started', 'This is recorded once the appointment has started.');
             }
-            $change = $appointment->markNoShow();
+            $change = $move($appointment);
             $this->appointments->update($id, $appointment, $change, $actor, null, [], $now);
 
             return $appointment;

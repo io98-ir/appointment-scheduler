@@ -14,8 +14,9 @@ use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Shared\Domain\InvalidValue;
 
 /**
- * Staff change an appointment (docs/api.md): cancel, reschedule and
- * no-show, as the service's policy allows unless overridden. The
+ * Staff change an appointment (docs/api.md): cancel and reschedule, as
+ * the service's policy allows unless overridden; no-show, complete,
+ * approve and the internal note. The
  * customer's own routes come with the customer panel (T4.4).
  */
 final class AppointmentRoutes
@@ -61,6 +62,64 @@ final class AppointmentRoutes
             fn (\WP_REST_Request $request): \WP_REST_Response => $this->noShow($request),
             $allowed
         );
+        $this->router->add(
+            self::ID . '/complete',
+            'POST',
+            fn (\WP_REST_Request $request): \WP_REST_Response => $this->complete($request),
+            $allowed
+        );
+        $this->router->add(
+            self::ID . '/approve',
+            'POST',
+            fn (\WP_REST_Request $request): \WP_REST_Response => $this->approve($request),
+            $allowed
+        );
+        $this->router->add(
+            self::ID . '/note',
+            'PUT',
+            fn (\WP_REST_Request $request): \WP_REST_Response => $this->note($request),
+            $allowed,
+            ['note' => ['type' => 'string', 'maxLength' => 5000, 'required' => true]]
+        );
+    }
+
+    /**
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     */
+    private function complete(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $id = self::int($request->get_param('id'));
+
+        return new \WP_REST_Response(
+            AppointmentJson::of($id, ($this->service)()->complete($id, \get_current_user_id()))
+        );
+    }
+
+    /**
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     */
+    private function approve(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $id = self::int($request->get_param('id'));
+
+        return new \WP_REST_Response(
+            AppointmentJson::of($id, ($this->service)()->approve($id, \get_current_user_id()))
+        );
+    }
+
+    /**
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     */
+    private function note(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $note = $request->get_param('note');
+        ($this->service)()->saveNote(
+            self::int($request->get_param('id')),
+            \get_current_user_id(),
+            \is_string($note) ? \sanitize_textarea_field($note) : ''
+        );
+
+        return new \WP_REST_Response(null, 204);
     }
 
     /**

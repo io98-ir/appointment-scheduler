@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
 
 import { ApiContext } from './api';
+import { AppointmentsPage } from './appointments/AppointmentsPage';
 import { CalendarPage } from './calendar/CalendarPage';
 import {
 	CategoriesPage,
@@ -44,7 +45,7 @@ const SECTIONS: Section[] = [
 	{
 		path: '/appointments',
 		title: () => __( 'Appointments', 'vaqtyar' ),
-		Page: Placeholder,
+		Page: AppointmentsPage,
 	},
 	{
 		path: '/customers',
@@ -93,7 +94,9 @@ export function sectionOf( route: string ): Section | undefined {
 	return SECTIONS.find( ( { path } ) =>
 		path === '/'
 			? route === '/'
-			: route === path || route.startsWith( path + '/' )
+			: route === path ||
+				route.startsWith( path + '/' ) ||
+				route.startsWith( path + '?' )
 	);
 }
 

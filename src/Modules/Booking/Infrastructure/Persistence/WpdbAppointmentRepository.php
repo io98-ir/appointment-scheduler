@@ -234,6 +234,19 @@ final class WpdbAppointmentRepository implements AppointmentRepository
         }
     }
 
+    public function saveNote(int $id, Appointment $appointment, string $note, Actor $actor, int $now): void
+    {
+        $at = \gmdate(self::UTC_FORMAT, $now);
+        $this->db->update(
+            Tables::name('appointments'),
+            ['internal_note' => $note, 'updated_at' => $at],
+            ['id' => $id]
+        );
+        $this->db->execute('UPDATE %i SET version = version + 1 WHERE id = %d', Tables::name('appointments'), $id);
+        $status = $appointment->status();
+        $this->history($id, new StatusChange('note', $status, $status), $actor->type, $actor->id, null, [], $at);
+    }
+
     /**
      * @param array<string, array{int|string|null, int|string|null}> $changes
      */

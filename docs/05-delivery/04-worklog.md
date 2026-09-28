@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-28 — سشن 19 — T3.4 لیست و جزئیات نوبت
+**Taskها:** T3.4
+**انجام شد:** Backend شامل `AppointmentService::approve`، `complete` و `saveNote`، `AppointmentRepository::saveNote`، و routeهای `POST /appointments/{id}/approve|complete` و `PUT /appointments/{id}/note`. Admin در `packages/admin/src/appointments/` (لیست با فیلتر و صفحه‌بندی، جزئیات با تغییر وضعیت، لغو و override، یادداشت و history). لینک Details در تقویم. E2E `appointments.spec.ts`.
+**تصمیم‌ها و فرض‌ها:** طبق ADR-019 لیست بدون DataViews ساخته شد. پرداخت‌ها تا M5 فقط وضعیت را نشان می‌دهند. modifierهای کلاس وضعیت kebab-case هستند (`_` به `-`) تا Stylelint قبول کند.
+**تأیید:** `composer check` ← 802 Unit OK. `pnpm lint` سبز. `pnpm test` ← 101 passed. `pnpm size` ← admin 27.94KB gz و widget 4.99KB. `composer test:rename` OK. reviewer: بدون مشکل مسدودکننده.
+**مشکلات و باقیمانده:** reviewer دو نکته جزئی داد. اول، `saveNote` با یادداشت تغییرنکرده هم ردیف history می‌نویسد. دوم، sanitize فقط در route انجام می‌شود. هر دو پذیرفته شدند.
+**قدم بعدی:** T3.5.
+**Commitها:** `feat(admin): appointment list and detail with approve, complete and notes (T3.4)`
+
+---
+
 ## 2026-09-28 — سشن 18 — T3.3 تقویم Admin
 **Taskها:** T3.3
 **انجام شد:** `calendar/time.ts` (ساعت دیواری از ISO، `isoAt`، `offsetOf` با `Intl` و `longOffset`، `todayIn`، `weekOf` از شنبه، `snap`، و `lanes` برای نوبت‌های هم‌پوشان)، `move.ts` (`reschedule` که رد `policy.*` را به‌صورت نتیجه برمی‌گرداند تا Override پیشنهاد شود و بقیه خطاها را به snackbar می‌سپارد)، `CalendarPage` (نمای روز و هفته، انتخاب شعبه و پرسنل، شبکه یک پیکسل برای هر دقیقه از 07:00 تا 22:00 که برای نوبت‌های بیرون از این بازه بزرگ می‌شود، drag با Pointer Events، `MoveDialog` و `OverrideDialog`) و `QuickBook`. E2E `calendar.spec.ts`: داده از REST، ثبت با کلیک روی 10:00، drag به 12:00، و reload.

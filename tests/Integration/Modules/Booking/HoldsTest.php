@@ -454,6 +454,37 @@ final class HoldsTest extends TestCase
         self::assertSame([409, 'not_started'], [$noShow['status'], $noShow['body']['code'] ?? null]);
     }
 
+    public function testStaffCompleteApproveAndKeepAnInternalNote(): void
+    {
+        $this->logInAs('administrator');
+        $db = $this->realDb();
+        $id = $this->bookAt(self::inDays(2), '10:00');
+
+        $early = $this->change($id, 'complete');
+        $approve = $this->change($id, 'approve');
+        $request = new \WP_REST_Request('PUT', '/' . Identity::REST_NAMESPACE . "/appointments/{$id}/note");
+        $request->set_header('Content-Type', 'application/json');
+        $request->set_body((string) \wp_json_encode(['note' => ' Prefers the morning ']));
+        $note = \rest_do_request($request);
+
+        self::assertSame([409, 'not_started'], [$early['status'], $early['body']['code'] ?? null]);
+        self::assertSame([409, 'invalid_transition'], [$approve['status'], $approve['body']['code'] ?? null]);
+        self::assertSame(204, $note->get_status());
+        self::assertSame(
+            'Prefers the morning',
+            $db->getVar('SELECT internal_note FROM %i WHERE id = %d', Tables::name('appointments'), $id)
+        );
+        self::assertSame(
+            '1',
+            $db->getVar(
+                'SELECT COUNT(*) FROM %i WHERE appointment_id = %d AND action = %s',
+                Tables::name('appointment_history'),
+                $id,
+                'note'
+            )
+        );
+    }
+
     public function testTheSameStartTwiceIsAConflict(): void
     {
         $day = self::inDays(2);

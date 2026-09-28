@@ -289,6 +289,71 @@ final class AppointmentServiceTest extends TestCase
         self::assertNotContains('release 12', $this->log);
     }
 
+    public function testCompleteOnlyOnceStarted(): void
+    {
+        try {
+            $this->service()->complete(12, 2);
+            self::fail('No exception.');
+        } catch (Conflict $e) {
+            self::assertSame('not_started', $e->errorCode);
+        }
+
+        $this->clock->advance(172_800 + 600);
+        $appointment = $this->service()->complete(12, 2);
+
+        self::assertSame(AppointmentStatus::Completed, $appointment->status());
+        self::assertSame(['find for update', 'update complete', 'commit'], \array_slice($this->log, -3));
+    }
+
+    public function testApproveConfirmsAPendingAppointmentAndKeepsItsTime(): void
+    {
+        $this->stored = self::stored(AppointmentStatus::PendingApproval);
+
+        $appointment = $this->service()->approve(12, 2);
+
+        self::assertSame(AppointmentStatus::Confirmed, $appointment->status());
+        self::assertSame(['begin', 'find for update', 'update approve', 'commit'], $this->log);
+    }
+
+    public function testApprovingAConfirmedAppointmentIsAnInvalidTransition(): void
+    {
+        try {
+            $this->service()->approve(12, 2);
+            self::fail('No exception.');
+        } catch (Conflict $e) {
+            self::assertSame('invalid_transition', $e->errorCode);
+        }
+        self::assertSame([], $this->updates);
+    }
+
+    public function testTheInternalNoteIsSavedWithAHistoryEntry(): void
+    {
+        $this->service()->saveNote(12, 2, "  Allergic to latex\n");
+
+        self::assertSame(['begin', 'find for update', 'note 12 Allergic to latex', 'commit'], $this->log);
+    }
+
+    public function testStaffChangesNeedManageBookingsAndAnExistingAppointment(): void
+    {
+        $calls = [
+            'approve' => fn () => $this->service()->approve(13, 2),
+            'complete' => fn () => $this->service()->complete(13, 2),
+            'note' => fn () => $this->service()->saveNote(13, 2, 'x'),
+        ];
+        foreach ($calls as $name => $call) {
+            try {
+                $call();
+                self::fail("No exception: {$name}.");
+            } catch (NotFound $e) {
+                self::assertSame('appointment_not_found', $e->errorCode, $name);
+            }
+        }
+
+        $this->caps[BookingService::CAPABILITY] = false;
+        $this->expectException(Forbidden::class);
+        $this->service()->saveNote(12, 2, 'x');
+    }
+
     public function record(string $entry): void
     {
         $this->log[] = $entry;
@@ -378,6 +443,11 @@ final class AppointmentServiceTest extends TestCase
             public function occupy(int $id, Claim $claim, int $variantId, int $partySize): void
             {
                 $this->test->record("occupy {$id} staff {$claim->staffId}");
+            }
+
+            public function saveNote(int $id, Appointment $appointment, string $note, Actor $actor, int $now): void
+            {
+                $this->test->record("note {$id} {$note}");
             }
         };
         $policies = new class () implements PolicyReader {

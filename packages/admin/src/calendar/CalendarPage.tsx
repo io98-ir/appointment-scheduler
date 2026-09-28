@@ -712,6 +712,12 @@ function MoveDialog( {
 					>
 						{ __( 'Move', 'vaqtyar' ) }
 					</Button>
+					<Button
+						variant="secondary"
+						href={ `#/appointments/${ item.id }` }
+					>
+						{ __( 'Details', 'vaqtyar' ) }
+					</Button>
 					<Button variant="tertiary" onClick={ onClose }>
 						{ __( 'Cancel', 'vaqtyar' ) }
 					</Button>

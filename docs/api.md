@@ -143,6 +143,9 @@
 | `POST /appointments/{id}/cancel` | `reason` (تا 1000)، `override` (bool) | 409 `policy.already_started` یا `policy.cancel_window_passed`؛ 409 `invalid_transition` |
 | `POST /appointments/{id}/reschedule` | `start` (ISO با offset، الزامی)، `staff`، `reason`، `override` | 409 `slot_taken`، `policy.reschedule_window_passed`، `policy.reschedule_limit_reached`، `invalid_transition` (فقط `confirmed` جابجا می‌شود) |
 | `POST /appointments/{id}/no-show` | — | 409 `not_started` (قبل از شروع)؛ 409 `invalid_transition` |
+| `POST /appointments/{id}/complete` | — | 409 `not_started` (قبل از شروع)؛ 409 `invalid_transition` (فقط `confirmed`) |
+| `POST /appointments/{id}/approve` | — | 409 `invalid_transition` (فقط `pending_approval`). زمان از قبل گرفته شده، پس قفلی لازم نیست |
+| `PUT /appointments/{id}/note` | `note` (الزامی، تا 5000) | 404 `appointment_not_found`. پاسخ 204. یادداشت داخلی را جایگزین می‌کند و یک ردیف `note` بدون متن به history اضافه می‌کند |
 
 - `override: true` به capability `override_policies` و `reason` غیرخالی نیاز دارد (403، 422 `reason_required`).
 - 404 `appointment_not_found`. 409 `appointment_changed` یعنی نوبت همزمان تغییر کرد و باید دوباره تلاش کرد.
