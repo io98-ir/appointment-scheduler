@@ -16,6 +16,18 @@
 
 ---
 
+## 2026-09-28 — سشن 17 — T3.2 صفحات کاتالوگ
+**Taskها:** T3.2
+**انجام شد:** (الف) Scheduling: `ScheduleService` (بررسی دوباره capability `manage_schedules`، وجود صاحب از `CatalogApi::isStored`، رد بازه‌های هم‌پوشان هم‌نوع با `overlapping_rules`، بازه حداکثر 366 روز) و `ScheduleRoutes` (`GET|PUT /schedules/{owner_type}/{owner_id}` و CRUD `/schedule-exceptions`). (ب) Admin: `catalog/` شامل `crud.ts` (useAll، useItem، useSave، useRemove، screenOf)، `CatalogList` (جدول، جستجو با نرمال‌سازی ی و ک، حذف با Modal)، `ItemEditor` (PUT کامل با حفظ فیلدهای مخفی)، `WeeklySchedule` و `TimeOff`، و صفحه‌های شعبه، پرسنل، منبع، دسته و خدمت. `ApiContext` به `api.ts` و `NotFound` به فایل جدا منتقل شدند. (ج) E2E: `tests/e2e` با config ابزار wp-scripts و job `e2e` در CI.
+**تصمیم‌ها و فرض‌ها:** (1) **ADR-019:** DataViews در bundle حدود 404KB gz می‌شد، در حالی که بودجه 150KB است. پس لیست‌ها جدول ساده هستند و DataViews در T3.4 به‌صورت lazy دوباره بررسی می‌شود. (2) قیمت در UI به ریال (IRR) است تا تنظیم واحد نمایش اضافه شود. (3) انتخاب تاریخ مرخصی با `input type=date` میلادی است و تاریخ جلالی زیر آن نمایش داده می‌شود. انتخابگر جلالی بعداً اضافه می‌شود. (4) پایان `24:00` از UI قابل انتخاب نیست (محدودیت `input type=time`). (5) Capability جدید `manage_schedules` فقط به administrator داده شده است.
+**تأیید:** `composer stan`، phpcs و deptrac ← سبز. `phpunit --testsuite unit` ← 797 passed. `pnpm lint` ← سبز. `pnpm test` ← 82 passed. `pnpm size` ← admin 20.4KB gz. Reviewer روی (الف) ← بدون یافته. Reviewer روی (ب) ← یک یافته: تاریخ 2030 خارج از بازه لیست بود. رفع شد.
+**مشکلات و باقیمانده:** run 36406404116 به دلیل انتشار ناقص Playground 3.1.56 در همان لحظه شکست خورد (خطای خارجی). run 36408589556: E2E به دلیل strict mode شکست خورد، چون متن snackbar در ناحیه `a11y-speak` هم تکرار می‌شود. رفع شد. pnpm محلی فیلدهای `libc` را از lockfile حذف می‌کند. این فیلدها دستی برگردانده شدند.
+**CI:** **سبز روی main (run 36409232141)**، شامل E2E.
+**قدم بعدی:** T3.3 تقویم.
+**Commitها:** `feat(scheduling): admin api for weekly schedules and exceptions (T3.2)`، `feat(admin): catalog screens with weekly hours, time off and e2e (T3.2)`، `test(e2e): scope snackbar checks past the a11y live region (T3.2)`
+
+---
+
 ## 2026-09-28 — سشن 16 — T3.1 Admin Shell
 **Taskها:** T3.1
 **انجام شد:** `packages/admin`: `App.tsx` (منوی `SECTIONS` با `aria-current`، هدر، ErrorBoundary برای هر صفحه، `Snackbars` روی store `core/notices`، و `useApi()` از context)، `query.ts` (`createQueryClient`، `shouldRetry`، `errorMessage`)، `config.ts` (خواندن `data-config`)، `theme.ts` (auto، light، dark در localStorage)، و `admin.css` (`color-scheme` با رنگ‌های سیستمی). PHP: `AdminPage` مقدار `data-config` (restUrl و nonce) را render می‌کند و style آن به `wp-components` وابسته است. وابستگی‌ها: `@tanstack/react-query`، `@wordpress/components`، `data` و `notices`. در `eslint.config.cjs` تست‌ها حالا وابستگی‌های پکیج خودشان را هم می‌بینند.
