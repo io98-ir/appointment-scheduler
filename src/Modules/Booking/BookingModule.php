@@ -15,9 +15,11 @@ use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Booking\Application\AppointmentBrowser;
 use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
+use Vaqtyar\Modules\Booking\Application\FieldAdminService;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldService;
 use Vaqtyar\Modules\Booking\Application\PolicyAdminService;
+use Vaqtyar\Modules\Booking\Domain\Field\FieldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Jobs\ActionSchedulerBookingJobs;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\AddAppointmentStartIndex;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateBookingTables;
@@ -25,6 +27,7 @@ use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateOccupanciesTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateResourceDayLocksTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbAppointmentRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbFieldReader;
+use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbFieldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbHoldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbOccupancyReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPolicyReader;
@@ -36,6 +39,7 @@ use Vaqtyar\Modules\Booking\Infrastructure\Query\WpdbAppointmentQuery;
 use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentListRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\BookingRoutes;
+use Vaqtyar\Modules\Booking\Presentation\Rest\FieldRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\PolicyRoutes;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
@@ -132,6 +136,18 @@ final class BookingModule implements Module
                 new WpdbPolicyRepository($c->get(Db::class), $c->get(Transaction::class), $c->get(Clock::class))
             )
         );
+        $container->singleton(
+            FieldRepository::class,
+            static fn (Container $c) => new WpdbFieldRepository($c->get(Db::class), $c->get(Clock::class))
+        );
+        $container->singleton(
+            FieldAdminService::class,
+            static fn (Container $c) => new FieldAdminService(
+                new WpAuthorizer(),
+                $c->get(CatalogApi::class),
+                $c->get(FieldRepository::class)
+            )
+        );
     }
 
     /**
@@ -191,6 +207,10 @@ final class BookingModule implements Module
             (new PolicyRoutes(
                 $container->get(Router::class),
                 static fn (): PolicyAdminService => $container->get(PolicyAdminService::class)
+            ))->register();
+            (new FieldRoutes(
+                $container->get(Router::class),
+                static fn (): FieldAdminService => $container->get(FieldAdminService::class)
             ))->register();
         });
     }

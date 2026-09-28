@@ -171,3 +171,15 @@
 | `DELETE /policies/{type}/{service_id}` | حذف این سطح؛ سطح پایین‌تر (سراسری، یا در نهایت آزاد) اعمال می‌شود. پاسخ 204 |
 
 ردیف خراب در جدول تنها روی مسیر رزرو (`WpdbPolicyReader`) نادیده گرفته می‌شود؛ این API همیشه یک `config` معتبر می‌نویسد یا می‌خواند.
+
+## فیلدهای سفارشی (Admin)
+همه routeها capability `manage_bookings` لازم دارند. `scope` یکی از `global` (همه خدمت‌ها) یا `service` است؛ برای `service`، `service_id` الزامی و باید در کاتالوگ باشد (وگرنه 404 `service_not_found`). ذخیره همیشه در برابر «مجموعه در دسترس» آن فیلد بررسی می‌شود: فیلدهای سراسری، به‌علاوه فیلدهای همان خدمت برای یک فیلد `service`؛ فقط فیلدهای سراسری برای یک فیلد `global` (implementation-notes §4.13).
+
+| Route | کار |
+|---|---|
+| `GET /fields` | `scope` و (برای `service`) `service_id`. آرایه به ترتیب `sort` |
+| `POST /fields` | `scope`، `service_id` (فقط `service`)، `field_key`، `type` (`text`، `textarea`، `number`، `select`، `checkbox`)، `label`، `required`، `options` (فقط `select`، حداکثر 50)، `show_if` (`{field, equals}` یا `null`)، `sort`. پاسخ 201 |
+| `PUT /fields/{id}` | جایگزینی کامل، با همان فیلدها. ناموجود: 404 `field_not_found` |
+| `DELETE /fields/{id}` | حذف واقعی. ناموجود: 404 `field_not_found` |
+
+خطاهای 422: `invalid_field` (کلید یا برچسب خالی، `select` بدون `options`)، `duplicate_field_key` (کلید تکراری در مجموعه در دسترس)، `invalid_show_if` (اشاره به خودش، فیلدی ناموجود، یا فیلدی با `sort` بزرگ‌تر یا مساوی؛ `sort` مساوی هم رد می‌شود چون ترتیب تضمین‌شده نیست). این بررسی‌ها فقط اینجاست؛ مسیر رزرو (`WpdbFieldReader`) نه تکراری را حذف می‌کند و نه `show_if` را اعتبارسنجی می‌کند، فقط آخرین فیلد هم‌کلید در پاسخ می‌نویسد.

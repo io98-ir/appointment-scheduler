@@ -21,6 +21,7 @@ import { store as noticesStore } from '@wordpress/notices';
 import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
+import { Fields } from '../fields/Fields';
 import { NotFound } from '../NotFound';
 import { Policies } from '../policies/Policies';
 import { useRoute } from '../router';
@@ -94,6 +95,7 @@ export function ServicesPage() {
 				<>
 					<Extras serviceId={ service.id } />
 					<Policies serviceId={ service.id } />
+					<Fields scope="service" serviceId={ service.id } />
 				</>
 			) }
 		>

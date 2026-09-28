@@ -344,3 +344,26 @@ export interface RescheduleConfig {
 export interface PolicyResponse< Config > {
 	config: Config | null;
 }
+
+export type FieldScope = 'global' | 'service';
+
+export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'checkbox';
+
+export interface FieldShowIf {
+	field: string;
+	equals: string;
+}
+
+/** /fields: a custom field definition (implementation-notes §4.13). */
+export interface FieldDefinition {
+	id: number;
+	scope: FieldScope;
+	service_id: number | null;
+	field_key: string;
+	type: FieldType;
+	label: string;
+	required: boolean;
+	options: string[];
+	show_if: FieldShowIf | null;
+	sort: number;
+}
