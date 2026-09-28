@@ -189,7 +189,7 @@ final class CustomersRestTest extends TestCase
             'POST',
             '/customers',
             ['first_name' => 'Blocked', 'phone' => '09350000000', 'status' => 'blocked']
-        )['body']['id'];
+        )['body']['id'] ?? null;
 
         $active = $this->request('GET', '/customers', ['status' => 'active']);
         $inactive = $this->request('GET', '/customers', ['status' => 'blocked']);
