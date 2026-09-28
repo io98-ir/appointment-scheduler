@@ -148,8 +148,7 @@ test.describe( 'calendar', () => {
 		const booked = column.getByRole( 'button', { name: /10:00–11:00/ } );
 		await expect( booked ).toContainText( 'E2E Rahimi' );
 
-		// Grabbed 5px below its top and dropped 120px lower: 12:00. Moved in
-		// steps, as Chromium starts a native drag only after a few moves.
+		// A pointer drag, grabbed 5px below its top and let go 120px lower: 12:00.
 		const box = await booked.boundingBox();
 		if ( box === null ) {
 			throw new Error( 'The appointment is not on screen.' );

@@ -241,6 +241,10 @@
 	line-height: 1.3;
 	text-align: start;
 	cursor: grab;
+
+	/* A touch drags the item instead of scrolling the page. */
+	touch-action: none;
+	user-select: none;
 }
 
 .vqy-calendar__item:focus-visible {

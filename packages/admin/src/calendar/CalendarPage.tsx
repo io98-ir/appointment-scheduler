@@ -20,7 +20,7 @@ import { useDispatch } from '@wordpress/data';
 import { useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
-import type { DragEvent, FormEvent, MouseEvent } from 'react';
+import type { FormEvent, PointerEvent } from 'react';
 
 import { useApi } from '../api';
 import { useAll } from '../catalog/crud';
@@ -79,6 +79,16 @@ function itemClass( status: AppointmentListItem[ 'status' ] ): string {
 
 function go( view: View, date: string ) {
 	window.location.hash = `#/calendar/${ view }/${ date }`;
+}
+
+interface Drag {
+	id: number;
+	/** Where the pointer went down. */
+	x: number;
+	y: number;
+	/** How far below the item's top it was grabbed. */
+	grab: number;
+	moved: boolean;
 }
 
 interface Column {
@@ -297,7 +307,15 @@ function Grid( {
 		null
 	);
 	const [ booking, setBooking ] = useState< Slot | null >( null );
-	const grab = useRef( 0 );
+	const grid = useRef< HTMLDivElement >( null );
+	/** The pointer drag in progress, and whether it ended as a drag. */
+	const drag = useRef< Drag | null >( null );
+	const dragged = useRef( false );
+	const [ offsetBy, setOffsetBy ] = useState< {
+		id: number;
+		x: number;
+		y: number;
+	} | null >( null );
 	const move = useMutation( {
 		mutationFn: ( request: MoveRequest ) => reschedule( api, request ),
 		onSuccess: ( result, request ) => {
@@ -324,14 +342,32 @@ function Grid( {
 	} );
 	const top = Math.floor( Math.min( FIRST, ...minutes ) / 60 ) * 60;
 	const bottom = Math.ceil( Math.max( LAST, ...minutes ) / 60 ) * 60;
-	const at = ( event: MouseEvent | DragEvent, minus = 0 ) =>
-		snap(
-			top +
-				event.clientY -
-				event.currentTarget.getBoundingClientRect().top -
-				minus,
-			STEP
+	const at = ( clientY: number, element: Element ) =>
+		snap( top + clientY - element.getBoundingClientRect().top, STEP );
+	const drop = ( event: PointerEvent, state: Drag ) => {
+		// The column under the pointer, by its horizontal span.
+		const target = Array.from(
+			grid.current?.querySelectorAll( '[data-column-key]' ) ?? []
+		).find( ( element ) => {
+			const rect = element.getBoundingClientRect();
+
+			return event.clientX >= rect.left && event.clientX < rect.right;
+		} );
+		const column = columns.find(
+			( item ) => item.key === target?.getAttribute( 'data-column-key' )
 		);
+		if ( target && column ) {
+			move.mutate( {
+				id: state.id,
+				start: isoAt(
+					column.date,
+					at( event.clientY - state.grab, target ),
+					offset
+				),
+				staff: column.staffId,
+			} );
+		}
+	};
 	const hours = Array.from(
 		{ length: ( bottom - top ) / 60 },
 		( _, i ) => top + i * 60
@@ -416,6 +452,7 @@ function Grid( {
 							key={ column.key }
 							className="vqy-calendar__column"
 							data-column={ column.label }
+							data-column-key={ column.key }
 							style={ {
 								blockSize: bottom - top,
 								backgroundSize: `100% 60px`,
@@ -424,26 +461,11 @@ function Grid( {
 								if ( event.target === event.currentTarget ) {
 									setBooking( {
 										date: column.date,
-										minutes: at( event ),
-										staffId: column.staffId,
-									} );
-								}
-							} }
-							onDragOver={ ( event ) => event.preventDefault() }
-							onDrop={ ( event ) => {
-								event.preventDefault();
-								const id = Number(
-									event.dataTransfer.getData( 'text/plain' )
-								);
-								if ( id > 0 ) {
-									move.mutate( {
-										id,
-										start: isoAt(
-											column.date,
-											at( event, grab.current ),
-											offset
+										minutes: at(
+											event.clientY,
+											event.currentTarget
 										),
-										staff: column.staffId,
+										staffId: column.staffId,
 									} );
 								}
 							} }
@@ -461,7 +483,6 @@ function Grid( {
 									<button
 										key={ item.id }
 										type="button"
-										draggable
 										className={ itemClass( item.status ) }
 										style={ {
 											insetBlockStart: span.from - top,
@@ -476,20 +497,74 @@ function Grid( {
 											borderInlineStartColor: color(
 												item.staff_id
 											),
+											...( offsetBy?.id === item.id && {
+												transform: `translate(${ offsetBy.x }px, ${ offsetBy.y }px)`,
+												zIndex: 3,
+											} ),
 										} }
-										onDragStart={ ( event ) => {
-											event.dataTransfer.setData(
-												'text/plain',
-												String( item.id )
+										onPointerDown={ ( event ) => {
+											if ( event.button !== 0 ) {
+												return;
+											}
+											event.currentTarget.setPointerCapture(
+												event.pointerId
 											);
-											event.dataTransfer.effectAllowed =
-												'move';
-											grab.current =
-												event.clientY -
-												event.currentTarget.getBoundingClientRect()
-													.top;
+											drag.current = {
+												id: item.id,
+												x: event.clientX,
+												y: event.clientY,
+												grab:
+													event.clientY -
+													event.currentTarget.getBoundingClientRect()
+														.top,
+												moved: false,
+											};
 										} }
-										onClick={ () => setMoving( item ) }
+										onPointerMove={ ( event ) => {
+											const state = drag.current;
+											if (
+												! state ||
+												state.id !== item.id
+											) {
+												return;
+											}
+											const x = event.clientX - state.x;
+											const y = event.clientY - state.y;
+											if (
+												! state.moved &&
+												Math.hypot( x, y ) < 5
+											) {
+												return;
+											}
+											state.moved = true;
+											setOffsetBy( {
+												id: item.id,
+												x,
+												y,
+											} );
+										} }
+										onPointerUp={ ( event ) => {
+											const state = drag.current;
+											drag.current = null;
+											setOffsetBy( null );
+											if ( state?.moved ) {
+												dragged.current = true;
+												drop( event, state );
+											}
+										} }
+										onPointerCancel={ () => {
+											drag.current = null;
+											setOffsetBy( null );
+										} }
+										onClick={ () => {
+											// The click that ends a drag opens nothing.
+											if ( dragged.current ) {
+												dragged.current = false;
+
+												return;
+											}
+											setMoving( item );
+										} }
 									>
 										<span dir="ltr">
 											{ item.start.slice( 11, 16 ) }–
