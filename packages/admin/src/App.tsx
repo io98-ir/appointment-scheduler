@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
 
 import { ApiContext } from './api';
+import { CalendarPage } from './calendar/CalendarPage';
 import {
 	CategoriesPage,
 	LocationsPage,
@@ -38,7 +39,7 @@ const SECTIONS: Section[] = [
 	{
 		path: '/calendar',
 		title: () => __( 'Calendar', 'vaqtyar' ),
-		Page: Placeholder,
+		Page: CalendarPage,
 	},
 	{
 		path: '/appointments',
