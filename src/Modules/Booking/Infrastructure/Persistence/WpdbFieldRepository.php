@@ -37,11 +37,13 @@ final class WpdbFieldRepository implements FieldRepository
      */
     public function globalFields(): array
     {
-        return $this->list(
+        $rows = $this->db->getResults(
             'SELECT * FROM %i WHERE scope = %s ORDER BY sort, id',
             Tables::name('fields'),
             self::GLOBAL
         );
+
+        return self::definitions($rows);
     }
 
     /**
@@ -49,12 +51,14 @@ final class WpdbFieldRepository implements FieldRepository
      */
     public function forService(int $serviceId): array
     {
-        return $this->list(
+        $rows = $this->db->getResults(
             'SELECT * FROM %i WHERE scope = %s AND service_id = %d ORDER BY sort, id',
             Tables::name('fields'),
             self::SERVICE,
             $serviceId
         );
+
+        return self::definitions($rows);
     }
 
     public function find(int $id): ?FieldDefinition
@@ -99,11 +103,11 @@ final class WpdbFieldRepository implements FieldRepository
     }
 
     /**
+     * @param list<array<string, string|null>> $rows
      * @return list<FieldDefinition>
      */
-    private function list(string $sql, int|string ...$args): array
+    private static function definitions(array $rows): array
     {
-        $rows = $this->db->getResults($sql, ...$args);
         $definitions = [];
         foreach ($rows as $values) {
             $definition = self::definition(new Row($values));
