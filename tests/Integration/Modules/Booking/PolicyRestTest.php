@@ -136,7 +136,13 @@ final class PolicyRestTest extends TestCase
         self::assertSame([404, 'service_not_found'], [$response['status'], $response['body']['code'] ?? null]);
     }
 
-    public function testABrokenRefundTierIs422(): void
+    /**
+     * The REST schema (0 to 100) already covers what RefundTier's own
+     * constructor checks, so an out-of-range tier never reaches the
+     * Domain: WordPress's own schema validation refuses it first, with
+     * 400 rest_invalid_param (architecture §9), not a 422 domain code.
+     */
+    public function testATierOutOfSchemaRangeIs400(): void
     {
         $this->logInAs('administrator');
 
@@ -144,7 +150,10 @@ final class PolicyRestTest extends TestCase
             'refund' => [['hours' => 24, 'percent' => 150]],
         ]);
 
-        self::assertSame(422, $response['status'], (string) \wp_json_encode($response['body']));
+        self::assertSame(
+            [400, 'rest_invalid_param'],
+            [$response['status'], $response['body']['code'] ?? null]
+        );
     }
 
     private function service(): int
