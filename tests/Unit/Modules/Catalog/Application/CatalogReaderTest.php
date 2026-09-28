@@ -71,6 +71,23 @@ final class CatalogReaderTest extends TestCase
         parent::tearDown();
     }
 
+    public function testAnInactiveItemIsStoredButAnUnknownOneOrKindIsNot(): void
+    {
+        $this->staff->shouldReceive('find')->with(5)->andReturn(self::staffMember(5, Status::Inactive));
+        $this->resources->shouldReceive('find')->with(6)->andReturn(null);
+        $this->locations->shouldReceive('find')->with(1)->andReturn(self::location(1, Status::Inactive));
+
+        self::assertSame(
+            [true, false, true, false],
+            [
+                $this->reader->isStored('staff', 5),
+                $this->reader->isStored('resource', 6),
+                $this->reader->isStored('location', 1),
+                $this->reader->isStored('service', 1),
+            ]
+        );
+    }
+
     public function testAnUnknownVariantHasNoOffer(): void
     {
         $this->services->shouldReceive('findByVariant')->with(99)->andReturnNull();

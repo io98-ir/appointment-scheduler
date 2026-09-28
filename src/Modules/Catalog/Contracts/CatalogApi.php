@@ -27,4 +27,13 @@ interface CatalogApi
      * Null when the location is deleted or inactive.
      */
     public function location(int $locationId): ?LocationInfo;
+
+    /**
+     * Whether a staff member, resource or location with this id exists and
+     * is not deleted, active or not: e.g. to edit the schedule of someone
+     * on leave.
+     *
+     * @param string $kind "staff", "resource" or "location"; anything else is not stored.
+     */
+    public function isStored(string $kind, int $id): bool;
 }

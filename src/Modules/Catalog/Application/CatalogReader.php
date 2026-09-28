@@ -104,6 +104,16 @@ final class CatalogReader implements CatalogApi
         );
     }
 
+    public function isStored(string $kind, int $id): bool
+    {
+        return match ($kind) {
+            'staff' => null !== $this->staff->find($id),
+            'resource' => null !== $this->resources->find($id),
+            'location' => null !== $this->locations->find($id),
+            default => false,
+        };
+    }
+
     /**
      * Null is every location, which is always open.
      */

@@ -137,6 +137,37 @@ export interface Extra {
 	status: CatalogStatus;
 }
 
+/** Whose calendar a schedule belongs to. */
+export type ScheduleOwnerType = 'staff' | 'resource' | 'location';
+
+/** One range of /schedules/{owner_type}/{owner_id}. */
+export interface ScheduleRule {
+	/** 0 = Saturday … 6 = Friday. */
+	weekday: number;
+	/** "HH:MM", wall-clock time of the location. */
+	start: string;
+	end: string;
+	kind: 'work' | 'break';
+}
+
+export interface WeeklySchedule {
+	rules: ScheduleRule[];
+}
+
+/** /schedule-exceptions: time off, extra hours or blocked time on one date. */
+export interface ScheduleException {
+	id: number;
+	owner_type: ScheduleOwnerType;
+	owner_id: number;
+	/** "YYYY-MM-DD", Gregorian. */
+	date: string;
+	/** Both null for the whole day. */
+	start: string | null;
+	end: string | null;
+	kind: 'off' | 'extra' | 'blocked';
+	note: string;
+}
+
 /** GET /availability: a day of the location. */
 export type DayStatus = 'available' | 'full' | 'closed';
 

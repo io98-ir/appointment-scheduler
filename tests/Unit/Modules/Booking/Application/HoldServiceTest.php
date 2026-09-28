@@ -326,6 +326,11 @@ final class HoldServiceTest extends TestCase
                 ], [], [new ExtraOffer(40, 15, Money::ofRial(150_000), 2)]);
             }
 
+            public function isStored(string $kind, int $id): bool
+            {
+                return false;
+            }
+
             public function location(int $locationId): ?LocationInfo
             {
                 return 2 === $locationId ? null : new LocationInfo($locationId, new \DateTimeZone('Asia/Tehran'), null);

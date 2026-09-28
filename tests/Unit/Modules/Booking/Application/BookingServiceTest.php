@@ -502,6 +502,11 @@ final class BookingServiceTest extends TestCase
                 return 6 === $variantId ? null : new Offer(7, $variantId, 3, 10, 0, null, [], [], []);
             }
 
+            public function isStored(string $kind, int $id): bool
+            {
+                return false;
+            }
+
             public function location(int $locationId): LocationInfo
             {
                 return new LocationInfo($locationId, new \DateTimeZone('Asia/Tehran'), null);

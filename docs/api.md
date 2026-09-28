@@ -34,6 +34,20 @@
 - شعبه‌ای که پرسنل یا منبع حذف‌نشده دارد حذف نمی‌شود (`location_in_use`)، چون ساعات کاری آن‌ها در منطقه زمانی همان شعبه حساب می‌شود.
 - حذف دسته، خدمت یا پرسنل آبشاری نیست. ارجاع به آیتم حذف‌شده می‌ماند و `CatalogApi` آن را نادیده می‌گیرد.
 
+## برنامه کاری (Admin)
+همه routeها Capability `manage_schedules` لازم دارند (پیش‌فرض: administrator). `ScheduleService` آن را دوباره بررسی می‌کند. `{owner_type}` یکی از `staff`، `resource`، `location` است. صاحب باید در کاتالوگ باشد (حذف‌نشده، فعال یا غیرفعال)، وگرنه 404 مثل `staff_not_found`. ساعت‌ها `HH:MM` به وقت محلی شعبه‌اند و تاریخ‌ها `YYYY-MM-DD`.
+
+| Route | کار |
+|---|---|
+| `GET /schedules/{owner_type}/{owner_id}` | `{rules: [{weekday, start, end, kind}]}` به ترتیب روز و شروع. `weekday` از 0 (شنبه) تا 6 (جمعه)، `kind` یکی از `work` و `break` |
+| `PUT /schedules/{owner_type}/{owner_id}` | `rules` (حداکثر 100) کل هفته را **جایگزین** می‌کند؛ آرایه خالی برنامه را پاک می‌کند. `kind` پیش‌فرض `work`. خطاها: 422 `overlapping_rules` (دو بازه هم‌نوع در یک روز هم‌پوشانی دارند؛ مماس بودن مجاز است)، `invalid_time_range`، `invalid_time` |
+| `GET /schedule-exceptions` | `owner_type`، `owner_id`، `from` و `to` (هر دو شامل، الزامی، حداکثر 366 روز: 422 `invalid_range`). آرایه به ترتیب تاریخ و شروع |
+| `POST /schedule-exceptions` | `owner_type`، `owner_id`، `date`، `kind` (`off` مرخصی، `extra` ساعت اضافه، `blocked` زمان مسدود)، `start` و `end` (هر دو یا هیچ‌کدام؛ هیچ‌کدام یعنی کل روز)، `note` (تا 1000). پاسخ 201. `extra` بدون ساعت: 422 `extra_needs_hours` |
+| `PUT /schedule-exceptions/{id}` | جایگزینی کامل، با همان فیلدها. ناموجود: 404 `exception_not_found` |
+| `DELETE /schedule-exceptions/{id}` | حذف واقعی (استثنا مرجع نوبتی نیست). پاسخ 204 |
+
+هر نوشتن `scheduling/changed` را می‌فرستد و کش Availability باطل می‌شود.
+
 ## Availability (عمومی)
 `GET /availability` بدون ورود در دسترس است (`permission_callback` عمومی فقط برای GET) و rate limit دارد: 120 درخواست در دقیقه برای هر کلاینت. پاسخ فقط **پیشنهاد** است و Hold دوباره زیر قفل از DB بررسی می‌کند (ADR-004).
 

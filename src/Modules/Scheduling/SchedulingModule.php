@@ -14,6 +14,7 @@ use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Scheduling\Application\AvailabilityService;
+use Vaqtyar\Modules\Scheduling\Application\ScheduleService;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Modules\Scheduling\Domain\HolidayRepository;
@@ -27,6 +28,8 @@ use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbScheduleExceptionR
 use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbScheduleRuleRepository;
 use Vaqtyar\Modules\Scheduling\Infrastructure\WpSlotCache;
 use Vaqtyar\Modules\Scheduling\Presentation\Rest\AvailabilityRoutes;
+use Vaqtyar\Modules\Scheduling\Presentation\Rest\ScheduleRoutes;
+use Vaqtyar\Shared\WpAuthorizer;
 use Vaqtyar\Shared\Domain\Clock;
 
 /**
@@ -59,6 +62,15 @@ final class SchedulingModule implements Module
             HolidayRepository::class,
             static fn (Container $c) => new WpdbHolidayRepository($c->get(Db::class), $c->get(Clock::class))
         );
+        $container->singleton(
+            ScheduleService::class,
+            static fn (Container $c) => new ScheduleService(
+                new WpAuthorizer(),
+                $c->get(CatalogApi::class),
+                $c->get(ScheduleRuleRepository::class),
+                $c->get(ScheduleExceptionRepository::class)
+            )
+        );
         $container->singleton(WpSlotCache::class, static fn () => new WpSlotCache());
         $container->singleton(SlotClaims::class, static fn (Container $c) => $c->get(AvailabilityService::class));
         $container->singleton(
@@ -89,7 +101,7 @@ final class SchedulingModule implements Module
      */
     public function capabilities(): array
     {
-        return [];
+        return [ScheduleService::CAPABILITY => ['administrator']];
     }
 
     public function boot(Context $context): void
@@ -105,6 +117,10 @@ final class SchedulingModule implements Module
             (new AvailabilityRoutes(
                 $container->get(Router::class),
                 static fn (): AvailabilityService => $container->get(AvailabilityService::class)
+            ))->register();
+            (new ScheduleRoutes(
+                $container->get(Router::class),
+                static fn (): ScheduleService => $container->get(ScheduleService::class)
             ))->register();
         });
     }

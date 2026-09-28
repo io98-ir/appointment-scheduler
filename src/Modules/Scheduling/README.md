@@ -38,9 +38,13 @@ one date, and holiday calendars with the shipped Iranian dataset.
   `GET /availability` (docs/api.md).
 - **Settings:** `AvailabilitySettings` (slot step, minimum notice, maximum
   advance, staff choice).
-- **Not yet:** Application and REST for editing schedules (with the admin
-  UI, T3.2 and T3.5) and the list of holiday calendars (only `ir` for now).
-- **Capabilities:** none. **Events:** fires `scheduling/changed` on every
+- **Schedule API (`Application/ScheduleService`):** the admin reads and
+  replaces an owner's weekly schedule and edits its exceptions; the owner
+  must be stored in the catalog (`CatalogApi::isStored`). Routes:
+  `/schedules/{owner_type}/{owner_id}` and `/schedule-exceptions`
+  (docs/api.md).
+- **Not yet:** the list of holiday calendars (only `ir` for now).
+- **Capabilities:** `manage_schedules` (administrator). **Events:** fires `scheduling/changed` on every
   schedule, exception or holiday write; listens to it and to
   `catalog/changed` to invalidate the availability cache.
 - **Tables:** `schedule_rules`, `schedule_exceptions`, `holidays`
