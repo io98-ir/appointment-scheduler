@@ -168,6 +168,15 @@ export interface ScheduleException {
 	note: string;
 }
 
+/** /holidays: one day off in a named calendar (a location's holidayCalendar). */
+export interface Holiday {
+	calendar: string;
+	/** "YYYY-MM-DD", Gregorian. */
+	date: string;
+	title: string;
+	source: 'dataset' | 'manual';
+}
+
 /** GET /availability: a day of the location. */
 export type DayStatus = 'available' | 'full' | 'closed';
 

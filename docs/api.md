@@ -48,6 +48,17 @@
 
 هر نوشتن `scheduling/changed` را می‌فرستد و کش Availability باطل می‌شود.
 
+## تعطیلات (Admin)
+همه routeها Capability `manage_bookings` لازم دارند (همان Capability رزرو؛ برای یک صفحه مدیریتی دیگر Capability جدیدی لازم نیست). `{calendar}` کلیدی است که تنظیم `holiday_calendar` یک شعبه به آن اشاره می‌کند (مثلاً `ir`)؛ این route هر تقویمی را با کلیدش می‌خواند و ویرایش می‌کند، حتی پیش از آنکه شعبه‌ای آن را انتخاب کند. تاریخ‌ها `YYYY-MM-DD` میلادی‌اند.
+
+| Route | کار |
+|---|---|
+| `GET /holidays` | `calendar`، `from` و `to` (هر دو شامل، الزامی، حداکثر 366 روز: 422 `invalid_range`). آرایه به ترتیب تاریخ. تقویم ناشناخته یعنی آرایه خالی، نه خطا |
+| `POST /holidays` | `calendar`، `date`، `title`. یک روز از قبل موجود را جایگزین می‌کند (همان کلید calendar/date)؛ همیشه با منبع `manual` ذخیره می‌شود، حتی اگر روزی از دیتاست را جایگزین کند. پاسخ 201 |
+| `DELETE /holidays/{calendar}/{date}` | حذف واقعی. ناموجود: 404 `holiday_not_found` |
+
+دیتاست‌های سالانه (`assets/holidays`) فقط با `ImportHolidays` در Migration نوشته می‌شوند، نه از این route.
+
 ## Availability (عمومی)
 `GET /availability` بدون ورود در دسترس است (`permission_callback` عمومی فقط برای GET) و rate limit دارد: 120 درخواست در دقیقه برای هر کلاینت. پاسخ فقط **پیشنهاد** است و Hold دوباره زیر قفل از DB بررسی می‌کند (ADR-004).
 

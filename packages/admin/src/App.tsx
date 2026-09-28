@@ -17,6 +17,7 @@ import {
 } from './catalog/screens';
 import { ServicesPage } from './catalog/ServicesPage';
 import { CustomersPage } from './customers/CustomersPage';
+import { HolidaysPage } from './holidays/HolidaysPage';
 import { NotFound } from './NotFound';
 import { SettingsPage } from './policies/SettingsPage';
 import { errorMessage } from './query';
@@ -79,6 +80,11 @@ const SECTIONS: Section[] = [
 		path: '/locations',
 		title: () => __( 'Locations', 'vaqtyar' ),
 		Page: LocationsPage,
+	},
+	{
+		path: '/holidays',
+		title: () => __( 'Holidays', 'vaqtyar' ),
+		Page: HolidaysPage,
 	},
 	{
 		path: '/settings',

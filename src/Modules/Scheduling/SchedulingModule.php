@@ -14,6 +14,7 @@ use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Scheduling\Application\AvailabilityService;
+use Vaqtyar\Modules\Scheduling\Application\HolidayService;
 use Vaqtyar\Modules\Scheduling\Application\ScheduleService;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
@@ -28,6 +29,7 @@ use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbScheduleExceptionR
 use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbScheduleRuleRepository;
 use Vaqtyar\Modules\Scheduling\Infrastructure\WpSlotCache;
 use Vaqtyar\Modules\Scheduling\Presentation\Rest\AvailabilityRoutes;
+use Vaqtyar\Modules\Scheduling\Presentation\Rest\HolidayRoutes;
 use Vaqtyar\Modules\Scheduling\Presentation\Rest\ScheduleRoutes;
 use Vaqtyar\Shared\WpAuthorizer;
 use Vaqtyar\Shared\Domain\Clock;
@@ -70,6 +72,10 @@ final class SchedulingModule implements Module
                 $c->get(ScheduleRuleRepository::class),
                 $c->get(ScheduleExceptionRepository::class)
             )
+        );
+        $container->singleton(
+            HolidayService::class,
+            static fn (Container $c) => new HolidayService(new WpAuthorizer(), $c->get(HolidayRepository::class))
         );
         $container->singleton(WpSlotCache::class, static fn () => new WpSlotCache());
         $container->singleton(SlotClaims::class, static fn (Container $c) => $c->get(AvailabilityService::class));
@@ -121,6 +127,10 @@ final class SchedulingModule implements Module
             (new ScheduleRoutes(
                 $container->get(Router::class),
                 static fn (): ScheduleService => $container->get(ScheduleService::class)
+            ))->register();
+            (new HolidayRoutes(
+                $container->get(Router::class),
+                static fn (): HolidayService => $container->get(HolidayService::class)
             ))->register();
         });
     }
