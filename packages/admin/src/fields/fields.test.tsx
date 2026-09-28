@@ -167,7 +167,7 @@ describe( 'the global custom fields section', () => {
 
 		await type( input( container, 'Key' ), 'allergies' );
 		await type( input( container, 'Label' ), 'Allergies' );
-		await click( button( 'Add' ) );
+		await click( button( 'Add field' ) );
 
 		expect( server.items ).toMatchObject( [
 			{
@@ -216,7 +216,7 @@ describe( 'the global custom fields section', () => {
 			input( container, 'Options (comma separated)' ),
 			' friend , ad ,friend'
 		);
-		await click( button( 'Add' ) );
+		await click( button( 'Add field' ) );
 
 		expect( server.items ).toMatchObject( [
 			{
@@ -232,7 +232,7 @@ describe( 'the global custom fields section', () => {
 
 		await type( input( container, 'Key' ), 'a' );
 		await type( input( container, 'Label' ), 'A' );
-		await click( button( 'Add' ) );
+		await click( button( 'Add field' ) );
 
 		expect( () => input( container, '…equals' ) ).toThrow();
 		await type( input( container, 'Show only when field…' ), 'a' );
@@ -241,7 +241,7 @@ describe( 'the global custom fields section', () => {
 		await type( input( container, 'Key' ), 'b' );
 		await type( input( container, 'Label' ), 'B' );
 		await type( input( container, '…equals' ), '1' );
-		await click( button( 'Add' ) );
+		await click( button( 'Add field' ) );
 
 		expect( server.items ).toMatchObject( [
 			{ field_key: 'a', show_if: null },

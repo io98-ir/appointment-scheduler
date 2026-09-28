@@ -233,7 +233,7 @@ function AddField( props: Scope & { onAdded: () => void } ) {
 				isBusy={ add.isPending }
 				disabled={ add.isPending }
 			>
-				{ __( 'Add', 'vaqtyar' ) }
+				{ __( 'Add field', 'vaqtyar' ) }
 			</Button>
 		</form>
 	);

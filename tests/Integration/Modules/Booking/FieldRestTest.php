@@ -57,9 +57,10 @@ final class FieldRestTest extends TestCase
      */
     public static function routes(): iterable
     {
+        $body = ['scope' => 'global', 'field_key' => 'x', 'type' => 'text', 'label' => 'X'];
         yield 'list' => ['GET', '/fields', ['scope' => 'global']];
-        yield 'create' => ['POST', '/fields', ['scope' => 'global', 'field_key' => 'x', 'type' => 'text', 'label' => 'X']];
-        yield 'update' => ['PUT', '/fields/1', ['scope' => 'global', 'field_key' => 'x', 'type' => 'text', 'label' => 'X']];
+        yield 'create' => ['POST', '/fields', $body];
+        yield 'update' => ['PUT', '/fields/1', $body];
         yield 'delete' => ['DELETE', '/fields/1', []];
     }
 
@@ -168,7 +169,12 @@ final class FieldRestTest extends TestCase
     {
         $this->logInAs('administrator');
         $service = $this->service();
-        $this->request('POST', '/fields', ['scope' => 'global', 'field_key' => 'note', 'type' => 'text', 'label' => 'Note']);
+        $this->request('POST', '/fields', [
+            'scope' => 'global',
+            'field_key' => 'note',
+            'type' => 'text',
+            'label' => 'Note',
+        ]);
 
         $response = $this->request('POST', '/fields', [
             'scope' => 'service',
