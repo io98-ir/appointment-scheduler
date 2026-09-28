@@ -22,6 +22,7 @@ import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
 import { NotFound } from '../NotFound';
+import { Policies } from '../policies/Policies';
 import { useRoute } from '../router';
 import { CatalogList, type Column } from './CatalogList';
 import { screenOf, useAll } from './crud';
@@ -89,7 +90,12 @@ export function ServicesPage() {
 				staff: [],
 				resources: [],
 			} }
-			after={ ( service ) => <Extras serviceId={ service.id } /> }
+			after={ ( service ) => (
+				<>
+					<Extras serviceId={ service.id } />
+					<Policies serviceId={ service.id } />
+				</>
+			) }
 		>
 			{ ( draft, change ) => (
 				<>

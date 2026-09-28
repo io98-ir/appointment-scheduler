@@ -311,3 +311,27 @@ export interface AppointmentDetail extends AppointmentListItem {
 	cancelled_at: string | null;
 	cancel_reason: string | null;
 }
+
+export type PolicyType = 'cancellation' | 'reschedule';
+
+export interface RefundTier {
+	hours: number;
+	percent: number;
+}
+
+/** GET|PUT /policies/cancellation/{service_id} (docs/api.md). */
+export interface CancellationConfig {
+	notice_hours: number | null;
+	refund: RefundTier[];
+}
+
+/** GET|PUT /policies/reschedule/{service_id} (docs/api.md). */
+export interface RescheduleConfig {
+	notice_hours: number | null;
+	max_times: number | null;
+}
+
+/** GET|PUT /policies/{type}/{service_id}: null when this level is not set. */
+export interface PolicyResponse< Config > {
+	config: Config | null;
+}

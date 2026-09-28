@@ -41,6 +41,49 @@ final class CancellationPolicy
     }
 
     /**
+     * The policies table's JSON config: {"notice_hours": int|null,
+     * "refund": [{"hours": int, "percent": int}]}. A missing "refund" is no
+     * tiers, not an error. The config is all or nothing: a broken "refund"
+     * throws even next to a valid "notice_hours", so WpdbPolicyReader skips
+     * the whole row rather than keep only the valid half.
+     *
+     * @param array<mixed> $config
+     * @throws InvalidValue when a present key does not match this shape.
+     */
+    public static function fromConfig(array $config): self
+    {
+        $refund = $config['refund'] ?? [];
+        if (!\is_array($refund)) {
+            throw new InvalidValue('invalid_policy', "The policy's refund is not a list.");
+        }
+        $tiers = [];
+        foreach ($refund as $tier) {
+            $hours = \is_array($tier) ? ($tier['hours'] ?? null) : null;
+            $percent = \is_array($tier) ? ($tier['percent'] ?? null) : null;
+            if (!\is_int($hours) || !\is_int($percent)) {
+                throw new InvalidValue('invalid_policy', 'A refund tier needs whole-number hours and percent.');
+            }
+            $tiers[] = new RefundTier($hours, $percent);
+        }
+
+        return new self(self::intOrNull($config, 'notice_hours'), $tiers);
+    }
+
+    /**
+     * @return array{notice_hours: ?int, refund: list<array{hours: int, percent: int}>}
+     */
+    public function toConfig(): array
+    {
+        return [
+            'notice_hours' => $this->noticeHours,
+            'refund' => \array_map(
+                static fn (RefundTier $tier): array => ['hours' => $tier->hours, 'percent' => $tier->percent],
+                $this->tiers
+            ),
+        ];
+    }
+
+    /**
      * @param int $start UTC seconds.
      * @param int $now UTC seconds.
      * @param Money $paid what the customer paid for the appointment.
@@ -64,5 +107,19 @@ final class CancellationPolicy
 
         // Half up: neither side loses a rounding rial on purpose.
         return Decision::allow($percent, $paid->percent($percent, Rounding::HalfUp));
+    }
+
+    /**
+     * @param array<mixed> $config
+     * @throws InvalidValue when the key holds something else.
+     */
+    private static function intOrNull(array $config, string $key): ?int
+    {
+        $value = $config[$key] ?? null;
+        if (null !== $value && !\is_int($value)) {
+            throw new InvalidValue('invalid_policy', "The policy's {$key} is not a whole number.");
+        }
+
+        return $value;
     }
 }

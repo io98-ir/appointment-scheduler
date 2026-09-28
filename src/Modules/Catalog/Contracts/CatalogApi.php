@@ -29,11 +29,11 @@ interface CatalogApi
     public function location(int $locationId): ?LocationInfo;
 
     /**
-     * Whether a staff member, resource or location with this id exists and
-     * is not deleted, active or not: e.g. to edit the schedule of someone
-     * on leave.
+     * Whether a staff member, resource, location or service with this id
+     * exists and is not deleted, active or not: e.g. to edit the schedule
+     * of someone on leave, or the policy of an inactive service.
      *
-     * @param string $kind "staff", "resource" or "location"; anything else is not stored.
+     * @param string $kind "staff", "resource", "location" or "service"; anything else is not stored.
      */
     public function isStored(string $kind, int $id): bool;
 }

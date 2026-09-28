@@ -10,7 +10,6 @@ use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Modules\Booking\Application\PolicyReader;
 use Vaqtyar\Modules\Booking\Domain\Policy\CancellationPolicy;
 use Vaqtyar\Modules\Booking\Domain\Policy\PolicyEvaluator;
-use Vaqtyar\Modules\Booking\Domain\Policy\RefundTier;
 use Vaqtyar\Modules\Booking\Domain\Policy\ReschedulePolicy;
 use Vaqtyar\Shared\Domain\InvalidValue;
 
@@ -51,9 +50,9 @@ final class WpdbPolicyReader implements PolicyReader
             }
             try {
                 if (self::CANCELLATION === $row->string('type')) {
-                    $cancellation ??= self::cancellation($config);
+                    $cancellation ??= CancellationPolicy::fromConfig($config);
                 } else {
-                    $reschedule ??= self::reschedule($config);
+                    $reschedule ??= ReschedulePolicy::fromConfig($config);
                 }
             } catch (InvalidValue) {
                 continue;
@@ -64,45 +63,5 @@ final class WpdbPolicyReader implements PolicyReader
             $cancellation ?? CancellationPolicy::lenient(),
             $reschedule ?? ReschedulePolicy::lenient()
         );
-    }
-
-    /**
-     * @param array<mixed> $config
-     */
-    private static function cancellation(array $config): ?CancellationPolicy
-    {
-        $tiers = [];
-        foreach (\is_array($config['refund'] ?? null) ? $config['refund'] : [] as $tier) {
-            $hours = \is_array($tier) ? ($tier['hours'] ?? null) : null;
-            $percent = \is_array($tier) ? ($tier['percent'] ?? null) : null;
-            if (!\is_int($hours) || !\is_int($percent)) {
-                return null;
-            }
-            $tiers[] = new RefundTier($hours, $percent);
-        }
-
-        return new CancellationPolicy(self::intOrNull($config, 'notice_hours'), $tiers);
-    }
-
-    /**
-     * @param array<mixed> $config
-     */
-    private static function reschedule(array $config): ReschedulePolicy
-    {
-        return new ReschedulePolicy(self::intOrNull($config, 'notice_hours'), self::intOrNull($config, 'max_times'));
-    }
-
-    /**
-     * @param array<mixed> $config
-     * @throws InvalidValue when the key holds something else.
-     */
-    private static function intOrNull(array $config, string $key): ?int
-    {
-        $value = $config[$key] ?? null;
-        if (null !== $value && !\is_int($value)) {
-            throw new InvalidValue('invalid_policy', "The policy's {$key} is not a whole number.");
-        }
-
-        return $value;
     }
 }

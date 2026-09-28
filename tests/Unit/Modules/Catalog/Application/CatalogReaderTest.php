@@ -76,14 +76,18 @@ final class CatalogReaderTest extends TestCase
         $this->staff->shouldReceive('find')->with(5)->andReturn(self::staffMember(5, Status::Inactive));
         $this->resources->shouldReceive('find')->with(6)->andReturn(null);
         $this->locations->shouldReceive('find')->with(1)->andReturn(self::location(1, Status::Inactive));
+        $this->services->shouldReceive('find')->with(7)->andReturn(self::service(Status::Inactive));
+        $this->services->shouldReceive('find')->with(3)->andReturn(null);
 
         self::assertSame(
-            [true, false, true, false],
+            [true, false, true, true, false, false],
             [
                 $this->reader->isStored('staff', 5),
                 $this->reader->isStored('resource', 6),
                 $this->reader->isStored('location', 1),
-                $this->reader->isStored('service', 1),
+                $this->reader->isStored('service', 7),
+                $this->reader->isStored('service', 3),
+                $this->reader->isStored('unknown', 1),
             ]
         );
     }

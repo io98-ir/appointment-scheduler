@@ -12,8 +12,8 @@
 | Python | ✅ | 3.13 | Skill `webapp-testing` (Playwright Python) |
 | intelephense | ✅ (نصب شد) | npm global | LSP برای PHP (plugin `php-lsp`) |
 | typescript + typescript-language-server | ✅ (نصب شد) | npm global | LSP برای TS (plugin `typescript-lsp`) |
-| **PHP** | ⛔ **از 2026-09-28 روی دستگاه جدید نصب نیست** | — | پروژه به دستگاه جدید (`D:\PycharmProjects\appointment_php`) منتقل شد؛ نصب قبلی (8.3.33 با winget) مال دستگاه قدیم بود. کاربر تصمیم گرفت **فعلاً نصب نکند**: کار PHP بدون تأیید محلی (`composer check`) نوشته می‌شود و فقط با CI تأیید می‌شود (§2) |
-| **Composer** | ⛔ **از 2026-09-28 روی دستگاه جدید نصب نیست** | — | همان‌طور؛ فقط CI |
+| **PHP** | ✅ | 8.3.33 (winget) | فقط در PowerShell دیده می‌شود، نه در PATH ابزار Bash (Git Bash)؛ `php` در Bash هم کار می‌کند چون همان نصب winget است |
+| **Composer** | ✅ | 2.10.3 | **فقط در PowerShell**؛ در ابزار Bash در PATH نیست (`composer: command not found`). دستورهای `composer …` را با ابزار PowerShell اجرا کن |
 | **Docker Desktop** | ⏭️ **به تصمیم کاربر روی این سیستم نصب نمی‌شود** | | بستر آماده است: `.wp-env.json`. تست Integration، Concurrency و E2E **در GitHub Actions** اجرا می‌شوند (runnerها Docker دارند). روی هر سیستمی که Docker دارد: `npx wp-env start` |
 | GitHub CLI (`gh`) | ✅ نصب و لاگین (`NimaM048`) | 2.101.0 | `gh run list`، `gh run watch` روی این دستگاه کار می‌کند |
 | Coverage driver | ✅ `phpdbg` (همراه PHP) | | pcov و xdebug نصب نیستند. پوشش محلی: `phpdbg -qrr -d memory_limit=-1 vendor/bin/phpunit --testsuite unit --coverage-text` (phpdbg کنار `php.exe` است؛ آزمون 73 هزار روزه Jalali با سقف 1G حافظه کم می‌آورد) |
@@ -31,13 +31,12 @@ winget install --id GitHub.cli -e            # اختیاری
 - `mbstring`, `intl`, `sodium`, `openssl`, `curl`, `mysqli`, `pdo_mysql`, `zip`, `fileinfo`
 - `xdebug` یا `pcov` برای Coverage
 
-> وضعیت 2026-09-24 (دستگاه قدیم): PHP و Composer و gh نصب شدند. Docker طبق تصمیم کاربر محلی نصب نمی‌شود.
-> **وضعیت 2026-09-28 (دستگاه جدید):** پروژه منتقل شد؛ PHP و Composer روی این دستگاه نصب نیستند. کاربر تصمیم گرفت فعلاً نصب نکند (نه winget، نه دستی) و کار PHP را فقط با CI تأیید کند، نه با `composer check` محلی. اگر بعداً خواست نصب شود، همان دستور بخش 2 با تأیید کاربر اجرا شود.
+> وضعیت 2026-09-24: PHP، Composer و gh نصب شدند. Docker طبق تصمیم کاربر محلی نصب نمی‌شود.
+> **اصلاحیه 2026-09-28:** یک سشن قبلی نوشته بود پروژه به دستگاه دیگری (`D:\PycharmProjects\appointment_php`) منتقل شده و PHP/Composer آنجا نصب نیستند. این با مسیر واقعی Repo (`J:\New folder (2)\extention_php`، همان‌جا که Remote و `.git` هستند) و وضعیت واقعی این سشن نمی‌خواند: PHP 8.3.33 و Composer 2.10.3 روی همین دستگاه نصب‌اند و `composer check` مستقیماً همین‌جا اجرا و سبز شد (820 تست Unit، T3.5 بخش Policy). یادداشت «دستگاه جدید» ظاهراً اشتباه یا مال یک محیط دیگر بوده؛ نادیده گرفته شود. **PHP و Composer را از این پس، مثل قبل، محلی هم تأیید کن** (`composer check` قبل و بعد از هر Task)، نه فقط با CI.
 > **نکته شل:** بعد از نصب، PATH در سشن‌های ابزار قدیمی به‌روز نمی‌شود. اگر `php` یا `composer` پیدا نشد، اول این را اجرا کن: `$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')`. در غیر این صورت از مسیر کامل استفاده کن.
 
-**بدون Docker چه چیزی ممکن است:** تست Unit در Domain و Application، PHPStan، PHPCS، Deptrac و Build JS (وقتی PHP نصب باشد).
-**بدون Docker چه چیزی ممکن نیست:** تست Integration با MySQL، **تست همزمانی** (قفل InnoDB) و E2E.
-**روی این دستگاه (بدون PHP) چه چیزی ممکن است:** فقط Build، Lint، Typecheck و Vitest سمت JS (`pnpm lint`، `pnpm test`، `pnpm build`، `pnpm size`). هر تغییر PHP فقط با CI (`gh run watch`) تأیید می‌شود، نه محلی.
+**بدون Docker چه چیزی ممکن است:** تست Unit در Domain و Application، PHPStan، PHPCS، Deptrac و Build JS (`composer check`، `pnpm lint`/`test`/`build`/`size`، همه محلی).
+**بدون Docker چه چیزی ممکن نیست:** تست Integration با MySQL، **تست همزمانی** (قفل InnoDB) و E2E؛ این‌ها فقط در CI (`gh run watch`) تأیید می‌شوند.
 WordPress Playground از SQLite استفاده می‌کند و **برای تست قفل ردیف مناسب نیست**.
 
 **Smoke محلی با WordPress Playground (بدون Docker):** برای دیدن فعال‌سازی واقعی افزونه روی نسخه‌های مختلف PHP و WP کافی است (T0.1 همین‌طور تأیید شد):

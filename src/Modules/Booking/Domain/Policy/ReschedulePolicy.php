@@ -29,6 +29,25 @@ final class ReschedulePolicy
     }
 
     /**
+     * The policies table's JSON config: {"notice_hours": int|null, "max_times": int|null}.
+     *
+     * @param array<mixed> $config
+     * @throws InvalidValue when a present key does not match this shape.
+     */
+    public static function fromConfig(array $config): self
+    {
+        return new self(self::intOrNull($config, 'notice_hours'), self::intOrNull($config, 'max_times'));
+    }
+
+    /**
+     * @return array{notice_hours: ?int, max_times: ?int}
+     */
+    public function toConfig(): array
+    {
+        return ['notice_hours' => $this->noticeHours, 'max_times' => $this->maxTimes];
+    }
+
+    /**
      * @param int $start the current start, UTC seconds.
      * @param int $times how often the appointment was moved already.
      */
@@ -46,5 +65,19 @@ final class ReschedulePolicy
         }
 
         return Decision::allow();
+    }
+
+    /**
+     * @param array<mixed> $config
+     * @throws InvalidValue when the key holds something else.
+     */
+    private static function intOrNull(array $config, string $key): ?int
+    {
+        $value = $config[$key] ?? null;
+        if (null !== $value && !\is_int($value)) {
+            throw new InvalidValue('invalid_policy', "The policy's {$key} is not a whole number.");
+        }
+
+        return $value;
     }
 }

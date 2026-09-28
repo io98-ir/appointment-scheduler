@@ -18,6 +18,7 @@ import {
 import { ServicesPage } from './catalog/ServicesPage';
 import { CustomersPage } from './customers/CustomersPage';
 import { NotFound } from './NotFound';
+import { SettingsPage } from './policies/SettingsPage';
 import { errorMessage } from './query';
 import { useRoute } from './router';
 import { useTheme, type ThemeChoice } from './theme';
@@ -82,7 +83,7 @@ const SECTIONS: Section[] = [
 	{
 		path: '/settings',
 		title: () => __( 'Settings', 'vaqtyar' ),
-		Page: Placeholder,
+		Page: SettingsPage,
 	},
 ];
 

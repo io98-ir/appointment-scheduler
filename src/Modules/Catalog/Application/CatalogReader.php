@@ -110,6 +110,7 @@ final class CatalogReader implements CatalogApi
             'staff' => null !== $this->staff->find($id),
             'resource' => null !== $this->resources->find($id),
             'location' => null !== $this->locations->find($id),
+            'service' => null !== $this->services->find($id),
             default => false,
         };
     }

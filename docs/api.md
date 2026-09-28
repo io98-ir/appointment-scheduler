@@ -149,3 +149,14 @@
 
 - `override: true` به capability `override_policies` و `reason` غیرخالی نیاز دارد (403، 422 `reason_required`).
 - 404 `appointment_not_found`. 409 `appointment_changed` یعنی نوبت همزمان تغییر کرد و باید دوباره تلاش کرد.
+
+## Policy لغو و جابجایی (Admin)
+همه routeها capability `manage_bookings` لازم دارند (همان `POST /bookings`). `{type}` یکی از `cancellation` یا `reschedule` است و `{service_id}` صفر برای Policy سراسری یا شناسه یک خدمت (باید در کاتالوگ باشد، حذف‌نشده، فعال یا غیرفعال؛ وگرنه 404 `service_not_found`). Policy خدمت بر سراسری مقدم است و نبود هیچ‌کدام یعنی لغو و جابجایی تا شروع آزاد و استرداد 100% (booking-engine §6).
+
+| Route | کار |
+|---|---|
+| `GET /policies/{type}/{service_id}` | `{config}`. `config` برابر `null` است وقتی این سطح تنظیم نشده |
+| `PUT /policies/{type}/{service_id}` | Upsert. `cancellation`: `notice_hours` (عدد یا `null`)، `refund` (آرایه `{hours, percent}`، حداکثر 50 پله). `reschedule`: `notice_hours`، `max_times` (عدد یا `null`، یعنی بدون سقف). پاسخ 200 با `{config}` ذخیره‌شده |
+| `DELETE /policies/{type}/{service_id}` | حذف این سطح؛ سطح پایین‌تر (سراسری، یا در نهایت آزاد) اعمال می‌شود. پاسخ 204 |
+
+ردیف خراب در جدول تنها روی مسیر رزرو (`WpdbPolicyReader`) نادیده گرفته می‌شود؛ این API همیشه یک `config` معتبر می‌نویسد یا می‌خواند.
