@@ -23,7 +23,7 @@
 **تأیید:** `composer check` محلی ← 821 Unit OK (PHPCS، PHPStan سطح 9، هر دو Deptrac). `composer test:rename` محلی ← سبز. `pnpm lint` (js، style، typecheck)، `pnpm test` ← 105 passed (شامل `policies.test.tsx` تازه) و `pnpm build` سبز؛ `pnpm size` ← admin 29.7KB gz (بودجه 150KB)، widget بدون تغییر. Subagent `reviewer` دو یافته واقعی داد؛ هر دو رفع شد (زیر). **Integration (`PolicyRestTest`) و E2E (افزوده به `catalog.spec.ts` + یک تست تازه در `/settings`) هنوز روی CI تأیید نشده‌اند** (push نشده).
 **مشکلات و باقیمانده:** reviewer یافته اول: تنگ‌کردن رفتار `WpdbPolicyReader` برای یک شکل خاص (ورودی) — یک تست regression در `PolicyConfigTest` و یادداشت در docblock اضافه شد تا این تفاوت عمدی مستند بماند. یافته دوم: `WpdbPolicyRepository::find*` بدون try/catch یک ردیف خراب را با 422 غیرقابل‌بازیابی روی صفحه Admin می‌کرد؛ رفع شد (مثل reader، ردیف خراب یعنی «تنظیم نشده»، نه خطا). حین نوشتن تست JS یک باگ واقعی در خود fake server تست پیدا و رفع شد (نه در کد محصول): `new Response('', {status: 204})` طبق Fetch spec روی وضعیت null-body خطا می‌دهد؛ باید `null` باشد نه رشته خالی. باقی‌مانده T3.5: فیلدهای سفارشی، Price rule و کوپن (Domain/REST هنوز ساخته نشده) و تعطیلات (فقط REST admin و UI لازم است، Domain آماده است).
 **قدم بعدی:** ادامه T3.5: فیلدهای سفارشی یا تعطیلات (implementation-notes §4.13). Push و `gh run watch` برای تأیید CI روی این commit (هنوز push نشده).
-**Commitها:** (بعد از این سشن اضافه می‌شود)
+**Commitها:** `e2aee8f feat(booking): admin CRUD for the cancellation and reschedule policy (T3.5)`
 
 ---
 
