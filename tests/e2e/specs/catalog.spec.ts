@@ -29,7 +29,7 @@ test.describe( 'catalog', () => {
 			.click();
 		await page.getByRole( 'button', { name: 'Copy to every day' } ).first().click();
 		await page.getByRole( 'button', { name: 'Save hours' } ).click();
-		await expect( page.getByText( 'Hours saved.' ) ).toBeVisible();
+		await expect( page.locator( '.components-snackbar' ).getByText( 'Hours saved.' ).last() ).toBeVisible();
 
 		// A reload reads the hours back from the server.
 		await page.reload();
@@ -69,7 +69,7 @@ test.describe( 'catalog', () => {
 			.getByRole( 'button', { name: 'Add hours' } )
 			.click();
 		await page.getByRole( 'button', { name: 'Save hours' } ).click();
-		await expect( page.getByText( 'Hours saved.' ) ).toBeVisible();
+		await expect( page.locator( '.components-snackbar' ).getByText( 'Hours saved.' ).last() ).toBeVisible();
 
 		const timeOff = page.locator( 'section', {
 			has: page.getByRole( 'heading', { name: 'Time off and extra hours' } ),
@@ -87,7 +87,7 @@ test.describe( 'catalog', () => {
 
 		await page.getByLabel( 'Add-on', { exact: true } ).fill( 'E2E x-ray' );
 		await page.getByRole( 'button', { name: 'Add', exact: true } ).click();
-		await expect( page.getByText( 'Added.' ) ).toBeVisible();
+		await expect( page.locator( '.components-snackbar' ).getByText( 'Added.' ).last() ).toBeVisible();
 
 		// Read back from the server.
 		await page.reload();
