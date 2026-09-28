@@ -504,7 +504,11 @@ function Grid( {
 											} ),
 										} }
 										onPointerDown={ ( event ) => {
-											if ( event.button !== 0 ) {
+											// Only a confirmed appointment moves (docs/api.md).
+											if (
+												event.button !== 0 ||
+												item.status !== 'confirmed'
+											) {
 												return;
 											}
 											event.currentTarget.setPointerCapture(

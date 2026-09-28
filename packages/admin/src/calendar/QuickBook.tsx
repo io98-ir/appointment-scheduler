@@ -17,7 +17,7 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
-import { useState } from '@wordpress/element';
+import { useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
 import type { FormEvent } from 'react';
@@ -116,9 +116,33 @@ export function QuickBook( {
 			} ),
 		enabled: typeof variant?.id === 'number',
 	} );
-	const starts = ( availability.data?.slots ?? [] ).map(
+	// What a failed attempt already made, for the retry to reuse: the hold
+	// keeps its start from others (there is no route to release it), and
+	// the customer exists now.
+	const made = useRef< {
+		customer?: { key: string; id: number };
+		hold?: { key: string; token: string; start: string; until: number };
+	} >( {} );
+	const heldFor = ( at: string ) => {
+		const hold = made.current.hold;
+
+		return hold &&
+			hold.key === `${ variant?.id }|${ staffId }|${ at }` &&
+			hold.until > Date.now()
+			? hold
+			: undefined;
+	};
+	const free = ( availability.data?.slots ?? [] ).map(
 		( item ) => item.start
 	);
+	const held = made.current.hold?.start;
+	const starts =
+		held !== undefined &&
+		held.startsWith( date ) &&
+		! free.includes( held ) &&
+		heldFor( held )
+			? [ ...free, held ].sort()
+			: free;
 	const start =
 		chosenStart !== null && starts.includes( chosenStart )
 			? chosenStart
@@ -135,23 +159,35 @@ export function QuickBook( {
 
 	const book = useMutation( {
 		mutationFn: async () => {
-			// The hold first: a start taken meanwhile leaves no customer behind.
-			const hold = await api.post< PlacedHold >( '/holds', {
-				variant: variant?.id,
-				location: location.id,
-				staff: staffId,
-				start,
-			} );
 			let id = customer?.id;
 			if ( isNew ) {
-				const [ first, ...rest ] = name.trim().split( /\s+/ );
-				id = (
-					await api.post< Customer >( '/customers', {
+				const key = `${ name.trim() }|${ phone.trim() }`;
+				if ( made.current.customer?.key !== key ) {
+					const [ first, ...rest ] = name.trim().split( /\s+/ );
+					const created = await api.post< Customer >( '/customers', {
 						first_name: first ?? '',
 						last_name: rest.join( ' ' ),
 						phone,
-					} )
-				).id;
+					} );
+					made.current.customer = { key, id: created.id };
+				}
+				id = made.current.customer.id;
+			}
+			let hold = heldFor( start );
+			if ( ! hold ) {
+				const placed = await api.post< PlacedHold >( '/holds', {
+					variant: variant?.id,
+					location: location.id,
+					staff: staffId,
+					start,
+				} );
+				hold = {
+					key: `${ variant?.id }|${ staffId }|${ start }`,
+					token: placed.token,
+					start: placed.start,
+					until: Date.parse( placed.expires_at ),
+				};
+				made.current.hold = hold;
 			}
 			await api.post( '/bookings', {
 				hold_token: hold.token,

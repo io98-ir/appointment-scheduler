@@ -259,3 +259,8 @@
 .vqy-calendar__item--done {
 	opacity: 0.6;
 }
+
+.vqy-calendar__item--pending,
+.vqy-calendar__item--done {
+	cursor: pointer;
+}

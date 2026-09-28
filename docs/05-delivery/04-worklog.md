@@ -16,6 +16,15 @@
 
 ---
 
+## 2026-09-28 — سشن 18 — T3.3 تقویم Admin
+**Taskها:** T3.3
+**انجام شد:** `calendar/time.ts` (ساعت دیواری از ISO، `isoAt`، `offsetOf` با `Intl` و `longOffset`، `todayIn`، `weekOf` از شنبه، `snap`، و `lanes` برای نوبت‌های هم‌پوشان)، `move.ts` (`reschedule` که رد `policy.*` را به‌صورت نتیجه برمی‌گرداند تا Override پیشنهاد شود و بقیه خطاها را به snackbar می‌سپارد)، `CalendarPage` (نمای روز و هفته، انتخاب شعبه و پرسنل، شبکه یک پیکسل برای هر دقیقه از 07:00 تا 22:00 که برای نوبت‌های بیرون از این بازه بزرگ می‌شود، drag با Pointer Events، `MoveDialog` و `OverrideDialog`) و `QuickBook`. E2E `calendar.spec.ts`: داده از REST، ثبت با کلیک روی 10:00، drag به 12:00، و reload.
+**تصمیم‌ها و فرض‌ها:** (1) Drag با Pointer Events انجام می‌شود، نه HTML5 DnD. در CI، drag از `<button draggable>` در Chromium شروع نشد، و HTML5 DnD روی صفحه لمسی (تبلت پذیرش) هم کار نمی‌کند. (2) ثبت سریع فقط شروع‌های `/availability` را پیشنهاد می‌کند (نزدیک‌ترین به محل کلیک)، پس زمان خارج از شبکه اسلات از تقویم ثبت نمی‌شود. (3) Hold راه آزادسازی ندارد، پس Hold و مشتری جدید یک تلاش ناموفق در تلاش بعدی دوباره استفاده می‌شوند. (4) فقط نوبت `confirmed` جابجا می‌شود (همان قانون API).
+**تأیید:** `pnpm lint` ← سبز. `pnpm test` ← 95 passed. `pnpm size` ← admin 24.4KB gz. CI: run اول E2E شکست خورد (`dragTo` به click تبدیل شد، و DELETE با 204 در `requestUtils.rest` خطای JSON داد). run دوم: HTML5 DnD اصلاً شروع نشد. run سوم: ref شبکه وصل نبود. **run 36425211018 سبز، E2E 4 passed بدون retry.** Reviewer دو یافته داشت: تلاش دوباره ثبت سریع Hold قبلی را می‌گرفت و مشتری تکراری می‌ساخت، و drag برای نوبت غیر confirmed فعال بود. هر دو رفع شد.
+**مشکلات و باقیمانده:** دیالوگ جزئیات کامل نوبت و تغییر وضعیت در T3.4 است. انتخابگر تاریخ جلالی هنوز نداریم (`input type=date`).
+**قدم بعدی:** T3.4 لیست و جزئیات نوبت.
+**Commitها:** `feat(admin): calendar with day and week views, drag to move and quick booking (T3.3)`، `test(e2e): drag in mouse steps and accept empty delete responses (T3.3)`، `fix(admin): drag appointments with pointer events (T3.3)`، `fix(admin): attach the calendar grid ref for drops (T3.3)`، `fix(admin): reuse a quick booking's hold and customer on retry (T3.3)`
+
 ## 2026-09-28 — سشن 17 — T3.2 صفحات کاتالوگ
 **Taskها:** T3.2
 **انجام شد:** (الف) Scheduling: `ScheduleService` (بررسی دوباره capability `manage_schedules`، وجود صاحب از `CatalogApi::isStored`، رد بازه‌های هم‌پوشان هم‌نوع با `overlapping_rules`، بازه حداکثر 366 روز) و `ScheduleRoutes` (`GET|PUT /schedules/{owner_type}/{owner_id}` و CRUD `/schedule-exceptions`). (ب) Admin: `catalog/` شامل `crud.ts` (useAll، useItem، useSave، useRemove، screenOf)، `CatalogList` (جدول، جستجو با نرمال‌سازی ی و ک، حذف با Modal)، `ItemEditor` (PUT کامل با حفظ فیلدهای مخفی)، `WeeklySchedule` و `TimeOff`، و صفحه‌های شعبه، پرسنل، منبع، دسته و خدمت. `ApiContext` به `api.ts` و `NotFound` به فایل جدا منتقل شدند. (ج) E2E: `tests/e2e` با config ابزار wp-scripts و job `e2e` در CI.
