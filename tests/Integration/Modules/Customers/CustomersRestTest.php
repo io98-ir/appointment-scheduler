@@ -196,7 +196,7 @@ final class CustomersRestTest extends TestCase
 
         self::assertSame(['Active'], \array_column($active['body'], 'first_name'));
         self::assertSame(['Blocked'], \array_column($inactive['body'], 'first_name'));
-        self::assertSame($blocked, $inactive['body'][0]['id'] ?? null);
+        self::assertSame([$blocked], \array_column($inactive['body'], 'id'));
     }
 
     public function testDeletingTheWordPressAccountUnlinksTheCustomer(): void
