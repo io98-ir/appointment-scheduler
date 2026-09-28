@@ -114,7 +114,14 @@ test.describe( 'calendar', () => {
 			`/staff/${ made.staff }`,
 			`/locations/${ made.location }`,
 		] ) {
-			await requestUtils.rest( { method: 'DELETE', path: path( route ) } );
+			// 204 has no body, which requestUtils.rest() fails to parse.
+			await requestUtils
+				.rest( { method: 'DELETE', path: path( route ) } )
+				.catch( ( error: unknown ) => {
+					if ( ! ( error instanceof SyntaxError ) ) {
+						throw error;
+					}
+				} );
 		}
 	} );
 
@@ -141,11 +148,16 @@ test.describe( 'calendar', () => {
 		const booked = column.getByRole( 'button', { name: /10:00–11:00/ } );
 		await expect( booked ).toContainText( 'E2E Rahimi' );
 
-		// Grabbed 5px below its top and dropped 300px lower: 12:00.
-		await booked.dragTo( column, {
-			sourcePosition: { x: 10, y: 5 },
-			targetPosition: { x: 20, y: 305 },
-		} );
+		// Grabbed 5px below its top and dropped 120px lower: 12:00. Moved in
+		// steps, as Chromium starts a native drag only after a few moves.
+		const box = await booked.boundingBox();
+		if ( box === null ) {
+			throw new Error( 'The appointment is not on screen.' );
+		}
+		await page.mouse.move( box.x + 10, box.y + 5 );
+		await page.mouse.down();
+		await page.mouse.move( box.x + 10, box.y + 125, { steps: 12 } );
+		await page.mouse.up();
 		await expect(
 			page.locator( '.components-snackbar' ).getByText( 'Appointment moved.' ).last()
 		).toBeVisible();
