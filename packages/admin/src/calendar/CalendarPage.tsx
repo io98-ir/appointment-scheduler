@@ -398,6 +398,7 @@ function Grid( {
 				{ ( items.isFetching || move.isPending ) && <Spinner /> }
 			</div>
 			<div
+				ref={ grid }
 				className="vqy-calendar__grid"
 				style={ {
 					gridTemplateColumns: `4em repeat(${ columns.length }, minmax(8em, 1fr))`,
