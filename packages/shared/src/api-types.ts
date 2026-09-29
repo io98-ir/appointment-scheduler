@@ -354,6 +354,22 @@ export interface FieldShowIf {
 	equals: string;
 }
 
+export type CouponType = 'percent' | 'fixed';
+
+/** /coupons: a discount code. `value` is a percent, or rials for `fixed`. */
+export interface Coupon {
+	id: number;
+	code: string;
+	type: CouponType;
+	value: number;
+	active: boolean;
+	valid_from: string | null;
+	valid_to: string | null;
+	max_uses: number | null;
+	used: number;
+	service_ids: number[] | null;
+}
+
 /** /fields: a custom field definition (implementation-notes §4.13). */
 export interface FieldDefinition {
 	id: number;

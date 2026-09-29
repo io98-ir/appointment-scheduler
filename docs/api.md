@@ -183,3 +183,15 @@
 | `DELETE /fields/{id}` | حذف واقعی. ناموجود: 404 `field_not_found` |
 
 خطاهای 422: `invalid_field` (کلید یا برچسب خالی، `select` بدون `options`)، `duplicate_field_key` (کلید تکراری در مجموعه در دسترس)، `invalid_show_if` (اشاره به خودش، فیلدی ناموجود، یا فیلدی با `sort` بزرگ‌تر یا مساوی؛ `sort` مساوی هم رد می‌شود چون ترتیب تضمین‌شده نیست). این بررسی‌ها فقط اینجاست؛ مسیر رزرو (`WpdbFieldReader`) نه تکراری را حذف می‌کند و نه `show_if` را اعتبارسنجی می‌کند، فقط آخرین فیلد هم‌کلید در پاسخ می‌نویسد.
+
+## کوپن‌ها (Admin)
+همه routeها capability `manage_bookings` لازم دارند. `used` را فقط رزرو (`BookingService::confirm`) می‌شمارد؛ این API آن را نمی‌نویسد و ویرایش کوپن آن را دست نمی‌زند.
+
+| Route | کار |
+|---|---|
+| `GET /coupons` | آرایه، تازه‌ترین اول |
+| `POST /coupons` | `code` (1 تا 64 نویسه، بدون تفاوت حرف بزرگ و کوچک یکتا)، `type` (`percent` یا `fixed`)، `value` (درصد 1 تا 100، یا ریال برای `fixed`)، `active` (پیش‌فرض `true`)، `valid_from` و `valid_to` (ISO 8601 یا `null`؛ ابتدا شامل و انتها غیرشامل)، `max_uses` (عدد ≥ 1 یا `null` یعنی بی‌سقف)، `service_ids` (آرایه یا `null` یعنی همه خدمت‌ها). پاسخ 201 |
+| `PUT /coupons/{id}` | جایگزینی کامل، با همان فیلدها. ناموجود: 404 `coupon_not_found` |
+| `DELETE /coupons/{id}` | حذف واقعی. ناموجود: 404 `coupon_not_found` |
+
+خطاها: 404 `service_not_found` (یکی از `service_ids` در کاتالوگ نیست)، 409 `coupon_code_taken` (کوپن دیگری همین کد را دارد)، 422 `invalid_coupon_value` (درصد بیرون از 1 تا 100، یا مقدار کمتر از 1) و `invalid_coupon` (کد خالی یا بلندتر از 64، `valid_to` نه بعد از `valid_from`، `max_uses` کمتر از 1، یا `service_ids` خالی؛ برای همه خدمت‌ها `null` بفرست).
