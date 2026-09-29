@@ -118,7 +118,7 @@
 | `POST /otp/request` | `phone`، `captcha_token`، `captcha_answer` و هدر `X-WP-Nonce`. کد 6 رقمی می‌فرستد. پاسخ 202 با `{expires_in: 300, resend_after: 60}`. کد هرگز در پاسخ نیست و معلوم نمی‌کند شماره مشتری دارد یا نه. حداکثر 5 درخواست در دقیقه برای هر کلاینت؛ برای هر شماره یک کد در دقیقه و 3 کد در 10 دقیقه (429 `otp_rate_limited` با `Retry-After`). captcha غلط: 422 `invalid_captcha` |
 | `POST /otp/verify` | `phone`، `code` (ارقام فارسی مشکلی ندارد) و هدر `X-WP-Nonce`. پاسخ 200 با `{token, expires_at}`؛ `token` نشست 30 دقیقه‌ای همان شماره است. کد غلط، منقضی یا مصرف‌شده: 422 `invalid_code` (بدون اینکه بگوید کدام). کد 5 حدس مجاز دارد و 5 دقیقه عمر می‌کند و یک‌بار مصرف است |
 
-نشست شماره یک توکن امضاشده (HMAC با `wp_salt('auth')`) از شماره و انقضاست. `POST /book` آن را در `session_token` می‌گیرد و اگر `required` باشد و توکن مال همین شماره نباشد، 422 `phone_not_verified` می‌دهد. کد را هیچ‌جا نمی‌نویسیم؛ فقط action `{prefix}/customers/otp` با `($phone, $code)` صدا زده می‌شود تا سایت آن را با درگاه خودش بفرستد (فرستنده‌های پیامک از T5.5 می‌آیند).
+نشست شماره یک توکن امضاشده (HMAC با `wp_salt('auth')`) از شماره و انقضاست. `POST /book` آن را در `session_token` می‌گیرد و اگر `required` باشد و توکن مال همین شماره نباشد، 422 `phone_not_verified` می‌دهد. کد را هیچ‌جا نمی‌نویسیم؛ فقط action `{prefix}/customers/otp` با `($phone, $code)` صدا زده می‌شود تا سایت آن را با درگاه خودش بفرستد (ماژول Notifications آن را با سرویس‌دهنده‌های پیامک می‌فرستد؛ بخش پیامک پایین‌تر).
 
 ## پنل مشتری (عمومی، با نشست شماره)
 مشتری همان نشست شماره `POST /otp/verify` است که در هدر `X-Phone-Session` می‌آید، و هدر `X-WP-Nonce` نشان می‌دهد درخواست از خود سایت است. rate limit: 60 در دقیقه برای هر کلاینت. نشست نامعتبر، منقضی یا شماره‌ای که مشتری قابل‌رزرو ندارد: 401 یا 403.
@@ -154,11 +154,21 @@
 
 | Route | کار |
 |---|---|
-| `GET /notification-templates` | همه قالب‌ها با `{id, trigger, audience, channel, offset_min, subject, body, enabled}` |
-| `POST /notification-templates` | ساخت. پاسخ 201. `channel` باید یکی از کانال‌های ثبت‌شده باشد (فعلاً `email`)، وگرنه 422 `unknown_channel`. `body` الزامی و تا 2000 کاراکتر؛ `subject` تا 191 |
+| `GET /notification-templates` | همه قالب‌ها با `{id, trigger, audience, channel, offset_min, subject, body, enabled, sms_patterns}` |
+| `POST /notification-templates` | ساخت. پاسخ 201. `channel` باید یکی از کانال‌های ثبت‌شده باشد (`email`، و `sms` وقتی یک سرویس‌دهنده پیامک تنظیم شده)، وگرنه 422 `unknown_channel`. `body` الزامی و تا 2000 کاراکتر؛ `subject` تا 191. `sms_patterns` (اختیاری): `{"kavenegar": {"code": "booked", "args": ["customer_name", "code"]}}`؛ کلید شناسه سرویس‌دهنده است و خطا 422 `invalid_sms_pattern` |
 | `PUT /notification-templates/{id}` | جایگزینی کامل. نبودن: 404 `template_not_found` |
 | `DELETE /notification-templates/{id}` | 204 |
 | `GET /notification-log` | یک صفحه (`page`، `per_page`) با `X-WP-Total`، جدیدترین اول: `{id, template_id, channel, recipient (ماسک‌شده)، status (sending/sent/failed)، provider_ref, error, sent_at, created_at}` |
+
+**پیامک (T5.5).** سرویس‌دهنده‌ها: `kavenegar`، `ippanel`، `smsir`، `melipayamak`. همان capability `manage_notifications` و بررسی دوباره در `SmsAdminService`. هیچ‌وقت مقدار یک secret برگردانده نمی‌شود، فقط `set`.
+
+| Route | کار |
+|---|---|
+| `GET /sms` | `{order, senders, otp_patterns, providers: [{id, configured, secrets: [{name, set, fixed}]}]}`. `order` ترتیب failover است و سرویس‌دهنده‌ای که در آن نیست خاموش است؛ `fixed` یعنی مقدار در wp-config.php تعریف شده |
+| `PUT /sms` | جایگزینی تنظیمات: `order`، `senders` (خط ارسال هر سرویس‌دهنده)، `otp_patterns` (کد پترن کد ورود هر سرویس‌دهنده) و `secrets` (`{sms_kavenegar_key: "…"}`؛ نیامدن یعنی بدون تغییر، رشته خالی یعنی حذف). خطاها: 422 `invalid_sms_config`، `unknown_secret`، `secret_in_config` |
+| `POST /sms/test` | `phone` و `text` (اختیاری). از ترتیب failover می‌فرستد و `{reference: "provider:ref"}` می‌دهد؛ اگر همه رد کنند 422 `sms_failed` با دلیل هر کدام. 5 بار در دقیقه |
+
+یک سرویس‌دهنده وقتی «تنظیم‌شده» است که همه secretهایش (`sms_kavenegar_key`، `sms_ippanel_key`، `sms_smsir_key`، `sms_melipayamak_username` و `sms_melipayamak_password`) و (به‌جز Kavenegar) خط ارسالش را داشته باشد. تا یکی تنظیم نشده کانال `sms` ثبت نیست و قالب‌های پیامکی بی‌صدا رد می‌شوند. کد ورود (OTP) هم با همین سرویس‌دهنده‌ها می‌رود.
 
 جای‌نگه‌دارها (در `subject` و `body`): `{code}`، `{customer_name}`، `{service}`، `{staff}`، `{location}`، `{date}`، `{time}`، `{end_time}`، `{party_size}`، `{total}` (ریال، با جداکننده هزار). نام ناشناخته خالی می‌شود.
 

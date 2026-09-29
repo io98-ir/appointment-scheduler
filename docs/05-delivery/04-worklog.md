@@ -16,6 +16,16 @@
 
 ---
 
+## 2026-09-30 — سشن 27 — T5.5: پیامک
+**Taskها:** T5.5 (منتظر CI)
+**انجام شد:** در ماژول `Notifications`: Port `SmsProvider` و چهار Adapter (`KavenegarProvider`، `IpPanelProvider`، `SmsIrProvider`، `MelipayamakProvider`) روی Port `SmsHttp`؛ `SmsSender` با Failover؛ `SmsChannel` (کانال `sms` فقط وقتی ثبت می‌شود که یک سرویس‌دهنده تنظیم باشد)؛ `SmsPattern` (کد پترن و نام جای‌نگه‌دارها) در قالب‌ها با ستون `sms_patterns` و migration `AddSmsPatterns` که چهار قالب پیامکی پیش‌فرض هم می‌کارد؛ `OtpSms` روی action `customers/otp`؛ `SmsAdminService` با `GET/PUT /sms` و `POST /sms/test`. کلیدها در `SecretStore` (`sms_*`)، ترتیب و خط ارسال در `SmsSettings`. جزئیات در implementation-notes §4.20 و `api.md`.
+**تصمیم‌ها و فرض‌ها:** (۱) پترن هر قالب برای هر سرویس‌دهنده جداست و سرویس‌دهنده بی‌پترن متن ساده می‌گیرد. (۲) متغیر پترن IPPanel و SMS.ir باید همان نام جای‌نگه‌دار باشد (نگاشت جدا نساختم). (۳) فقط موبایل ایرانی. (۴) شکست OTP فقط لاگ می‌شود، نه خطا به مشتری. (۵) صفحه Admin با T6.1، مثل درگاه‌ها. (۶) IPPanel روی API قدیمی `rest.ippanel.com/v1` است و شکل همه چهار درخواست از حافظه/مستندات است، نه با کلید واقعی.
+**تأیید:** محلی: `composer check` سبز (lint هر دو استاندارد، PHPStan، Deptrac دو فایل با 0 violation، unit 966 تست). Integration (`NotificationStoreTest` با دو تست تازه) فقط در CI. CI هنوز به‌خاطر billing گیتهاب اجرا نمی‌شود.
+**مشکلات و باقیمانده:** CI برای T5.3 تا T5.5؛ تست زنده با کلید واقعی؛ صفحه Admin.
+**قدم بعدی:** T6.1.
+**Commitها:** T5.5 در commit بعدی.
+
+---
 ## 2026-09-29 — سشن 26 — T5.4: هسته اعلان‌ها
 **Taskها:** T5.4 (منتظر CI)
 **انجام شد:** ماژول `Notifications` (Domain: `Trigger`، `Audience`، `Template`، `TemplateRenderer`، `QuietHours`، `Preferences`؛ Application: `NotificationService`، `NotificationAdminService` و Portها؛ Infrastructure: `EmailChannel`، `ActionSchedulerReminders`، `WpdbTemplateRepository`، `WpdbNotificationLog`، migration با هفت قالب پیش‌فرض فارسی، `NotificationSettings`؛ REST قالب‌ها و لاگ). Contractهای تازه: `Booking\Contracts\AppointmentFactsReader` و `Catalog\Contracts\CatalogNames`؛ `CustomerSummary` ایمیل هم دارد. جزئیات در implementation-notes §4.19 و `api.md`.

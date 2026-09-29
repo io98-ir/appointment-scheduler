@@ -9,6 +9,7 @@ use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Modules\Notifications\Application\TemplateRepository;
 use Vaqtyar\Modules\Notifications\Domain\Audience;
+use Vaqtyar\Modules\Notifications\Domain\SmsPattern;
 use Vaqtyar\Modules\Notifications\Domain\Template;
 use Vaqtyar\Modules\Notifications\Domain\Trigger;
 use Vaqtyar\Shared\Domain\Clock;
@@ -66,6 +67,7 @@ final class WpdbTemplateRepository implements TemplateRepository
             'subject' => $template->subject,
             'body' => $template->body,
             'enabled' => $template->enabled ? 1 : 0,
+            'sms_patterns' => self::encode($template->smsPatterns),
             'updated_at' => $now,
         ];
         if (null !== $template->id) {
@@ -118,10 +120,52 @@ final class WpdbTemplateRepository implements TemplateRepository
                 $row->intOrNull('offset_min'),
                 $row->string('subject'),
                 $row->string('body'),
-                1 === $row->int('enabled')
+                1 === $row->int('enabled'),
+                self::decode($row->stringOrNull('sms_patterns'))
             );
         } catch (InvalidValue) {
             return null;
         }
+    }
+
+    /**
+     * @param array<string, SmsPattern> $patterns
+     */
+    private static function encode(array $patterns): ?string
+    {
+        if ([] === $patterns) {
+            return null;
+        }
+        $json = [];
+        foreach ($patterns as $provider => $pattern) {
+            $json[$provider] = ['code' => $pattern->code, 'args' => $pattern->args];
+        }
+
+        return (string) \wp_json_encode($json);
+    }
+
+    /**
+     * A pattern that no longer parses is dropped: that provider then sends the plain text.
+     *
+     * @return array<string, SmsPattern>
+     */
+    private static function decode(?string $stored): array
+    {
+        $decoded = null === $stored ? null : \json_decode($stored, true);
+        $patterns = [];
+        foreach (\is_array($decoded) ? $decoded : [] as $provider => $pattern) {
+            $code = \is_array($pattern) ? ($pattern['code'] ?? null) : null;
+            $args = \is_array($pattern) ? ($pattern['args'] ?? null) : null;
+            if (!\is_string($provider) || !\is_string($code) || !\is_array($args)) {
+                continue;
+            }
+            try {
+                $patterns[$provider] = new SmsPattern($code, \array_values(\array_filter($args, \is_string(...))));
+            } catch (InvalidValue) {
+                continue;
+            }
+        }
+
+        return $patterns;
     }
 }

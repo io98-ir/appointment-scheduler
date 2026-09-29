@@ -8,8 +8,8 @@ use Vaqtyar\Kernel\Settings\SettingsGroup;
 
 /**
  * Whether a guest must verify their phone with a one-time code before a
- * booking (T4.3). Off until a site can deliver codes (an SMS provider from
- * T5.5, or its own gateway on the customers/otp action).
+ * booking (T4.3). Off until a site can deliver codes (an SMS provider set up
+ * in Notifications, or its own gateway on the customers/otp action).
  */
 final class LoginSettings implements SettingsGroup
 {

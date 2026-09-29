@@ -19,7 +19,8 @@ final class Template
     public const MAX_BODY = 2000;
 
     /**
-     * @throws InvalidValue invalid_offset, invalid_subject, invalid_body or invalid_channel.
+     * @param array<string, SmsPattern> $smsPatterns by SMS provider id; only the sms channel uses them.
+     * @throws InvalidValue invalid_offset, invalid_subject, invalid_body, invalid_channel or invalid_sms_pattern.
      */
     public function __construct(
         public readonly ?int $id,
@@ -30,7 +31,13 @@ final class Template
         public readonly string $subject,
         public readonly string $body,
         public readonly bool $enabled = true,
+        public readonly array $smsPatterns = [],
     ) {
+        foreach (\array_keys($smsPatterns) as $provider) {
+            if (!\in_array($provider, SmsCatalog::IDS, true)) {
+                throw new InvalidValue('invalid_sms_pattern', 'No SMS provider has this id.');
+            }
+        }
         if (1 !== \preg_match('/^[a-z][a-z0-9_]{0,31}$/D', $channel)) {
             throw new InvalidValue('invalid_channel', 'A channel is a short lowercase name.');
         }
@@ -62,7 +69,8 @@ final class Template
             $this->offsetMin,
             $this->subject,
             $this->body,
-            $this->enabled
+            $this->enabled,
+            $this->smsPatterns
         );
     }
 }

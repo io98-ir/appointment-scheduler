@@ -9,8 +9,10 @@ use Vaqtyar\Kernel\Rest\Pagination;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Notifications\Application\NotificationAdminService;
 use Vaqtyar\Modules\Notifications\Domain\Audience;
+use Vaqtyar\Modules\Notifications\Domain\SmsPattern;
 use Vaqtyar\Modules\Notifications\Domain\Template;
 use Vaqtyar\Modules\Notifications\Domain\Trigger;
+use Vaqtyar\Shared\Domain\InvalidValue;
 
 /**
  * The admin notifications API (docs/api.md):
@@ -110,6 +112,7 @@ final class NotificationRoutes
             'subject' => ['type' => 'string', 'maxLength' => Template::MAX_SUBJECT, 'default' => ''],
             'body' => ['type' => 'string', 'maxLength' => Template::MAX_BODY, 'required' => true],
             'enabled' => ['type' => 'boolean', 'default' => true],
+            'sms_patterns' => ['type' => 'object', 'default' => []],
         ];
     }
 
@@ -127,6 +130,10 @@ final class NotificationRoutes
             'subject' => $template->subject,
             'body' => $template->body,
             'enabled' => $template->enabled,
+            'sms_patterns' => (object) \array_map(
+                static fn (SmsPattern $pattern): array => ['code' => $pattern->code, 'args' => $pattern->args],
+                $template->smsPatterns
+            ),
         ];
     }
 
@@ -168,8 +175,28 @@ final class NotificationRoutes
             null === $offset ? null : self::intValue($offset),
             \trim(self::string($p['subject'] ?? '')),
             self::string($p['body'] ?? null),
-            (bool) ($p['enabled'] ?? true)
+            (bool) ($p['enabled'] ?? true),
+            self::patterns($p['sms_patterns'] ?? [])
         );
+    }
+
+    /**
+     * @return array<string, SmsPattern>
+     * @throws InvalidValue invalid_sms_pattern for anything but {provider: {code, args: [name…]}}.
+     */
+    private static function patterns(mixed $value): array
+    {
+        $patterns = [];
+        foreach (\is_array($value) ? $value : [] as $provider => $pattern) {
+            $code = \is_array($pattern) ? ($pattern['code'] ?? null) : null;
+            $args = \is_array($pattern) ? ($pattern['args'] ?? []) : null;
+            if (!\is_string($provider) || !\is_string($code) || !\is_array($args) || !\array_is_list($args)) {
+                throw new InvalidValue('invalid_sms_pattern', 'A pattern is {"code": "…", "args": ["name", …]}.');
+            }
+            $patterns[$provider] = new SmsPattern($code, \array_values(\array_filter($args, \is_string(...))));
+        }
+
+        return $patterns;
     }
 
     /**

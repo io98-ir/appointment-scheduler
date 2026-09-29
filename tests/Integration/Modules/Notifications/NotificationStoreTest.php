@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Modules\Notifications\Application\NotificationLog;
 use Vaqtyar\Modules\Notifications\Domain\Audience;
+use Vaqtyar\Modules\Notifications\Domain\SmsPattern;
 use Vaqtyar\Modules\Notifications\Domain\Template;
 use Vaqtyar\Modules\Notifications\Domain\Trigger;
 use Vaqtyar\Modules\Notifications\Infrastructure\Persistence\WpdbNotificationLog;
@@ -31,6 +32,33 @@ final class NotificationStoreTest extends TestCase
         $reminders = $repository->enabledFor(Trigger::Reminder);
         self::assertNotSame([], $reminders);
         self::assertSame(1440, $reminders[0]->offsetMin);
+    }
+
+    public function testANewSiteAlsoStartsWithTheSmsTemplates(): void
+    {
+        $repository = new WpdbTemplateRepository($this->realDb(), new SystemClock());
+
+        $sms = \array_filter($repository->all(), static fn (Template $t): bool => 'sms' === $t->channel);
+
+        self::assertGreaterThanOrEqual(4, \count($sms));
+    }
+
+    public function testSmsPatternsSurviveTheRoundTrip(): void
+    {
+        $repository = new WpdbTemplateRepository($this->realDb(), new SystemClock());
+        $patterns = [
+            'kavenegar' => new SmsPattern('booked', ['customer_name', 'code']),
+            'smsir' => new SmsPattern('1001', []),
+        ];
+
+        $saved = $repository->save(
+            new Template(null, Trigger::Booked, Audience::Customer, 'sms', null, '', 'B', true, $patterns)
+        );
+        self::assertNotNull($saved->id);
+        $found = $repository->find($saved->id);
+
+        self::assertEquals($patterns, $found?->smsPatterns);
+        $repository->delete($saved->id);
     }
 
     public function testATemplateIsSavedChangedAndDeleted(): void

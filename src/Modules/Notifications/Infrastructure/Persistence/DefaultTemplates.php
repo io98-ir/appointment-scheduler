@@ -10,10 +10,59 @@ use Vaqtyar\Modules\Notifications\Domain\Trigger;
 
 /**
  * The templates a new site starts with, in Persian: stored as data, so the
- * owner edits them like any other. All email; the SMS ones come with T5.5.
+ * owner edits them like any other. all() is the email set, sms() the SMS one.
  */
 final class DefaultTemplates
 {
+    /**
+     * The customer's SMS: short, no subject, one message per event.
+     *
+     * @return list<Template>
+     */
+    public static function sms(): array
+    {
+        $details = '{service} - {date} ساعت {time}';
+
+        return [
+            new Template(
+                null,
+                Trigger::Booked,
+                Audience::Customer,
+                'sms',
+                null,
+                '',
+                "{customer_name} عزیز، نوبت شما ثبت شد.\n" . $details . "\nکد پیگیری: {code}"
+            ),
+            new Template(
+                null,
+                Trigger::Cancelled,
+                Audience::Customer,
+                'sms',
+                null,
+                '',
+                "{customer_name} عزیز، نوبت شما لغو شد.\n" . $details . "\nکد پیگیری: {code}"
+            ),
+            new Template(
+                null,
+                Trigger::Rescheduled,
+                Audience::Customer,
+                'sms',
+                null,
+                '',
+                "{customer_name} عزیز، زمان نوبت شما تغییر کرد.\nزمان جدید: " . $details . "\nکد پیگیری: {code}"
+            ),
+            new Template(
+                null,
+                Trigger::Reminder,
+                Audience::Customer,
+                'sms',
+                3 * 60,
+                '',
+                "{customer_name} عزیز، یادآوری نوبت شما:\n" . $details
+            ),
+        ];
+    }
+
     /**
      * @return list<Template>
      */

@@ -110,7 +110,7 @@
 ### Notifications
 | جدول | ستون‌های کلیدی | ایندکس |
 |---|---|---|
-| `notification_templates` | `trigger_type, audience, channel, offset_min NULL, subject, body, enabled` (`sms_patterns JSON` با T5.5) | (trigger_type, enabled) |
+| `notification_templates` | `trigger_type, audience, channel, offset_min NULL, subject, body, enabled` (`sms_patterns TEXT NULL`، JSON با `{provider: {code, args}}`، T5.5) | (trigger_type, enabled) |
 | `notification_log` | `dedup_key, template_id, channel, provider, recipient_masked, status (sending/sent/failed), provider_ref, error, sent_at, created_at` | UNIQUE(dedup_key), (created_at) |
 
 > **T5.4:** `trigger` به `trigger_type` تغییر کرد چون `TRIGGER` در MySQL کلمه رزرو است. جزئیات در implementation-notes §4.19.

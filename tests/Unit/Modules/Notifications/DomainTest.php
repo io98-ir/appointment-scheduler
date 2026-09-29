@@ -7,6 +7,7 @@ namespace Vaqtyar\Tests\Unit\Modules\Notifications;
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Notifications\Domain\Audience;
 use Vaqtyar\Modules\Notifications\Domain\QuietHours;
+use Vaqtyar\Modules\Notifications\Domain\SmsPattern;
 use Vaqtyar\Modules\Notifications\Domain\Template;
 use Vaqtyar\Modules\Notifications\Domain\TemplateRenderer;
 use Vaqtyar\Modules\Notifications\Domain\Trigger;
@@ -70,6 +71,38 @@ final class DomainTest extends TestCase
             4,
             \array_unique(\array_map(static fn (Template $t): string => $t->trigger->value, $customer))
         );
+    }
+
+    public function testTheDefaultSmsTemplatesAreShortAndForTheCustomer(): void
+    {
+        $templates = DefaultTemplates::sms();
+
+        self::assertCount(4, $templates);
+        foreach ($templates as $template) {
+            self::assertSame(
+                ['sms', Audience::Customer, ''],
+                [$template->channel, $template->audience, $template->subject]
+            );
+        }
+    }
+
+    public function testATemplateKeepsPatternsOnlyForKnownProviders(): void
+    {
+        $pattern = new SmsPattern('p1', ['code']);
+        $template = self::smsTemplate(['smsir' => $pattern]);
+
+        self::assertSame($pattern, $template->withId(3)->smsPatterns['smsir']);
+
+        $this->expectException(InvalidValue::class);
+        self::smsTemplate(['nope' => $pattern]);
+    }
+
+    /**
+     * @param array<string, SmsPattern> $patterns
+     */
+    private static function smsTemplate(array $patterns): Template
+    {
+        return new Template(null, Trigger::Booked, Audience::Customer, 'sms', null, '', 'body', true, $patterns);
     }
 
     /**

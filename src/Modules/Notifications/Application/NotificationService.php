@@ -126,7 +126,9 @@ final class NotificationService
             $reference = $channel->send(new Message(
                 $recipient,
                 $this->renderer->render($template->subject, $values),
-                $this->renderer->render($template->body, $values)
+                $this->renderer->render($template->body, $values),
+                $values,
+                $template->smsPatterns
             ));
         } catch (\Throwable $e) {
             // Whatever went wrong, the claim must not stay "sending": that would block every retry.
