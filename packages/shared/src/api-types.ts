@@ -370,6 +370,21 @@ export interface Coupon {
 	service_ids: number[] | null;
 }
 
+/** /time-rules: a change of the base price for starts at some local times. */
+export interface TimeRule {
+	id: number;
+	service_id: number | null;
+	priority: number;
+	active: boolean;
+	/** 0 is Saturday … 6 is Friday; empty is every day. */
+	weekdays: number[];
+	from: string;
+	to: string;
+	valid_from: string | null;
+	valid_to: string | null;
+	percent: number;
+}
+
 /** /fields: a custom field definition (implementation-notes §4.13). */
 export interface FieldDefinition {
 	id: number;

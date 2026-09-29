@@ -195,3 +195,15 @@
 | `DELETE /coupons/{id}` | حذف واقعی. ناموجود: 404 `coupon_not_found` |
 
 خطاها: 404 `service_not_found` (یکی از `service_ids` در کاتالوگ نیست)، 409 `coupon_code_taken` (کوپن دیگری همین کد را دارد)، 422 `invalid_coupon_value` (درصد بیرون از 1 تا 100، یا مقدار کمتر از 1) و `invalid_coupon` (کد خالی یا بلندتر از 64، `valid_to` نه بعد از `valid_from`، `max_uses` کمتر از 1، یا `service_ids` خالی؛ برای همه خدمت‌ها `null` بفرست).
+
+## قیمت زمانی (Admin)
+ردیف‌های `price_rules` از نوع `time` (مثلاً +20% عصرهای جمعه). همه routeها capability `manage_bookings` لازم دارند. قاعده‌ای که به یک شروع می‌خورد درصدش را روی قیمت پایه اعمال می‌کند؛ ترتیب چند قاعده با `priority` است (بالاتر اول).
+
+| Route | کار |
+|---|---|
+| `GET /time-rules` | آرایه، به ترتیب `priority` نزولی و بعد `id` |
+| `POST /time-rules` | `service_id` (یا `null`، یعنی همه خدمت‌ها)، `priority` (پیش‌فرض 0)، `active` (پیش‌فرض `true`)، `weekdays` (آرایه 0 تا 6 که 0 شنبه است؛ خالی یعنی هر روز)، `from` و `to` (ساعت محلی `HH:MM`؛ `from` شامل، `to` غیرشامل، `24:00` پایان روز)، `valid_from` و `valid_to` (تاریخ محلی `YYYY-MM-DD` یا `null`، هر دو شامل)، `percent` (عدد صحیح از -100 تا 1000 و غیر از 0؛ منفی یعنی تخفیف). پاسخ 201 |
+| `PUT /time-rules/{id}` | جایگزینی کامل، با همان فیلدها. ناموجود: 404 `time_rule_not_found` |
+| `DELETE /time-rules/{id}` | حذف واقعی. ناموجود: 404 `time_rule_not_found` |
+
+خطاها: 404 `service_not_found`، 422 `invalid_weekday`، `invalid_time_range` (بازه بیرون از یک روز یا `to` نه بعد از `from`)، `invalid_date_range` (`valid_to` قبل از `valid_from`) و `invalid_percent`.

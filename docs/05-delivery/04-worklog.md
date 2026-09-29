@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 — T3.5 (بخش ۶): قیمت زمانی (Price rule) در Admin
+**Taskها:** T3.5 (در حال انجام؛ این بار فقط ردیف‌های `price_rules` از نوع `time`)
+**انجام شد:** Domain: `TimeRuleDefinition` (id، service_id، priority، active، به‌علاوه `TimeRule` موجود که فقط قاعده را می‌سنجد و همه invariantهای بازه، درصد و تاریخ را خودش دارد) و `TimeRuleRepository`. Infrastructure: `WpdbTimeRuleRepository` جدا از `WpdbPricingReader` (دست‌نخورده) که config JSON را دقیقاً به شکلی که reader مستند کرده می‌نویسد؛ ردیف خراب از لیست حذف می‌شود. Application: `TimeRuleAdminService` (capability `manage_bookings`، خدمت باید در کاتالوگ باشد). Presentation: `TimeRuleRoutes` با `GET|POST /time-rules` و `PUT|DELETE /time-rules/{id}`. Admin UI: `packages/admin/src/timeRules/TimeRules.tsx` (لیست + فرم افزودن با چک‌باکس روزهای هفته) در `/settings`. `docs/api.md` و نوع TS `TimeRule` اضافه شدند.
+**تصمیم‌ها و فرض‌ها:** `<input type="time">` نمی‌تواند `24:00` تولید کند؛ API آن را می‌پذیرد ولی UI فقط تا `23:59` می‌رود. فرم UI همیشه `service_id: null` می‌فرستد (قاعده مخصوص یک خدمت فقط با API). ردیف‌های `price_rules` غیر از `time` هیچ‌وقت خوانده یا حذف نمی‌شوند (`AND type = 'time'` در همه کوئری‌ها).
+**تأیید:** `composer check` (821 Unit، phpcs، PHPStan 9، Deptrac) سبز. `pnpm lint` سبز. `pnpm test` ← 114 passed (18 فایل). `pnpm build` و `pnpm size` (admin 31.91KB gz) سبز. `TimeRuleRestTest` (Integration) فقط با CI اجرا می‌شود. subagent `reviewer` اجرا نشد؛ بازبینی دستی.
+**مشکلات و باقیمانده:** T3.5: انتخاب خدمت در فرم کوپن و قیمت زمانی (API دارد، UI ندارد)، و E2E کامل (مشتریان، Policy، تعطیلات، فیلدها، کوپن و قیمت زمانی فقط Vitest دارند).
+**قدم بعدی:** E2E T3.5 (Playwright روی wp-env)، بعد انتخاب خدمت در UI، بعد T3.5 ✅ و T3.6.
+**Commitها:** (بعد از commit پر می‌شود)
+
+---
+
 ## 2026-09-29 — سشن 24 — T3.5 (بخش ۵): کوپن‌ها در Admin
 **Taskها:** T3.5 (در حال انجام؛ این بار فقط کوپن. Price rule از نوع زمانی می‌ماند)
 **انجام شد:** Domain: `CouponRepository` (در `Domain\Pricing`، کنار `Coupon`؛ `all`، `find`، `findByCode`، `save`، `delete`). Infrastructure: `WpdbCouponRepository` جدا از `WpdbPricingReader` (مسیر خواندن و شمارش رزرو، دست‌نخورده ماند)؛ `used` هرگز نوشته نمی‌شود؛ کلید تکراری 1062 به `Conflict coupon_code_taken` تبدیل می‌شود. Application: `CouponAdminService` (capability همان `manage_bookings`؛ کد 1 تا 64 نویسه، `valid_to` بعد از `valid_from`، `max_uses` ≥ 1، `service_ids` خالی رد می‌شود و هر خدمت باید در کاتالوگ باشد، کد تکراری بدون توجه به حرف بزرگ و کوچک 409). Presentation: `CouponRoutes` با `GET|POST /coupons` و `PUT|DELETE /coupons/{id}`. Admin UI: `packages/admin/src/coupons/Coupons.tsx` (لیست + فرم افزودن، بدون ویرایش درجا؛ بازه به‌صورت `datetime-local` در منطقه زمانی مرورگر و ارسال به‌صورت UTC) در `/settings` زیر Policy و فیلدها. `docs/api.md` و نوع TS `Coupon` اضافه شدند.

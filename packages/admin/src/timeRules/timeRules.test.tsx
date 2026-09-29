@@ -13,20 +13,20 @@ import { App } from '../App';
 
 interface Item {
 	id: number;
-	code: string;
-	type: string;
-	value: number;
+	service_id: number | null;
+	priority: number;
 	active: boolean;
+	weekdays: number[];
+	from: string;
+	to: string;
 	valid_from: string | null;
 	valid_to: string | null;
-	max_uses: number | null;
-	used: number;
-	service_ids: number[] | null;
+	percent: number;
 }
 
 /**
- * `/coupons`, plus empty answers for the other sections the settings screen
- * renders (`/policies/*`, `/fields`, `/time-rules`).
+ * `/time-rules`, plus empty answers for the other sections the settings
+ * screen renders (`/policies/*`, `/fields`, `/coupons`).
  */
 function fakeServer() {
 	const items: Item[] = [];
@@ -44,7 +44,7 @@ function fakeServer() {
 		if ( path.startsWith( '/policies/' ) ) {
 			return json( { config: null } );
 		}
-		if ( path === '/fields' || path === '/time-rules' ) {
+		if ( path === '/fields' || path === '/coupons' ) {
 			return json( [] );
 		}
 		if ( method === 'GET' ) {
@@ -53,10 +53,10 @@ function fakeServer() {
 		if ( method === 'POST' ) {
 			const body = JSON.parse( String( init?.body ) ) as Omit<
 				Item,
-				'id' | 'used'
+				'id'
 			>;
-			const item: Item = { ...body, used: 0, id: next++ };
-			items.unshift( item );
+			const item: Item = { ...body, id: next++ };
+			items.push( item );
 
 			return json( item, 201 );
 		}
@@ -124,7 +124,7 @@ function button( text: string ): HTMLElement | undefined {
 	);
 }
 
-describe( 'the coupons section of the settings screen', () => {
+describe( 'the time-based prices section of the settings screen', () => {
 	let container: HTMLElement;
 	let root: Root;
 	let server: ReturnType< typeof fakeServer >;
@@ -159,50 +159,60 @@ describe( 'the coupons section of the settings screen', () => {
 		container.remove();
 	} );
 
-	it( 'adds a coupon, lists it and deletes it', async () => {
+	it( 'adds a rule for chosen weekdays, lists it and deletes it', async () => {
 		await go( '#/settings' );
-		expect( container.textContent ).toContain( 'No coupons yet.' );
+		expect( container.textContent ).toContain(
+			'No time-based prices yet.'
+		);
 
-		await type( input( container, 'Coupon code' ), 'NOWRUZ' );
-		await type( input( container, 'Discount value' ), '15' );
-		await click( button( 'Add coupon' ) );
+		await click( input( container, 'Friday' ) );
+		await click( input( container, 'Saturday' ) );
+		await type(
+			input( container, 'Price change (%, negative for a discount)' ),
+			'20'
+		);
+		await click( button( 'Add time-based price' ) );
 
 		expect( server.items ).toMatchObject( [
 			{
-				code: 'NOWRUZ',
-				type: 'percent',
-				value: 15,
-				active: true,
+				service_id: null,
+				weekdays: [ 0, 6 ],
+				from: '18:00',
+				to: '22:00',
 				valid_from: null,
 				valid_to: null,
-				max_uses: null,
-				service_ids: null,
+				percent: 20,
+				active: true,
 			},
 		] );
-		expect( container.textContent ).toContain( 'NOWRUZ' );
-		expect( container.textContent ).toContain( '15%' );
+		expect( container.textContent ).toContain( '+20%' );
 
 		await click( button( 'Delete' ) );
 
 		expect( server.items ).toEqual( [] );
 	} );
 
-	it( 'sends the limit and the window as UTC, and an unlimited coupon as null', async () => {
+	it( 'sends no weekdays for every day, and a negative percent as a discount', async () => {
 		await go( '#/settings' );
 
-		await type( input( container, 'Coupon code' ), 'LIMITED' );
+		await type( input( container, 'Starts from' ), '09:00' );
+		await type( input( container, 'Starts before' ), '12:00' );
+		await type( input( container, 'Applies from date' ), '2027-03-20' );
 		await type(
-			input( container, 'Maximum uses (empty for unlimited)' ),
-			'5'
+			input( container, 'Price change (%, negative for a discount)' ),
+			'-10'
 		);
-		await type( input( container, 'Valid from' ), '2027-03-20T08:30' );
-		await click( button( 'Add coupon' ) );
+		await click( button( 'Add time-based price' ) );
 
-		const [ coupon ] = server.items;
-		expect( coupon?.max_uses ).toBe( 5 );
-		expect( coupon?.valid_from ).toBe(
-			new Date( '2027-03-20T08:30' ).toISOString()
-		);
-		expect( coupon?.valid_to ).toBeNull();
+		expect( server.items ).toMatchObject( [
+			{
+				weekdays: [],
+				from: '09:00',
+				to: '12:00',
+				valid_from: '2027-03-20',
+				valid_to: null,
+				percent: -10,
+			},
+		] );
 	} );
 } );
