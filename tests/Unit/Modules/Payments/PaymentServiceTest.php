@@ -129,6 +129,40 @@ final class PaymentServiceTest extends TestCase
         }
     }
 
+    public function testACallbackIsMatchedByTheGatewaysOwnParameter(): void
+    {
+        $service = $this->service([$this->gateway('up')]);
+        $authority = $service->start(7, Money::ofRial(1000), 'https://x.test/cb')->payment->authority;
+
+        self::assertSame(
+            PaymentStatus::Succeeded,
+            $service->settleCallback('up', ['authority' => $authority])->status
+        );
+        foreach ([['up', []], ['nope', ['authority' => $authority]]] as [$gateway, $params]) {
+            try {
+                $service->settleCallback($gateway, $params);
+                self::fail('No exception.');
+            } catch (NotFound $e) {
+                self::assertSame('payment_not_found', $e->errorCode);
+            }
+        }
+    }
+
+    public function testReconcilingSettlesWhatTheCustomerNeverReturnedFromAndSkipsOffline(): void
+    {
+        $service = $this->service([$this->gateway('up'), $this->gateway('offline')]);
+        $service->start(7, Money::ofRial(1000), 'https://x.test/cb', ['up']);
+        $service->start(8, Money::ofRial(1000), 'https://x.test/cb', ['offline']);
+
+        self::assertSame(1, $service->reconcile(900, 50));
+        self::assertCount(1, $this->succeeded);
+        self::assertSame(0, $service->reconcile(900, 50), 'Nothing is left to settle.');
+
+        $this->reachable = false;
+        $service->start(9, Money::ofRial(1000), 'https://x.test/cb', ['up']);
+        self::assertSame(0, $service->reconcile(900, 50), 'An unreachable gateway settles nothing.');
+    }
+
     public function testOnlyStaffConfirmAnOfflinePayment(): void
     {
         $service = $this->service([$this->gateway('offline')]);
@@ -226,6 +260,17 @@ final class PaymentServiceTest extends TestCase
                 return new StartedAttempt($this->id . '-' . ++$this->serial, 'https://pay.test/' . $this->id);
             }
 
+            /**
+             * @param array<string, string> $callbackParams
+             */
+            public function callbackAuthority(array $callbackParams): ?string
+            {
+                return $callbackParams['authority'] ?? null;
+            }
+
+            /**
+             * @param array<string, string> $callbackParams
+             */
             public function verify(string $authority, Money $amount, array $callbackParams): Verification
             {
                 return $this->test->verified() ?? throw new GatewayException('unreachable');
@@ -261,6 +306,29 @@ final class PaymentServiceTest extends TestCase
             public function find(string $gateway, string $authority, bool $forUpdate = false): ?Payment
             {
                 return $this->stored[$gateway . '|' . $authority] ?? null;
+            }
+
+            public function findById(int $id, bool $forUpdate = false): ?Payment
+            {
+                foreach ($this->stored as $payment) {
+                    if ($payment->id === $id) {
+                        return $payment;
+                    }
+                }
+
+                return null;
+            }
+
+            /**
+             * @return list<Payment>
+             */
+            public function awaitingBefore(int $cutoff, int $limit): array
+            {
+                return \array_values(\array_filter(
+                    $this->stored,
+                    static fn (Payment $p): bool => PaymentStatus::AwaitingCallback === $p->status
+                        && 'offline' !== $p->gateway
+                ));
             }
 
             public function settle(Payment $payment, int $now): bool

@@ -67,7 +67,7 @@ function fakeServer() {
 	const requests: URLSearchParams[] = [];
 	const json = ( body: unknown ) => new Response( JSON.stringify( body ) );
 
-	const options = { required: false };
+	const options = { required: false, online: false };
 	const posts: { path: string; body: Record< string, unknown > }[] = [];
 	const fetch = async ( resource: RequestInfo | URL, init?: RequestInit ) => {
 		const url = new URL( String( resource ) );
@@ -128,6 +128,23 @@ function fakeServer() {
 				);
 			}
 
+			if ( body.pay_online === true ) {
+				return new Response(
+					JSON.stringify( {
+						code: 'AB12CD34',
+						status: 'pending_payment',
+						start: '2027-01-10T10:00:00+03:30',
+						end: '2027-01-10T10:30:00+03:30',
+						price: {
+							total: { amount: 900000, currency: 'IRR' },
+							lines: [],
+						},
+						payment_url: 'https://pay.example.test/start/1',
+					} ),
+					{ status: 201 }
+				);
+			}
+
 			return new Response(
 				JSON.stringify( {
 					code: 'AB12CD34',
@@ -141,6 +158,9 @@ function fakeServer() {
 				} ),
 				{ status: 201 }
 			);
+		}
+		if ( path === '/payment-options' ) {
+			return json( { online: options.online } );
 		}
 		if ( path === '/nonce' ) {
 			return json( { nonce: 'fresh-nonce' } );
@@ -443,6 +463,69 @@ describe( 'the booking widget', () => {
 		} );
 		expect( text() ).toContain( 'Your appointment is booked.' );
 		expect( text() ).toContain( 'Tracking code: AB12CD34' );
+	} );
+
+	it( 'offers to pay online and sends the customer to the gateway', async () => {
+		server.options.online = true;
+		await open();
+		await act( () =>
+			days()
+				.find( ( day ) => ! day.disabled )
+				?.click()
+		);
+		await settle();
+		await act( () =>
+			container
+				.querySelector< HTMLButtonElement >(
+					'.vqy-widget__slot-list button'
+				)
+				?.click()
+		);
+		const next = [ ...container.querySelectorAll( 'button' ) ].find(
+			( element ) => element.textContent === 'Continue'
+		);
+		await act( () => next?.click() );
+		await settle();
+
+		const button = ( label: string ) =>
+			[ ...container.querySelectorAll( 'button' ) ].find(
+				( element ) => element.textContent === label
+			);
+		expect( button( 'Book and pay at the place' ) ).toBeDefined();
+		const field = ( label: string ) =>
+			[ ...container.querySelectorAll( 'label' ) ]
+				.find( ( element ) => element.textContent?.startsWith( label ) )
+				?.querySelector< HTMLInputElement >( 'input, textarea' );
+		for ( const [ label, value ] of [
+			[ 'First name', 'Sara' ],
+			[ 'Mobile number', '09351112233' ],
+		] as const ) {
+			await act( () => {
+				const element = field( label );
+				if ( element ) {
+					element.value = value;
+					element.dispatchEvent(
+						new Event( 'input', { bubbles: true } )
+					);
+				}
+			} );
+		}
+		await act( () => {
+			button( 'Pay online and book' )?.click();
+		} );
+		await settle();
+
+		const booked = server.posts.find( ( post ) => post.path === '/book' );
+		expect( booked?.body ).toMatchObject( { pay_online: true } );
+		expect( typeof booked?.body.return_url ).toBe( 'string' );
+		expect( text() ).toContain( 'Taking you to the payment page' );
+	} );
+
+	it( 'says what happened when the customer returns from the gateway', async () => {
+		window.history.replaceState( null, '', '/?pay=failed' );
+		await open( { restUrl: 'x', paymentParam: 'pay' } );
+		expect( text() ).toContain( 'The payment was not completed' );
+		window.history.replaceState( null, '', '/' );
 	} );
 
 	it( 'verifies the phone with a captcha and a code before booking, when the site asks for it', async () => {

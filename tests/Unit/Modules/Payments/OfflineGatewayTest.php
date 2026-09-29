@@ -15,6 +15,9 @@ final class OfflineGatewayTest extends GatewayContractTest
         return new OfflineGateway();
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function unpaidParams(): array
     {
         // A callback's parameters are text: "1" or "true" is not the boolean staff pass.

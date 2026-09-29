@@ -12,7 +12,7 @@ import {
 	type PublicField,
 } from '@vaqtyar/shared';
 import { __, sprintf } from '@wordpress/i18n';
-import { useEffect, useId, useState } from 'preact/hooks';
+import { useEffect, useId, useRef, useState } from 'preact/hooks';
 
 import { PhoneCheck } from './PhoneCheck';
 import type { SlotChoice } from './Widget';
@@ -149,6 +149,13 @@ export function BookingFlow( {
 	const otp = useFetch< { required: boolean } >( 'otp-config', () =>
 		clientFor().get< { required: boolean } >( '/otp/config' )
 	);
+	const paymentOptions = useFetch< { online: boolean } >(
+		'payment-options',
+		() => clientFor().get< { online: boolean } >( '/payment-options' )
+	);
+	// Which submit button was pressed: pay now, or pay at the place.
+	const payOnline = useRef( false );
+	const [ redirecting, setRedirecting ] = useState( false );
 	const [ session, setSession ] = useState< string | null >( null );
 	const [ firstName, setFirstName ] = useState( '' );
 	const [ lastName, setLastName ] = useState( '' );
@@ -176,6 +183,13 @@ export function BookingFlow( {
 	}, [ expiresAt, booking ] );
 
 	const holdError = placed.error;
+	if ( redirecting ) {
+		return (
+			<p role="status">
+				{ __( 'Taking you to the payment page…', 'vaqtyar' ) }
+			</p>
+		);
+	}
 	if ( booking ) {
 		return (
 			<div className="vqy-widget__done" role="status">
@@ -229,6 +243,11 @@ export function BookingFlow( {
 		error instanceof ApiError && typeof error.details.field_key === 'string'
 			? error.details.field_key
 			: null;
+	// Free bookings have nothing to pay, whatever the site offers.
+	const payable =
+		paymentOptions.data?.online === true && hold.price.total.amount > 0;
+	const blocked =
+		busy || expired || ( otp.data?.required === true && session === null );
 	const minutes = String( Math.floor( left / 60 ) );
 	const seconds = String( left % 60 ).padStart( 2, '0' );
 
@@ -237,8 +256,9 @@ export function BookingFlow( {
 		setBusy( true );
 		setError( null );
 		try {
-			setBooking(
-				await clientFor( nonce ).post< GuestBooking >( '/book', {
+			const booked = await clientFor( nonce ).post< GuestBooking >(
+				'/book',
+				{
 					hold_token: hold.token,
 					first_name: firstName,
 					last_name: lastName,
@@ -246,6 +266,8 @@ export function BookingFlow( {
 					email: email.trim() === '' ? null : email.trim(),
 					customer_note: note,
 					session_token: session,
+					pay_online: payOnline.current,
+					return_url: window.location.href,
 					answers: Object.fromEntries(
 						shown
 							.filter( ( field ) => field.field_key in answers )
@@ -254,8 +276,15 @@ export function BookingFlow( {
 								answers[ field.field_key ],
 							] )
 					),
-				} )
+				}
 			);
+			if ( booked.payment_url ) {
+				setRedirecting( true );
+				window.location.assign( booked.payment_url );
+
+				return;
+			}
+			setBooking( booked );
 		} catch ( failure ) {
 			setError(
 				failure instanceof Error
@@ -388,15 +417,27 @@ export function BookingFlow( {
 				<button type="button" onClick={ onBack }>
 					{ __( 'Back', 'vaqtyar' ) }
 				</button>
+				{ payable && (
+					<button
+						type="submit"
+						disabled={ blocked }
+						onClick={ () => {
+							payOnline.current = true;
+						} }
+					>
+						{ __( 'Pay online and book', 'vaqtyar' ) }
+					</button>
+				) }
 				<button
 					type="submit"
-					disabled={
-						busy ||
-						expired ||
-						( otp.data?.required === true && session === null )
-					}
+					disabled={ blocked }
+					onClick={ () => {
+						payOnline.current = false;
+					} }
 				>
-					{ __( 'Confirm booking', 'vaqtyar' ) }
+					{ payable
+						? __( 'Book and pay at the place', 'vaqtyar' )
+						: __( 'Confirm booking', 'vaqtyar' ) }
 				</button>
 			</div>
 		</form>

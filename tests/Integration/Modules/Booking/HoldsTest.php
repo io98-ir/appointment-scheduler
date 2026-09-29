@@ -12,6 +12,7 @@ use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Kernel\Tables;
+use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\HoldService;
 use Vaqtyar\Modules\Booking\BookingModule;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
@@ -31,6 +32,7 @@ use Vaqtyar\Modules\Customers\Infrastructure\LoginSettings;
 use Vaqtyar\Modules\Customers\Domain\Customer;
 use Vaqtyar\Modules\Customers\Domain\CustomerStatus;
 use Vaqtyar\Modules\Customers\Infrastructure\Persistence\WpdbCustomerRepository;
+use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
 use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
 use Vaqtyar\Modules\Scheduling\Domain\Owner;
 use Vaqtyar\Modules\Scheduling\Domain\OwnerType;
@@ -39,6 +41,7 @@ use Vaqtyar\Modules\Scheduling\Domain\ScheduleRule;
 use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbScheduleRuleRepository;
 use Vaqtyar\Modules\Scheduling\SchedulingModule;
 use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\Domain\Conflict;
 use Vaqtyar\Shared\Domain\LocalDate;
 use Vaqtyar\Shared\Domain\LocalTime;
 use Vaqtyar\Shared\Domain\Money;
@@ -47,6 +50,7 @@ use Vaqtyar\Shared\Domain\PhoneNumber;
 use Vaqtyar\Shared\Domain\TransactionRunner;
 use Vaqtyar\Shared\SystemClock;
 use Vaqtyar\Tests\Integration\Kernel\Database\RealDatabase;
+use Vaqtyar\Tests\Fixtures\FakeGateway;
 use Vaqtyar\Tests\Integration\Modules\Catalog\CatalogTables;
 
 /**
@@ -80,6 +84,8 @@ final class HoldsTest extends TestCase
         'policies',
         'customers',
         'otp_codes',
+        'payments',
+        'refunds',
     ];
 
     /** @var list<int> */
@@ -412,7 +418,7 @@ final class HoldsTest extends TestCase
         ]);
 
         self::assertSame(201, $booked['status'], (string) \wp_json_encode($booked['body']));
-        self::assertSame(8, \strlen((string) ($booked['body']['code'] ?? '')));
+        self::assertSame(8, \strlen(self::text($booked['body']['code'] ?? '')));
         self::assertSame('confirmed', $booked['body']['status'] ?? null);
         self::assertArrayNotHasKey('id', $booked['body']);
         $db = $this->realDb();
@@ -522,7 +528,7 @@ final class HoldsTest extends TestCase
         $unknown = $this->guestGet('/service-fields', ['service' => 999_999]);
 
         self::assertSame(200, $nonce['status']);
-        self::assertNotFalse(\wp_verify_nonce((string) ($nonce['body']['nonce'] ?? ''), 'wp_rest'));
+        self::assertNotFalse(\wp_verify_nonce(self::text($nonce['body']['nonce'] ?? ''), 'wp_rest'));
         self::assertSame(
             [200, ['plate'], [true]],
             [
@@ -561,8 +567,8 @@ final class HoldsTest extends TestCase
             $captcha = $this->guestGet('/captcha')['body'];
             $asked = $this->guestPost('/otp/request', [
                 'phone' => '09351112233',
-                'captcha_token' => (string) ($captcha['token'] ?? ''),
-                'captcha_answer' => (string) ((int) ($captcha['a'] ?? 0) + (int) ($captcha['b'] ?? 0)),
+                'captcha_token' => self::text($captcha['token'] ?? ''),
+                'captcha_answer' => (string) (self::number($captcha['a'] ?? 0) + self::number($captcha['b'] ?? 0)),
             ]);
             self::assertSame(202, $asked['status'], (string) \wp_json_encode($asked['body']));
             self::assertIsString($code);
@@ -576,7 +582,7 @@ final class HoldsTest extends TestCase
 
             $verified = $this->guestPost('/otp/verify', ['phone' => '09351112233', 'code' => $code]);
             self::assertSame(200, $verified['status'], (string) \wp_json_encode($verified['body']));
-            $session = (string) ($verified['body']['token'] ?? '');
+            $session = self::text($verified['body']['token'] ?? '');
 
             $other = $this->guestBook($token, ['phone' => '09121234567'] + $guest + ['session_token' => $session]);
             self::assertSame(
@@ -610,7 +616,10 @@ final class HoldsTest extends TestCase
         self::assertSame([$mine], \array_column($list['body'], 'id'));
         self::assertSame(
             [true, true],
-            [$list['body'][0]['cancel']['allowed'] ?? null, $list['body'][0]['reschedule']['allowed'] ?? null]
+            [
+                self::map(self::map($list['body'][0] ?? null)['cancel'] ?? null)['allowed'] ?? null,
+                self::map(self::map($list['body'][0] ?? null)['reschedule'] ?? null)['allowed'] ?? null,
+            ]
         );
 
         self::assertContains($this->panel('GET', '/my/appointments', [], null)['status'], [401, 403]);
@@ -626,12 +635,12 @@ final class HoldsTest extends TestCase
         $cancelled = $this->panel('POST', "/my/appointments/{$mine}/cancel", ['reason' => 'busy'], $session);
         self::assertSame([200, 'cancelled'], [$cancelled['status'], $cancelled['body']['status'] ?? null]);
         $after = $this->panel('GET', '/my/appointments', [], $session);
-        $first = $after['body'][0] ?? [];
+        $first = self::map($after['body'][0] ?? null);
         self::assertSame(
             [true, true, null, null],
             [
-                rray_key_exists('cancel', $first),
-                rray_key_exists('reschedule', $first),
+                \array_key_exists('cancel', $first),
+                \array_key_exists('reschedule', $first),
                 $first['cancel'] ?? null,
                 $first['reschedule'] ?? null,
             ]
@@ -649,7 +658,7 @@ final class HoldsTest extends TestCase
 
             $refused = $this->guestPost('/otp/request', [
                 'phone' => '09351112233',
-                'captcha_token' => (string) ($captcha['token'] ?? ''),
+                'captcha_token' => self::text($captcha['token'] ?? ''),
                 'captcha_answer' => '99',
             ]);
             $config = $this->guestGet('/otp/config');
@@ -827,6 +836,211 @@ final class HoldsTest extends TestCase
                 $db->getVar('SELECT COUNT(*) FROM %i', Tables::name('occupancies')),
             ]
         );
+    }
+
+    public function testAGuestPaysOnlineAndThePaymentConfirmsTheAppointment(): void
+    {
+        FakeGateway::$paid = true;
+        self::assertTrue($this->guestGet('/payment-options')['body']['online'] ?? null);
+        $jobs = self::bookedJobs();
+
+        $booked = $this->bookOnline();
+
+        self::assertSame('pending_payment', $booked['body']['status'] ?? null, (string) \wp_json_encode($booked));
+        $url = self::text($booked['body']['payment_url'] ?? null);
+        self::assertStringStartsWith('https://pay.test/F', $url);
+        $db = $this->realDb();
+        self::assertSame(
+            ['pending_payment', 'unpaid', '1'],
+            [
+                $db->getVar('SELECT status FROM %i', Tables::name('appointments')),
+                $db->getVar('SELECT payment_status FROM %i', Tables::name('appointments')),
+                $this->appointmentOccupancies(),
+            ],
+            'The time is taken while the customer pays.'
+        );
+        self::assertSame($jobs, self::bookedJobs(), 'It is announced when paid, not when booked.');
+
+        $authority = \basename($url);
+        $back = $this->paymentCallback($authority);
+
+        self::assertSame(302, $back->get_status());
+        $location = self::text($back->get_headers()['Location'] ?? null);
+        self::assertStringContainsString(Identity::PREFIX . '_payment=succeeded', $location);
+        self::assertStringStartsWith(\home_url('/'), $location);
+        self::assertSame(
+            ['confirmed', 'paid'],
+            [
+                $db->getVar('SELECT status FROM %i', Tables::name('appointments')),
+                $db->getVar('SELECT payment_status FROM %i', Tables::name('appointments')),
+            ]
+        );
+        self::assertSame($jobs + 1, self::bookedJobs());
+
+        $this->paymentCallback($authority);
+        self::assertSame($jobs + 1, self::bookedJobs(), 'A repeated callback changes nothing.');
+        self::assertSame('1', $db->getVar('SELECT COUNT(*) FROM %i', Tables::name('payments')));
+    }
+
+    public function testStaffRecordARefundOnlyUpToWhatWasPaid(): void
+    {
+        FakeGateway::$paid = true;
+        $this->paymentCallback(\basename(self::text($this->bookOnline()['body']['payment_url'] ?? null)));
+        $paymentId = (int) $this->realDb()->getVar('SELECT id FROM %i', Tables::name('payments'));
+        $this->logInAs('administrator');
+
+        $first = $this->refund($paymentId, 600_000);
+        $second = $this->refund($paymentId, 500_000);
+        $rest = $this->refund($paymentId, 400_000);
+
+        self::assertSame([201, 409, 201], [$first['status'], $second['status'], $rest['status']]);
+        self::assertSame('refund_exceeds_payment', $second['body']['code'] ?? null);
+        self::assertSame(
+            '1000000',
+            $this->realDb()->getVar('SELECT SUM(amount) FROM %i', Tables::name('refunds'))
+        );
+    }
+
+    public function testAPaymentThatNeverCameBackIsSettledByTheReconciliationJob(): void
+    {
+        FakeGateway::$paid = true;
+        $this->bookOnline();
+        $db = $this->realDb();
+        $db->execute('UPDATE %i SET created_at = created_at - INTERVAL 20 MINUTE', Tables::name('payments'));
+
+        \do_action(Hooks::name('payments/reconcile'));
+
+        self::assertSame('confirmed', $db->getVar('SELECT status FROM %i', Tables::name('appointments')));
+        self::assertSame('succeeded', $db->getVar('SELECT status FROM %i', Tables::name('payments')));
+    }
+
+    public function testAnUnpaidAppointmentExpiresAndALatePaymentIsReportedNotApplied(): void
+    {
+        FakeGateway::$paid = true;
+        $booked = $this->bookOnline();
+        $authority = \basename(self::text($booked['body']['payment_url'] ?? null));
+        $db = $this->realDb();
+        $db->execute('UPDATE %i SET created_at = created_at - INTERVAL 31 MINUTE', Tables::name('appointments'));
+        $attention = [];
+        \add_action(
+            Hooks::name('booking/needs_attention'),
+            static function (int $appointmentId, int $paymentId) use (&$attention): void {
+                $attention[] = [$appointmentId, $paymentId];
+            },
+            10,
+            2
+        );
+
+        \do_action(Hooks::name('booking/expire_unpaid'));
+
+        self::assertSame(
+            ['expired', '0'],
+            [
+                $db->getVar('SELECT status FROM %i', Tables::name('appointments')),
+                $this->appointmentOccupancies(),
+            ]
+        );
+
+        $this->paymentCallback($authority);
+
+        self::assertSame('expired', $db->getVar('SELECT status FROM %i', Tables::name('appointments')));
+        self::assertSame('succeeded', $db->getVar('SELECT status FROM %i', Tables::name('payments')));
+        self::assertCount(1, $attention, 'Staff are told: the money is taken.');
+    }
+
+    public function testWhenTheGatewayCannotTakeThePaymentNothingIsBooked(): void
+    {
+        FakeGateway::$paid = true;
+        $token = $this->post(self::inDays(3), '12:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+        $failing = new class () implements PaymentsApi {
+            public function onlineAvailable(): bool
+            {
+                return true;
+            }
+
+            public function startOnline(int $appointmentId, Money $amount, string $returnUrl): string
+            {
+                throw new Conflict('no_gateway_available', 'down');
+            }
+        };
+        $container = $this->container();
+        $container->singleton(PaymentsApi::class, static fn (): PaymentsApi => $failing);
+        $service = $container->get(BookingService::class);
+
+        try {
+            $service->confirmAsGuest(
+                HoldToken::fromString($token),
+                '09121234567',
+                'Ali',
+                'Karimi',
+                null,
+                '',
+                [],
+                null,
+                \home_url('/')
+            );
+            self::fail('No exception.');
+        } catch (Conflict $e) {
+            self::assertSame('payment_unavailable', $e->errorCode);
+        }
+
+        $db = $this->realDb();
+        self::assertSame(
+            ['expired', '0'],
+            [
+                $db->getVar('SELECT status FROM %i', Tables::name('appointments')),
+                $this->appointmentOccupancies(),
+            ]
+        );
+    }
+
+    /**
+     * POST /book as a guest who pays online: the hold, then the booking.
+     *
+     * @return array{status: int, body: array<string, mixed>}
+     */
+    private function bookOnline(): array
+    {
+        $token = $this->post(self::inDays(3), '12:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+
+        return $this->guestBook($token, [
+            'first_name' => 'Sara',
+            'phone' => '09351112233',
+            'pay_online' => true,
+            'return_url' => \home_url('/book'),
+        ]);
+    }
+
+    private function appointmentOccupancies(): ?string
+    {
+        return $this->realDb()->getVar(
+            'SELECT COUNT(*) FROM %i WHERE owner_type = %s',
+            Tables::name('occupancies'),
+            'appointment'
+        );
+    }
+
+    private function paymentCallback(string $authority): \WP_REST_Response
+    {
+        $request = new \WP_REST_Request('GET', '/' . Identity::REST_NAMESPACE . '/payments/callback/fake');
+        $request->set_query_params(['authority' => $authority, 'return' => \home_url('/book')]);
+
+        return \rest_do_request($request);
+    }
+
+    /**
+     * @return array{status: int, body: array<string, mixed>}
+     */
+    private function refund(int $paymentId, int $amount): array
+    {
+        $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . '/payments/refunds');
+        $request->set_body_params(['payment_id' => $paymentId, 'amount' => $amount, 'reason' => 'asked']);
+        $response = \rest_do_request($request);
+        $body = $response->get_data();
+
+        return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
     }
 
     /**
@@ -1078,5 +1292,23 @@ final class HoldsTest extends TestCase
         foreach (self::OWN_TABLES as $table) {
             $this->realDb()->execute('TRUNCATE TABLE %i', Tables::name($table));
         }
+    }
+
+    private static function text(mixed $value): string
+    {
+        return \is_string($value) ? $value : '';
+    }
+
+    private static function number(mixed $value): int
+    {
+        return \is_int($value) || \is_numeric($value) ? (int) $value : 0;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function map(mixed $value): array
+    {
+        return \is_array($value) ? $value : [];
     }
 }

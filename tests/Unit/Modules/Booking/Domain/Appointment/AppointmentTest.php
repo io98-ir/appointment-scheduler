@@ -31,7 +31,7 @@ final class AppointmentTest extends TestCase
         $appointment = self::book(S::Confirmed);
 
         self::assertSame(S::Confirmed, $appointment->status());
-        self::assertSame(PaymentStatus::Unpaid, $appointment->paymentStatus);
+        self::assertSame(PaymentStatus::Unpaid, $appointment->paymentStatus());
         self::assertSame('2027-01-15', $appointment->localDate);
         self::assertSame(1_200_000, $appointment->quote->total()->amount);
         $created = $appointment->created();
@@ -178,7 +178,7 @@ final class AppointmentTest extends TestCase
 
         self::assertSame(
             [S::Cancelled, PaymentStatus::Paid, self::START - 60, 'Sick'],
-            [$restored->status(), $restored->paymentStatus, $restored->cancelledAt(), $restored->cancelReason()]
+            [$restored->status(), $restored->paymentStatus(), $restored->cancelledAt(), $restored->cancelReason()]
         );
     }
 

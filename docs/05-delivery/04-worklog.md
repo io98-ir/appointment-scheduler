@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 (ادامه 7) — T5.2: درگاه‌ها، تطبیق، استرداد و اتصال Booking
+**Taskها:** T5.2 (منتظر CI)، رفع CI سرخ T4.3 تا T5.1
+**انجام شد:** `ZarinpalGateway` و `ZibalGateway` روی Port `JsonHttp`؛ `callbackAuthority` در Port درگاه؛ `PaymentService::settleCallback` و `reconcile`؛ `RefundService` با `POST /payments/refunds`؛ `OnlinePayments` (Contract `PaymentsApi`)؛ در Booking: `UnpaidAppointments`، `OnlineCheckout`، `Actor::system()`، `Appointment::paymentStatus()` (دیگر public readonly نیست)، Job انقضا، شنونده `payments/succeeded` با `booking/needs_attention`، `GET /payment-options` و `pay_online` در `POST /book`؛ callback با `return` به صفحه سایت برمی‌گردد. ویجت: دکمه «پرداخت آنلاین»، هدایت به درگاه، بنر نتیجه. مستندات: `api.md` و implementation-notes §4.17.
+**تصمیم‌ها و فرض‌ها:** (۱) مشتری انتخاب می‌کند «آنلاین» یا «در محل»؛ اگر درگاه آنلاینی هست هر دو دکمه دیده می‌شود، و «اجباری بودن پرداخت» تنظیم بعدی است (Policy deposit موکول شده بود). (۲) پرداخت دیرهنگام به نوبت منقضی‌شده اعمال نمی‌شود، بلکه به کارمند گزارش می‌شود، چون تصمیم پول با انسان است. (۳) استرداد با API درگاه ساخته نشد. (۴) merchant id فقط با `SecretStore` یا ثابت wp-config؛ UI با onboarding.
+**تأیید:** محلی: `composer lint` (هر دو استاندارد)، PHPStan، Deptrac (دو فایل)، `phpunit --testsuite unit` ← 885 تست، `vitest run` ← 143 تست، `pnpm typecheck` و `pnpm build` و `pnpm size` (ویجت 15.46KB gz). Integration نه (فقط CI). **علت CI سرخ قبلی:** اسکریپت Python با `\\a` در تست بایت BEL نوشته بود ← `HoldsTest` parse نمی‌شد ← fatal 255 در هر چهار ترکیب. درس: داخل Bash tool دو backslash پشت سر هم یکی می‌شود؛ برای کد PHP از Write/Edit استفاده کن، نه Python heredoc.
+**مشکلات و باقیمانده:** CI برای T4.2 تا T5.2؛ `payment_status` با استرداد؛ UI هشدار `needs_attention`؛ صفحه تنظیم درگاه؛ تست زنده با کلید واقعی.
+**قدم بعدی:** پس از سبز شدن CI ← T5.3.
+**Commitها:** T5.2 در commit بعدی.
+
+---
+
 ## 2026-09-29 — سشن 24 (ادامه 6) — T5.1: هسته پرداخت
 **Taskها:** T5.1 (منتظر CI)، رفع CI سرخ T4.4/T4.5
 **انجام شد:** ماژول `Payments` با Port درگاه، Registry، `PaymentService` (Failover، settle idempotent)، `OfflineGateway`، جدول‌های `payments` و `refunds`، routeهای callback و تأیید آفلاین، و رویداد `payments/succeeded`. رفع CI: باگ تست (`null ?? 'set'` همیشه `'set'` می‌دهد)، import بلااستفاده، دو خط بلند.

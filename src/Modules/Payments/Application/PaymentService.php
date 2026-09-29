@@ -41,18 +41,32 @@ final class PaymentService
     }
 
     /**
+     * @param string $callbackUrl where a gateway sends the customer back; "{gateway}" in it becomes the gateway's id.
      * @param list<string> $preferred gateway ids to try first, in order; the rest follow.
+     * @param bool $onlineOnly skip the offline gateway: the customer pays now, at a gateway's page.
      * @throws InvalidValue invalid_amount for an amount that is not positive.
      * @throws Conflict no_gateway_available when every gateway refuses.
      */
-    public function start(int $appointmentId, Money $amount, string $callbackUrl, array $preferred = []): StartedPayment
-    {
+    public function start(
+        int $appointmentId,
+        Money $amount,
+        string $callbackUrl,
+        array $preferred = [],
+        bool $onlineOnly = false,
+    ): StartedPayment {
         if ($amount->isNegative() || $amount->isZero()) {
             throw new InvalidValue('invalid_amount', 'A payment is a positive amount.');
         }
         foreach ($this->ordered($preferred) as $gateway) {
+            if ($onlineOnly && self::OFFLINE === $gateway->id()) {
+                continue;
+            }
             try {
-                $attempt = $gateway->start($appointmentId, $amount, $callbackUrl);
+                $attempt = $gateway->start(
+                    $appointmentId,
+                    $amount,
+                    \str_replace('{gateway}', $gateway->id(), $callbackUrl)
+                );
             } catch (GatewayException) {
                 continue;
             }
@@ -98,6 +112,42 @@ final class PaymentService
         }
 
         return $this->apply($payment, $verdict);
+    }
+
+    /**
+     * Settles a payment from a gateway's callback, whose own parameter names it.
+     *
+     * @param array<string, string> $params
+     * @throws NotFound payment_not_found
+     */
+    public function settleCallback(string $gatewayId, array $params): Payment
+    {
+        $authority = $this->gateways->get($gatewayId)?->callbackAuthority($params);
+        if (null === $authority) {
+            throw new NotFound('payment_not_found', 'There is no such payment.');
+        }
+
+        return $this->settle($gatewayId, $authority, $params);
+    }
+
+    /**
+     * The reconciliation job (booking-engine §7): asks the gateway about
+     * payments whose customer never came back, so a paid one is not lost.
+     *
+     * @return int how many it settled, paid or not.
+     */
+    public function reconcile(int $olderThanSeconds, int $limit): int
+    {
+        $settled = 0;
+        foreach ($this->payments->awaitingBefore($this->now() - $olderThanSeconds, $limit) as $payment) {
+            try {
+                $settled += $this->settle($payment->gateway, $payment->authority, [])->isFinal() ? 1 : 0;
+            } catch (NotFound) {
+                // Its gateway was switched off: nothing to ask.
+            }
+        }
+
+        return $settled;
     }
 
     /**

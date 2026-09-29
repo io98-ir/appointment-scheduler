@@ -27,6 +27,11 @@ require_once "$testsDir/includes/functions.php";
     'muplugins_loaded',
     static function (): void {
         require \dirname(__DIR__, 2) . '/vaqtyar.php';
+        // An online gateway the tests control; the registry reads the filter when a request first needs it.
+        \add_filter(
+            \Vaqtyar\Kernel\Hooks::name('payments/gateways'),
+            static fn (array $gateways): array => [...$gateways, new \Vaqtyar\Tests\Fixtures\FakeGateway()]
+        );
     }
 );
 

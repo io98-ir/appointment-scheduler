@@ -46,7 +46,7 @@ final class Appointment
         public readonly int $partySize,
         public readonly PriceQuote $quote,
         public readonly string $customerNote,
-        public readonly PaymentStatus $paymentStatus,
+        private PaymentStatus $paymentStatus,
         private AppointmentStatus $status,
     ) {
     }
@@ -198,6 +198,11 @@ final class Appointment
         return $this->status;
     }
 
+    public function paymentStatus(): PaymentStatus
+    {
+        return $this->paymentStatus;
+    }
+
     public function cancelledAt(): ?int
     {
         return $this->cancelledAt;
@@ -227,11 +232,14 @@ final class Appointment
      */
     public function paid(bool $needsApproval): StatusChange
     {
-        return $this->move(
+        $change = $this->move(
             'paid',
             [AppointmentStatus::PendingPayment],
             $needsApproval ? AppointmentStatus::PendingApproval : AppointmentStatus::Confirmed
         );
+        $this->paymentStatus = PaymentStatus::Paid;
+
+        return $change;
     }
 
     public function expire(): StatusChange

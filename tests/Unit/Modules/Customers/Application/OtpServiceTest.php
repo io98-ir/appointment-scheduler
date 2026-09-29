@@ -28,15 +28,16 @@ final class OtpServiceTest extends TestCase
     {
         $this->service = new OtpService(
             new InMemoryOtpStore(),
-            new class ($this->sent) implements OtpSender {
-                /** @param list<string> $sent */
-                public function __construct(private array &$sent)
+            new class (function (string $code): void {
+                $this->sent[] = $code;
+            }) implements OtpSender {
+                public function __construct(private readonly \Closure $onSend)
                 {
                 }
 
                 public function send(string $phone, string $code): void
                 {
-                    $this->sent[] = $code;
+                    ($this->onSend)($code);
                 }
             },
             new PhoneSessions(self::KEY),

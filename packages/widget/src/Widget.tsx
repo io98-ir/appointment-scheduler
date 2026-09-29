@@ -39,6 +39,8 @@ export interface WidgetConfig {
 	staff?: number;
 	calendar?: Calendar;
 	digits?: Digits;
+	/** The query parameter a payment gateway's return page carries the outcome in. */
+	paymentParam?: string;
 	[ key: string ]: unknown;
 }
 
@@ -83,6 +85,24 @@ function staffFor(
 }
 
 /**
+ * What the payment gateway's return page says happened, from the address bar.
+ *
+ * @param param The query parameter the server put the outcome in.
+ */
+export function paymentOutcome(
+	param: string | undefined
+): 'succeeded' | 'failed' | 'pending' | null {
+	if ( param === undefined || param === '' ) {
+		return null;
+	}
+	const value = new URLSearchParams( window.location.search ).get( param );
+
+	return value === 'succeeded' || value === 'failed' || value === 'pending'
+		? value
+		: null;
+}
+
+/**
  * The booking widget's first steps: the service, its variant, staff and
  * location, then a month calendar with the free days coloured and the free
  * starts of the chosen day. Choosing a start fires SLOT_EVENT; the later
@@ -113,6 +133,7 @@ export function Widget( {
 		} );
 	const calendar: Calendar = config.calendar ?? 'jalali';
 	const digits: Digits = config.digits ?? 'latin';
+	const outcome = paymentOutcome( config.paymentParam );
 	const menu = useFetch< PublicMenu >(
 		config.restUrl !== undefined || api !== undefined ? 'menu' : null,
 		() => client.get< PublicMenu >( '/catalog' )
@@ -261,6 +282,30 @@ export function Widget( {
 			<p className="vqy-widget__title">
 				{ __( 'Book an appointment', 'vaqtyar' ) }
 			</p>
+			{ outcome === 'succeeded' && (
+				<p role="status" className="vqy-widget__done">
+					{ __(
+						'Your payment was received and your appointment is booked.',
+						'vaqtyar'
+					) }
+				</p>
+			) }
+			{ outcome === 'pending' && (
+				<p role="status" className="vqy-widget__done">
+					{ __(
+						'We are still confirming your payment. Your appointment will be booked as soon as it arrives.',
+						'vaqtyar'
+					) }
+				</p>
+			) }
+			{ outcome === 'failed' && (
+				<p role="alert" className="vqy-widget__error">
+					{ __(
+						'The payment was not completed, so the appointment was not booked. You can try again.',
+						'vaqtyar'
+					) }
+				</p>
+			) }
 			{ menu.error && (
 				<p role="alert" className="vqy-widget__error">
 					{ menu.error }

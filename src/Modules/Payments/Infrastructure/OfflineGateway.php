@@ -28,6 +28,19 @@ final class OfflineGateway implements PaymentGateway
         return new StartedAttempt(\bin2hex(\random_bytes(16)), null);
     }
 
+    /**
+     * @param array<string, string> $callbackParams
+     */
+    public function callbackAuthority(array $callbackParams): ?string
+    {
+        $authority = $callbackParams['authority'] ?? '';
+
+        return '' === $authority ? null : $authority;
+    }
+
+    /**
+     * @param array<string, string|bool> $callbackParams
+     */
     public function verify(string $authority, Money $amount, array $callbackParams): Verification
     {
         return new Verification(true === ($callbackParams['confirmed'] ?? null));

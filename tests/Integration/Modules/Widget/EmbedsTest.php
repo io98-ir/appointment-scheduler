@@ -60,7 +60,8 @@ final class EmbedsTest extends TestCase
         self::assertArrayNotHasKey('staff', $config);
         self::assertArrayNotHasKey('variant', $config);
         self::assertSame(['gregorian', 'latin'], [$config['calendar'] ?? null, $config['digits'] ?? null]);
-        self::assertStringContainsString(Identity::REST_NAMESPACE, (string) ($config['restUrl'] ?? ''));
+        $restUrl = $config['restUrl'] ?? null;
+        self::assertStringContainsString(Identity::REST_NAMESPACE, \is_string($restUrl) ? $restUrl : '');
         self::assertTrue(\wp_script_is($handle, 'enqueued'));
         self::assertTrue(\wp_style_is($handle, 'enqueued'));
     }

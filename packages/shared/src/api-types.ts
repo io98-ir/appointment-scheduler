@@ -270,6 +270,8 @@ export interface GuestBooking {
 	start: string;
 	end: string;
 	price: PriceQuote;
+	/** The gateway's page, when the booking waits for an online payment. */
+	payment_url?: string | null;
 }
 
 export type CustomerStatus = 'active' | 'blocked';

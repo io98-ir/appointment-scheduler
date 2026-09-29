@@ -54,6 +54,14 @@ interface AppointmentRepository
     ): void;
 
     /**
+     * Ids of appointments waiting for a payment since before $cutoff, oldest first.
+     *
+     * @param int $cutoff UTC seconds.
+     * @return list<int>
+     */
+    public function pendingPaymentBefore(int $cutoff, int $limit): array;
+
+    /**
      * Frees the appointment's time: deletes its occupancies.
      */
     public function release(int $id): void;

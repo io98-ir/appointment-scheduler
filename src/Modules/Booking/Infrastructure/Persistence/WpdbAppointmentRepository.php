@@ -51,7 +51,7 @@ final class WpdbAppointmentRepository implements AppointmentRepository
             'variant_id' => $appointment->variantId,
             'staff_id' => $appointment->staffId,
             'status' => $appointment->status()->value,
-            'payment_status' => $appointment->paymentStatus->value,
+            'payment_status' => $appointment->paymentStatus()->value,
             'source' => $source,
             'start_at' => \gmdate(self::UTC_FORMAT, $appointment->start),
             'end_at' => \gmdate(self::UTC_FORMAT, $appointment->end),
@@ -193,6 +193,7 @@ final class WpdbAppointmentRepository implements AppointmentRepository
             Tables::name('appointments'),
             [
                 'status' => $appointment->status()->value,
+                'payment_status' => $appointment->paymentStatus()->value,
                 'staff_id' => $appointment->staffId,
                 'start_at' => \gmdate(self::UTC_FORMAT, $appointment->start),
                 'end_at' => \gmdate(self::UTC_FORMAT, $appointment->end),
@@ -204,7 +205,28 @@ final class WpdbAppointmentRepository implements AppointmentRepository
             ['id' => $id]
         );
         $this->db->execute('UPDATE %i SET version = version + 1 WHERE id = %d', Tables::name('appointments'), $id);
-        $this->history($id, $change, $actor->type, $actor->id, $reason, $changes, $at);
+        $this->history($id, $change, $actor->type, 0 === $actor->id ? null : $actor->id, $reason, $changes, $at);
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function pendingPaymentBefore(int $cutoff, int $limit): array
+    {
+        $ids = [];
+        foreach (
+            $this->db->getResults(
+                'SELECT id FROM %i WHERE status = %s AND created_at < %s ORDER BY id ASC LIMIT %d',
+                Tables::name('appointments'),
+                AppointmentStatus::PendingPayment->value,
+                \gmdate(self::UTC_FORMAT, $cutoff),
+                $limit
+            ) as $row
+        ) {
+            $ids[] = (new Row($row))->int('id');
+        }
+
+        return $ids;
     }
 
     public function release(int $id): void

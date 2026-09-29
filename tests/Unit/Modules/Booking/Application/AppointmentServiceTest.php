@@ -435,6 +435,14 @@ final class AppointmentServiceTest extends TestCase
                 $this->test->updates[] = [$id, $appointment, $change, $actor, $reason, $changes];
             }
 
+            /**
+             * @return list<int>
+             */
+            public function pendingPaymentBefore(int $cutoff, int $limit): array
+            {
+                return [];
+            }
+
             public function release(int $id): void
             {
                 $this->test->record("release {$id}");

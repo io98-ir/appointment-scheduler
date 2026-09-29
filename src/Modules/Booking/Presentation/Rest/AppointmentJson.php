@@ -29,7 +29,7 @@ final class AppointmentJson
             'uuid' => $appointment->uuid->toString(),
             'code' => $appointment->code->value,
             'status' => $appointment->status()->value,
-            'payment_status' => $appointment->paymentStatus->value,
+            'payment_status' => $appointment->paymentStatus()->value,
             'staff_id' => $appointment->staffId,
             'start' => $time($appointment->start),
             'end' => $time($appointment->end),

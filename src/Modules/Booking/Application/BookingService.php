@@ -48,6 +48,7 @@ final class BookingService
     /**
      * @param \Closure(): void $changed Tells availability the occupancies
      *     changed; called after the commit.
+     * @param ?OnlineCheckout $checkout Null when the site has no Payments to pay with.
      */
     public function __construct(
         private readonly CatalogApi $catalog,
@@ -62,6 +63,7 @@ final class BookingService
         private readonly Clock $clock,
         private readonly Authorizer $authorizer,
         private readonly \Closure $changed,
+        private readonly ?OnlineCheckout $checkout = null,
     ) {
     }
 
@@ -99,7 +101,10 @@ final class BookingService
      * expired) stays, like one a staff member created and never booked.
      *
      * @param array<string, mixed> $answers custom field answers by field_key.
+     * @param ?string $payReturnUrl Set when the customer pays online: the appointment then waits for the
+     *     payment (a free one does not), and the result says where to pay. The page they return to.
      * @throws NotFound hold_not_found, or Conflict / InvalidValue as confirm().
+     * @throws Conflict payment_unavailable when no gateway took the payment; nothing is booked then.
      */
     public function confirmAsGuest(
         HoldToken $token,
@@ -110,10 +115,20 @@ final class BookingService
         string $customerNote,
         array $answers = [],
         ?string $sessionToken = null,
+        ?string $payReturnUrl = null,
     ): BookedAppointment {
         $customerId = $this->customers->forBooking($phone, $firstName, $lastName, $email, $sessionToken);
+        $online = null !== $payReturnUrl && null !== $this->checkout && $this->checkout->available();
+        $booked = $this->book($token, $customerId, $customerNote, null, self::SOURCE_WIDGET, $answers, $online);
+        if (AppointmentStatus::PendingPayment !== $booked->appointment->status() || null === $this->checkout) {
+            return $booked;
+        }
 
-        return $this->book($token, $customerId, $customerNote, null, self::SOURCE_WIDGET, $answers);
+        return new BookedAppointment(
+            $booked->id,
+            $booked->appointment,
+            $this->checkout->start($booked, (string) $payReturnUrl)
+        );
     }
 
     /**
@@ -126,6 +141,7 @@ final class BookingService
         ?int $userId,
         string $source,
         array $answers,
+        bool $online = false,
     ): BookedAppointment {
         // Not under a lock: a customer deleted or blocked a moment later
         // keeps this one appointment, as one booked a moment earlier would.
@@ -146,7 +162,8 @@ final class BookingService
             $customerNote,
             $userId,
             $source,
-            $answers
+            $answers,
+            $online
         ): BookedAppointment {
             $this->locker->lock($found->lockKeys, $found->from, $found->to);
             $hold = $this->holds->find($token->hash(), true);
@@ -162,6 +179,10 @@ final class BookingService
             }
             $this->countCoupon($held, $offer->serviceId, $now->getTimestamp());
             $validAnswers = AnswerValidator::validate($this->fields->forService($offer->serviceId), $answers);
+            // A free booking has nothing to pay: it is confirmed.
+            $status = $online && $held->quote->total()->amount > 0
+                ? AppointmentStatus::PendingPayment
+                : AppointmentStatus::Confirmed;
 
             $appointment = Appointment::book(
                 Ulid::fromParts($now, \random_bytes(10)),
@@ -178,7 +199,7 @@ final class BookingService
                 $held->partySize,
                 $held->quote,
                 $customerNote,
-                AppointmentStatus::Confirmed
+                $status
             );
             $id = $this->appointments->add(
                 $appointment,
@@ -191,7 +212,10 @@ final class BookingService
                 $this->appointments->saveAnswers($id, $validAnswers, $now->getTimestamp());
             }
             $this->holds->handOver($hold->id, $id);
-            $this->jobs->appointmentBooked($id);
+            if (AppointmentStatus::Confirmed === $status) {
+                // A booking that waits for its payment is announced when it is paid.
+                $this->jobs->appointmentBooked($id);
+            }
 
             return new BookedAppointment($id, $appointment);
         };

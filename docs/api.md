@@ -103,9 +103,10 @@
 |---|---|
 | `GET /nonce` | یک nonce تازه `wp_rest` برای مهمان، چون nonce صفحه cache‌شده کهنه است. rate limit: 120 در دقیقه |
 | `GET /service-fields?service=` | فیلدهای سفارشی یک خدمت (سراسری‌ها و فیلدهای خود خدمت، به ترتیب `sort`) با `field_key`، `type`، `label`، `required`، `options` و `show_if`. خدمت ناموجود: 404 `service_not_found` |
+| `GET /payment-options` | `{online: bool}`: آیا مشتری می‌تواند آنلاین پرداخت کند (درگاهی جز آفلاین فعال است) |
 | `POST /book` | Hold را به نوبت تبدیل می‌کند |
 
-`POST /book` نیاز به هدر `X-WP-Nonce` (از `GET /nonce`) دارد و rate limit آن 10 در دقیقه برای هر کلاینت است. بدنه: `hold_token`، `phone` (الزامی، ارقام فارسی مشکلی ندارد)، `first_name` و `last_name` (حداقل یکی الزامی است)، `email` (اختیاری)، `customer_note`، `answers` (بر اساس `field_key`؛ checkbox فقط به‌صورت bool در بدنه JSON). مشتری با شماره پیدا یا ساخته می‌شود؛ مشتری موجود نام و ایمیلش را حفظ می‌کند و مهمان نمی‌تواند آن را عوض کند. `source` نوبت `widget` و `created_by` خالی است. **شماره هنوز تأیید نمی‌شود** (OTP در T4.3 می‌آید).
+`POST /book` نیاز به هدر `X-WP-Nonce` (از `GET /nonce`) دارد و rate limit آن 10 در دقیقه برای هر کلاینت است. بدنه: `hold_token`، `phone` (الزامی، ارقام فارسی مشکلی ندارد)، `first_name` و `last_name` (حداقل یکی الزامی است)، `email` (اختیاری)، `customer_note`، `answers` (بر اساس `field_key`؛ checkbox فقط به‌صورت bool در بدنه JSON). مشتری با شماره پیدا یا ساخته می‌شود؛ مشتری موجود نام و ایمیلش را حفظ می‌کند و مهمان نمی‌تواند آن را عوض کند. `source` نوبت `widget` و `created_by` خالی است. **شماره هنوز تأیید نمی‌شود** (OTP در T4.3 می‌آید). با `pay_online: true` (و `return_url` از همین سایت؛ پیش‌فرض صفحه اصلی) و قیمت بیشتر از صفر، نوبت `pending_payment` می‌شود و زمانش گرفته می‌ماند، پرداخت در اولین درگاه آنلاین باز می‌شود و پاسخ `payment_url` دارد؛ اگر هیچ درگاهی جواب ندهد نوبت همان لحظه `expired` می‌شود و پاسخ 409 `payment_unavailable` است. پرداخت موفق نوبت را `confirmed` و `payment_status` را `paid` می‌کند؛ اگر تا 30 دقیقه پرداخت نیاید نوبت `expired` و زمانش آزاد می‌شود.
 
 پاسخ 201: فقط `code` (کد پیگیری)، `status`، `start`، `end` و `price`. خطاها: 404 `hold_not_found` (توکن ناشناخته، منقضی یا مصرف‌شده)، 409 `service_unavailable`، 422 `customer_unavailable` (مشتری مسدود)، `invalid_phone`، `invalid_email`، `invalid_name`، و برای پاسخ نامعتبر `answer_required` یا `invalid_answer` که **`data.details.field_key`** فیلد خطادار را نشان می‌دهد.
 
@@ -142,8 +143,9 @@
 ## پرداخت
 | Route | کار |
 |---|---|
-| `GET /payments/callback/{gateway}` | عمومی؛ جایی که درگاه مشتری را برمی‌گرداند. `authority` الزامی است و بقیه پارامترهای query به‌صورت متن به adapter درگاه می‌رسد (هیچ‌کدام باور نمی‌شود؛ درگاه استعلام می‌شود). پاسخ: `{id, appointment_id, gateway, amount, status, ref_id}`. تکراری بودن callback بی‌اثر است. درگاه یا authority ناموجود: 404 `payment_not_found`. rate limit: 60 در دقیقه |
+| `GET /payments/callback/{gateway}` | عمومی؛ جایی که درگاه مشتری را برمی‌گرداند. پارامتر شناسه پرداخت را خود درگاه نام‌گذاری می‌کند (`Authority` در Zarinpal، `trackId` در Zibal، `authority` در آفلاین) و adapter آن را می‌خواند؛ پارامترهای query به‌صورت متن به adapter می‌رسد (هیچ‌کدام باور نمی‌شود؛ درگاه استعلام می‌شود). اگر `return` (آدرسی از همین سایت) باشد، پاسخ 302 به آن آدرس است با پارامتر `{prefix}_payment` برابر `succeeded`، `failed` یا `pending`؛ وگرنه JSON `{id, appointment_id, gateway, amount, status, ref_id}`. تکراری بودن callback بی‌اثر است. درگاه یا پرداخت ناموجود: 404 `payment_not_found`. rate limit: 60 در دقیقه |
 | `POST /payments/offline/confirm` | `authority`؛ فقط با capability `manage_bookings`. ثبت اینکه پرداخت آفلاین دریافت شد |
+| `POST /payments/refunds` | `payment_id`، `amount` (ریال)، `reason`؛ فقط با capability `manage_bookings`. ثبت استردادی که دستی انجام شده (در پنل درگاه یا کارت‌به‌کارت). فقط برای پرداخت موفق و تا سقف مبلغ پرداخت‌شده (جمع استردادها): وگرنه 409 `payment_not_paid` یا `refund_exceeds_payment`. پاسخ 201 با `{id}` |
 
 جریان: `PaymentService::start()` درگاه‌ها را به ترتیب امتحان می‌کند (Failover) و یک ردیف `awaiting_callback` می‌سازد؛ callback با `settle()` یک‌بار به `succeeded` یا `failed` می‌رود (درگاه بیرون از قفل استعلام می‌شود و انتقال زیر قفل ردیف انجام می‌شود). پس از commit، action `{prefix}/payments/succeeded` با `($appointmentId, $paymentId)` اجرا می‌شود؛ Booking و Payments فقط از راه رویداد به هم می‌رسند. درگاه‌ها با filter `{prefix}/payments/gateways` ثبت می‌شوند؛ فعلاً فقط `offline`.
 

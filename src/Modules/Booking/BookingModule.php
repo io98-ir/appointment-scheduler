@@ -9,12 +9,15 @@ use Vaqtyar\Kernel\Context;
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Transaction;
 use Vaqtyar\Kernel\Hooks;
+use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Booking\Application\AppointmentBrowser;
 use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
+use Vaqtyar\Modules\Booking\Application\OnlineCheckout;
+use Vaqtyar\Modules\Booking\Application\UnpaidAppointments;
 use Vaqtyar\Modules\Booking\Application\CouponAdminService;
 use Vaqtyar\Modules\Booking\Application\CustomerPanel;
 use Vaqtyar\Modules\Booking\Application\FieldAdminService;
@@ -57,6 +60,7 @@ use Vaqtyar\Modules\Booking\Presentation\Rest\ReportRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\TimeRuleRoutes;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
+use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
@@ -73,6 +77,14 @@ final class BookingModule implements Module
 {
     /** Expired holds are purged this often; correctness does not wait for it. */
     private const PURGE_EVERY_SECONDS = 600;
+
+    /**
+     * An appointment waiting for its payment is given up after this long: a gateway's page is good for
+     * about 15 minutes, and the reconciliation job (Payments) settles late payments by minute 20.
+     */
+    private const EXPIRE_UNPAID_AFTER_SECONDS = 1800;
+    private const EXPIRE_UNPAID_EVERY_SECONDS = 300;
+    private const EXPIRE_UNPAID_BATCH = 50;
 
     public function id(): string
     {
@@ -116,7 +128,25 @@ final class BookingModule implements Module
                 $c->get(TransactionRunner::class),
                 $c->get(Clock::class),
                 new WpAuthorizer(),
+                self::changed(...),
+                $c->get(OnlineCheckout::class)
+            )
+        );
+        $container->singleton(
+            UnpaidAppointments::class,
+            static fn (Container $c) => new UnpaidAppointments(
+                new WpdbAppointmentRepository($c->get(Db::class)),
+                new ActionSchedulerBookingJobs(),
+                $c->get(TransactionRunner::class),
+                $c->get(Clock::class),
                 self::changed(...)
+            )
+        );
+        $container->singleton(
+            OnlineCheckout::class,
+            static fn (Container $c) => new OnlineCheckout(
+                $c->get(PaymentsApi::class),
+                $c->get(UnpaidAppointments::class)
             )
         );
         $container->singleton(
@@ -229,6 +259,7 @@ final class BookingModule implements Module
                 \as_schedule_recurring_action(\time(), self::PURGE_EVERY_SECONDS, $purge, [], '', true);
             }
         });
+        $this->listenToPayments($container);
         \add_action('rest_api_init', static function () use ($container): void {
             (new HoldRoutes(
                 $container->get(Router::class),
@@ -270,12 +301,55 @@ final class BookingModule implements Module
                 $container->get(Router::class),
                 static fn (): BookingService => $container->get(BookingService::class),
                 static fn (): FieldReader => new WpdbFieldReader($container->get(Db::class)),
-                static fn (): CatalogApi => $container->get(CatalogApi::class)
+                static fn (): CatalogApi => $container->get(CatalogApi::class),
+                static fn (): bool => $container->get(OnlineCheckout::class)->available()
             ))->register();
             (new TimeRuleRoutes(
                 $container->get(Router::class),
                 static fn (): TimeRuleAdminService => $container->get(TimeRuleAdminService::class)
             ))->register();
+        });
+    }
+
+    /**
+     * The other half of a payment (booking-engine §7): Payments says a payment went through, and an
+     * appointment that still waits for it is confirmed. One that does not (it expired, or was cancelled,
+     * while the customer paid) is left as it is: the money is taken, so it is reported to staff with the
+     * `{prefix}/booking/needs_attention` action and the log, never decided here.
+     */
+    private function listenToPayments(Container $container): void
+    {
+        \add_action(
+            Hooks::name('payments/succeeded'),
+            static function (int $appointmentId, int $paymentId) use ($container): void {
+                try {
+                    if ($container->get(UnpaidAppointments::class)->paid($appointmentId)) {
+                        return;
+                    }
+                    $reason = 'The appointment no longer waited for its payment.';
+                } catch (\Throwable $e) {
+                    $reason = 'The appointment could not be marked paid: ' . $e::class;
+                }
+                $container->get(Logger::class)->error('booking', $reason, [
+                    'appointment_id' => $appointmentId,
+                    'payment_id' => $paymentId,
+                ]);
+                \do_action(Hooks::name('booking/needs_attention'), $appointmentId, $paymentId);
+            },
+            10,
+            2
+        );
+        $expire = Hooks::name('booking/expire_unpaid');
+        \add_action($expire, static function () use ($container): void {
+            $container->get(UnpaidAppointments::class)->expireOlderThan(
+                self::EXPIRE_UNPAID_AFTER_SECONDS,
+                self::EXPIRE_UNPAID_BATCH
+            );
+        });
+        \add_action('admin_init', static function () use ($expire): void {
+            if (!\as_has_scheduled_action($expire)) {
+                \as_schedule_recurring_action(\time(), self::EXPIRE_UNPAID_EVERY_SECONDS, $expire, [], '', true);
+            }
         });
     }
 

@@ -18,12 +18,14 @@ use Vaqtyar\Shared\Domain\NotFound;
  *
  *     GET  /nonce                  a fresh REST nonce, since a cached page's is stale
  *     GET  /service-fields         the custom fields a booking of a service asks for
+ *     GET  /payment-options        whether the customer can pay online
  *     POST /book                   a hold and the customer's details become an appointment
  *
  * All are public. POST /book needs the nonce and is rate limited per client;
  * the phone must be verified (session_token from POST /otp/verify) when the
  * site requires it. The reply is only what the
- * customer needs: the tracking code, the time and the price.
+ * customer needs: the tracking code, the time, the price and, for a booking
+ * paid online, the gateway's page to send them to (payment_url).
  */
 final class GuestBookingRoutes
 {
@@ -40,18 +42,22 @@ final class GuestBookingRoutes
         'customer_note' => ['type' => 'string', 'maxLength' => 2000, 'default' => ''],
         'answers' => ['type' => 'object', 'additionalProperties' => true, 'default' => []],
         'session_token' => ['type' => ['string', 'null'], 'maxLength' => 300, 'default' => null],
+        'pay_online' => ['type' => 'boolean', 'default' => false],
+        'return_url' => ['type' => 'string', 'maxLength' => 2000, 'default' => ''],
     ];
 
     /**
      * @param \Closure(): BookingService $service Built when a request needs it.
      * @param \Closure(): FieldReader $fields Built when a request needs it.
      * @param \Closure(): CatalogApi $catalog Built when a request needs it.
+     * @param \Closure(): bool $online Whether a customer can pay online.
      */
     public function __construct(
         private readonly Router $router,
         private readonly \Closure $service,
         private readonly \Closure $fields,
         private readonly \Closure $catalog,
+        private readonly \Closure $online,
     ) {
     }
 
@@ -71,6 +77,14 @@ final class GuestBookingRoutes
             fn (\WP_REST_Request $request): array => $this->fields($request),
             Router::ANYONE,
             ['service' => ['type' => 'integer', 'minimum' => 1, 'required' => true]],
+            new RateLimit(self::READ_LIMIT, 60)
+        );
+        $this->router->add(
+            '/payment-options',
+            'GET',
+            fn (): array => ['online' => ($this->online)()],
+            Router::ANYONE,
+            [],
             new RateLimit(self::READ_LIMIT, 60)
         );
         $this->router->add(
@@ -123,7 +137,8 @@ final class GuestBookingRoutes
             \is_string($email) ? $email : null,
             \sanitize_textarea_field(self::string($request->get_param('customer_note'))),
             \is_array($answers) ? $answers : [],
-            \is_string($session) ? $session : null
+            \is_string($session) ? $session : null,
+            true === $request->get_param('pay_online') ? self::returnUrl($request->get_param('return_url')) : null
         );
         $full = AppointmentJson::of($booked->id, $booked->appointment);
 
@@ -133,7 +148,18 @@ final class GuestBookingRoutes
             'start' => $full['start'],
             'end' => $full['end'],
             'price' => $full['price'],
+            'payment_url' => $booked->paymentUrl,
         ], 201);
+    }
+
+    /**
+     * Where the customer lands after paying: a page of this site, or the home page.
+     */
+    private static function returnUrl(mixed $url): string
+    {
+        $home = \home_url('/');
+
+        return \wp_validate_redirect(\is_string($url) ? $url : '', $home);
     }
 
     private static function string(mixed $value): string

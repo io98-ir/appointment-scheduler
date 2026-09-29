@@ -45,7 +45,7 @@ final class Embeds
             'digits' => ['type' => 'string', 'default' => 'latin'],
         ];
         \register_block_type(Identity::SLUG . '/' . self::BOOKING, [
-            'api_version' => 3,
+            'api_version' => '3',
             'title' => \__('Booking form', 'vaqtyar'),
             'description' => \__('Lets customers book an appointment.', 'vaqtyar'),
             'category' => 'widgets',
@@ -59,7 +59,7 @@ final class Embeds
             'render_callback' => [$this, 'renderBookingBlock'],
         ]);
         \register_block_type(Identity::SLUG . '/' . self::PANEL, [
-            'api_version' => 3,
+            'api_version' => '3',
             'title' => \__('My appointments', 'vaqtyar'),
             'description' => \__('Lets a customer see, cancel and move their appointments.', 'vaqtyar'),
             'category' => 'widgets',
@@ -183,6 +183,8 @@ final class Embeds
         // Zeros mean "not set", which the widget reads as absent.
         $config = \array_filter($config, static fn (int|string $value): bool => 0 !== $value);
         $config['restUrl'] = \rest_url(Identity::REST_NAMESPACE . '/');
+        // The query parameter Payments' return redirect carries the outcome in.
+        $config['paymentParam'] = Identity::PREFIX . '_payment';
 
         return \sprintf(
             '<div data-%s-%s="%s"></div>',

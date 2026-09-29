@@ -11,7 +11,13 @@ use Vaqtyar\Modules\Booking\Domain\Appointment\Appointment;
  */
 final class BookedAppointment
 {
-    public function __construct(public readonly int $id, public readonly Appointment $appointment)
-    {
+    /**
+     * @param ?string $paymentUrl where the customer pays, when the booking waits for an online payment.
+     */
+    public function __construct(
+        public readonly int $id,
+        public readonly Appointment $appointment,
+        public readonly ?string $paymentUrl = null,
+    ) {
     }
 }

@@ -9,6 +9,7 @@ use Vaqtyar\Kernel\Database\DbException;
 use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Modules\Payments\Application\PaymentRepository;
+use Vaqtyar\Modules\Payments\Application\PaymentService;
 use Vaqtyar\Modules\Payments\Domain\Payment;
 use Vaqtyar\Modules\Payments\Domain\PaymentStatus;
 use Vaqtyar\Shared\Domain\Conflict;
@@ -72,7 +73,21 @@ final class WpdbPaymentRepository implements PaymentRepository
         if ([] === $rows) {
             return null;
         }
-        $row = new Row($rows[0]);
+
+        return self::hydrate(new Row($rows[0]));
+    }
+
+    public function findById(int $id, bool $forUpdate = false): ?Payment
+    {
+        $rows = $forUpdate
+            ? $this->db->getResults('SELECT * FROM %i WHERE id = %d FOR UPDATE', Tables::name('payments'), $id)
+            : $this->db->getResults('SELECT * FROM %i WHERE id = %d', Tables::name('payments'), $id);
+
+        return [] === $rows ? null : self::hydrate(new Row($rows[0]));
+    }
+
+    private static function hydrate(Row $row): ?Payment
+    {
         $status = PaymentStatus::tryFrom($row->string('status'));
 
         return null === $status ? null : new Payment(
@@ -85,6 +100,30 @@ final class WpdbPaymentRepository implements PaymentRepository
             $row->stringOrNull('ref_id'),
             $row->stringOrNull('card_mask')
         );
+    }
+
+    /**
+     * @return list<Payment>
+     */
+    public function awaitingBefore(int $cutoff, int $limit): array
+    {
+        $rows = $this->db->getResults(
+            'SELECT * FROM %i WHERE status = %s AND gateway <> %s AND created_at < %s ORDER BY created_at ASC LIMIT %d',
+            Tables::name('payments'),
+            PaymentStatus::AwaitingCallback->value,
+            PaymentService::OFFLINE,
+            self::utc($cutoff),
+            $limit
+        );
+        $payments = [];
+        foreach ($rows as $row) {
+            $payment = self::hydrate(new Row($row));
+            if (null !== $payment) {
+                $payments[] = $payment;
+            }
+        }
+
+        return $payments;
     }
 
     public function settle(Payment $payment, int $now): bool

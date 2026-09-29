@@ -18,6 +18,14 @@ interface PaymentGateway
     public function id(): string;
 
     /**
+     * Which of the callback's parameters names the payment (each gateway
+     * calls it something else); null when there is none.
+     *
+     * @param array<string, string> $callbackParams
+     */
+    public function callbackAuthority(array $callbackParams): ?string;
+
+    /**
      * Opens a payment with the gateway.
      *
      * @throws GatewayException when the gateway cannot take it now (the next gateway is tried).

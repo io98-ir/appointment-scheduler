@@ -17,6 +17,16 @@ interface PaymentRepository
 
     public function find(string $gateway, string $authority, bool $forUpdate = false): ?Payment;
 
+    public function findById(int $id, bool $forUpdate = false): ?Payment;
+
+    /**
+     * Payments of an online gateway still awaiting their callback since before $cutoff, oldest first.
+     *
+     * @param int $cutoff UTC seconds.
+     * @return list<Payment>
+     */
+    public function awaitingBefore(int $cutoff, int $limit): array;
+
     /**
      * Writes a settled payment, only if it is still awaiting its callback.
      *

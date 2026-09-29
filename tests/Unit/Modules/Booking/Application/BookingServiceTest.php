@@ -407,6 +407,14 @@ final class BookingServiceTest extends TestCase
             ): void {
             }
 
+            /**
+             * @return list<int>
+             */
+            public function pendingPaymentBefore(int $cutoff, int $limit): array
+            {
+                return [];
+            }
+
             public function release(int $id): void
             {
             }

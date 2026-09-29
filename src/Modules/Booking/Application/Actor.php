@@ -12,6 +12,7 @@ final class Actor
 {
     public const USER = 'user';
     public const CUSTOMER = 'customer';
+    public const SYSTEM = 'system';
 
     private function __construct(public readonly string $type, public readonly int $id)
     {
@@ -25,6 +26,14 @@ final class Actor
     public static function customer(int $customerId): self
     {
         return new self(self::CUSTOMER, $customerId);
+    }
+
+    /**
+     * A job or a payment callback: nobody in particular, recorded with no actor id.
+     */
+    public static function system(): self
+    {
+        return new self(self::SYSTEM, 0);
     }
 
     public function isCustomer(): bool
