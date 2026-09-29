@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M4** سمت مشتری (M3 Admin کامل شد) |
-| **Task در حال انجام** | **T4.2، T4.3 و T4.4** — کدشان نوشته و push شده و منتظر CI سبز است (2026-09-29). CI اول T4.3 قرمز بود (import نوع در `PhoneCheck.tsx`، سازنده جدید `CustomerReader` در یک تست، `strtr` ارقام فارسی در تست، دو `if` چندخطی برای phpcs) و رفع شد. **T4.4** (پنل مشتری): `CustomerApi::customerOfSession`، `AppointmentService::decisions` (پیش‌نمایش Policy بدون قفل)، `CustomerPanel` و `PanelAppointment`، `PanelRoutes` (`GET /my/appointments`، `POST /my/appointments/{id}/cancel|reschedule` با هدر `X-Phone-Session` و nonce)، `ApiClient` گزینه `session`، ویجت `Panel.tsx` (ورود با OTP، فهرست، لغو با تأیید و درصد استرداد، جابجایی با انتخاب تاریخ و ساعت، خروج)، `mountPanel` و attribute `data-{slug}-panel`. «پرداخت مانده» به M5 موکول شد (پرداخت هنوز وجود ندارد). تست‌ها: `HoldsTest` (پنل)، `panel.test.tsx` |
-| **Task بعدی** | T4.5 — Shortcode و بلوک گوتنبرگ برای ویجت و پنل، بارگذاری شرطی asset، و enqueue با `restUrl`. بعد از آن M5 |
+| **Task در حال انجام** | **T4.2 تا T4.5** — کدشان نوشته و push شده و منتظر CI سبز است (2026-09-29). **T4.5:** ماژول تازه `Widget` (در `vaqtyar.php` و `tools/deptrac-modules.yaml` ثبت شد) با `Embeds`: Shortcode `[vaqtyar_booking]` و `[vaqtyar_panel]`، بلوک‌های `vaqtyar/booking` و `vaqtyar/panel` (رندر سمت سرور، ویرایشگر ساده `assets/blocks.js` بدون build که نام بلوک‌ها را از attribute تگ خودش می‌خواند)، و enqueue شرطی `build/widget.*` فقط وقتی یک embed رندر شود. تست: `EmbedsTest` (Integration؛ اگر `build/` نباشد مهمان رشته خالی می‌گیرد و تست هر دو حالت را می‌سنجد). **باقی‌مانده:** CI سبز؛ `assets/` باید در zip انتشار بیاید (T6.6)؛ E2E مرورگری ویجت حالا ممکن است (صفحه با shortcode) و برای T6.5 می‌ماند |
+| **Task بعدی** | **M5 — T5.1** Payments core (Port `PaymentGateway`، Registry، جریان start ← callback ← verify، Failover، Offline) |
 | **آخرین کار انجام‌شده** | **T3.5** کامل (مشتریان، تعطیلات، Policy، فیلدها، کوپن، قیمت زمانی، E2E `settings.spec.ts`)، **T3.6** (داشبورد `/`، گزارش `/reports`، `GET /reports/summary`، CSV)، **T4.1** (`GET /catalog` عمومی، ویجت: خدمت/Variant/شعبه/پرسنل، تقویم ماه شمسی یا میلادی، ساعت‌های خالی، «اولین نوبت خالی»، رویداد `vqy:slot`؛ ویجت 11KB gz). **CI سبز روی main: run 36544899242** (هر ۱۳ job، 2026-09-29) |
 | **Blockerها** | — |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
@@ -23,7 +23,7 @@
 | M1 کاتالوگ و زمان‌بندی | ✅ | 5/5 |
 | M2 هسته رزرو | ✅ | 8/8 |
 | M3 Admin | ✅ | 6/6 |
-| M4 سمت مشتری | 🟨 | 1/5 (T4.2، T4.3 و T4.4 منتظر CI) |
+| M4 سمت مشتری | 🟨 | 1/5 (T4.2 تا T4.5 منتظر CI) |
 | M5 پرداخت و اعلان | ⬜ | 0/5 |
 | M6 انتشار 1.0 | ⬜ | 0/6 |
 
@@ -69,8 +69,8 @@
 | T4.1 | ویجت: انتخاب و تقویم | ✅ | `33035a6`. `GET /catalog` عمومی. ویجت 11KB gz. **CI سبز (run 36544899242)** |
 | T4.2 | ویجت: Hold تا تأیید | 🟨 | `42b39eb`. Integration سبز؛ lint رفع شد، منتظر CI |
 | T4.3 | OTP | 🟨 | `4d0f662` + رفع lint/تست. منتظر CI. تنظیم `require_phone_verification` پیش‌فرض خاموش |
-| T4.4 | پنل مشتری | 🟨 | کد نوشته شد، منتظر CI. پرداخت مانده با M5 |
-| T4.5 | Shortcode و Block | ⬜ | |
+| T4.4 | پنل مشتری | 🟨 | `60198eb`. منتظر CI. پرداخت مانده با M5 |
+| T4.5 | Shortcode و Block | 🟨 | کد نوشته شد، منتظر CI. ماژول `Widget` |
 | T5.1 | Payments core | ⬜ | |
 | T5.2 | Zarinpal، Zibal، تطبیق | ⬜ | |
 | T5.3 | ووکامرس | ⬜ | |

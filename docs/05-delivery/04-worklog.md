@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 (ادامه 5) — T4.5: Shortcode و بلوک
+**Taskها:** T4.5 (منتظر CI)
+**انجام شد:** ماژول `Widget` (`WidgetModule`، `Presentation/Embeds`): shortcodeهای `[vaqtyar_booking]` و `[vaqtyar_panel]`، بلوک‌های سمت‌سرور با ویژگی‌های service، variant، location، staff، calendar و digits؛ enqueue شرطی؛ `assets/blocks.js` برای ویرایشگر. deptrac و `vaqtyar.php` به‌روز شدند.
+**تصمیم‌ها و فرض‌ها:** ویرایشگر بلوک بدون build و بدون global ساخته شد تا وابستگی پروژه بیشتر نشود (`@wordpress/blocks` و همراهانش external وردپرس‌اند). نام بلوک‌ها از attribute `data-blocks` تگ اسکریپت خوانده می‌شود، پس نام برند در JS نیست. بدون `build/` مهمان چیزی نمی‌بیند.
+**تأیید:** تست محلی گرفته نشد؛ CI ابزار تأیید است.
+**مشکلات و باقیمانده:** CI سبز برای T4.2 تا T4.5. اگر `rename.php` فایل `assets/blocks.js` را نبیند، text-domain آن پس از rename عوض نمی‌شود (CI بررسی می‌کند).
+**قدم بعدی:** M5 (T5.1).
+**Commitها:** T4.5 در commit بعدی.
+
+---
+
 ## 2026-09-29 — سشن 24 (ادامه 4) — T4.4: پنل مشتری
 **Taskها:** T4.4 (منتظر CI)، رفع CI سرخ T4.3
 **انجام شد:** `AppointmentService::decisions()` (Policy لغو و جابجایی بدون قفل و بدون تغییر)؛ `CustomerPanel` (نوبت‌های مشتری از روی نشست شماره، لغو و جابجایی از راه `AppointmentService` با `Actor::customer` که خودش مالکیت را می‌سنجد)؛ `PanelRoutes` زیر `/my/appointments`؛ `CustomerApi::customerOfSession`. ویجت: `Panel.tsx`، `mountPanel`، گزینه `session` در `ApiClient`، و `status` در `useFetch` برای خروج خودکار با 401 و 403.

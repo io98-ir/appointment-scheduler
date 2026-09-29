@@ -83,6 +83,15 @@ deptrac:
           must_not:
             - type: layer
               value: Contracts
+    - name: Widget
+      collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^Vaqtyar\\Modules\\Widget\\#'
+          must_not:
+            - type: layer
+              value: Contracts
     # Anything of ours outside the layers above, e.g. a module not listed here
     # yet: without this it would be "uncovered" and have no isolation at all.
     - name: Unclassified
@@ -112,6 +121,8 @@ deptrac:
               value: Notifications
             - type: layer
               value: Admin
+            - type: layer
+              value: Widget
   ruleset:
     # The main plugin file is the composition root and passes the modules in,
     # so the Kernel depends on no module (architecture §5).
@@ -125,4 +136,5 @@ deptrac:
     Payments: [Kernel, Shared, Contracts]
     Notifications: [Kernel, Shared, Contracts]
     Admin: [Kernel, Shared, Contracts]
+    Widget: [Kernel, Shared, Contracts]
     Unclassified: ~

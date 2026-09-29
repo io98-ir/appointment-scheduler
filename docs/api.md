@@ -130,6 +130,15 @@
 
 مشتری هرگز Override ندارد و فقط نوبت خودش را می‌بیند. ویجت آن را با `<div data-{slug}-panel>` می‌گیرد (Shortcode در T4.5).
 
+## جاسازی ویجت و پنل (Shortcode و بلوک)
+| | |
+|---|---|
+| `[vaqtyar_booking]` | فرم رزرو. ویژگی‌ها (همه اختیاری): `service`، `variant`، `location`، `staff` (شناسه؛ 0 یعنی مشتری انتخاب می‌کند)، `calendar` (`jalali` پیش‌فرض یا `gregorian`)، `digits` (`latin` پیش‌فرض یا `persian`) |
+| `[vaqtyar_panel]` | پنل مشتری (نوبت‌ها، لغو و جابجایی). فقط `calendar` و `digits` |
+| بلوک `vaqtyar/booking` و `vaqtyar/panel` | همان ویژگی‌ها، در دسته «ابزارک‌ها». رندر سمت سرور است و ویرایشگر از `assets/blocks.js` (بدون build) می‌آید |
+
+هر کدام یک `<div data-{slug}-widget>` یا `<div data-{slug}-panel>` با config به‌صورت JSON می‌نویسد (`restUrl` و ویژگی‌های غیرصفر) که `packages/widget` mount می‌کند. اسکریپت و استایل ویجت (`build/widget.*`) فقط وقتی اولین embed رندر شود enqueue می‌شوند، پس صفحه بدون آن چیزی بارگذاری نمی‌کند. بدون `pnpm build` مهمان چیزی نمی‌بیند و مدیر یک پیام. پوشه `assets/` باید در zip انتشار باشد (T6.6).
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 
