@@ -20,10 +20,10 @@
 **Taskها:** T3.5 (در حال انجام؛ این بار فقط کوپن. Price rule از نوع زمانی می‌ماند)
 **انجام شد:** Domain: `CouponRepository` (در `Domain\Pricing`، کنار `Coupon`؛ `all`، `find`، `findByCode`، `save`، `delete`). Infrastructure: `WpdbCouponRepository` جدا از `WpdbPricingReader` (مسیر خواندن و شمارش رزرو، دست‌نخورده ماند)؛ `used` هرگز نوشته نمی‌شود؛ کلید تکراری 1062 به `Conflict coupon_code_taken` تبدیل می‌شود. Application: `CouponAdminService` (capability همان `manage_bookings`؛ کد 1 تا 64 نویسه، `valid_to` بعد از `valid_from`، `max_uses` ≥ 1، `service_ids` خالی رد می‌شود و هر خدمت باید در کاتالوگ باشد، کد تکراری بدون توجه به حرف بزرگ و کوچک 409). Presentation: `CouponRoutes` با `GET|POST /coupons` و `PUT|DELETE /coupons/{id}`. Admin UI: `packages/admin/src/coupons/Coupons.tsx` (لیست + فرم افزودن، بدون ویرایش درجا؛ بازه به‌صورت `datetime-local` در منطقه زمانی مرورگر و ارسال به‌صورت UTC) در `/settings` زیر Policy و فیلدها. `docs/api.md` و نوع TS `Coupon` اضافه شدند.
 **تصمیم‌ها و فرض‌ها:** اعتبارسنجی بازه، سقف و لیست خدمت‌ها در Service است، نه سازنده `Coupon`، چون `WpdbPricingReader` همان سازنده را روی ردیف ذخیره‌شده صدا می‌زند و سخت‌تر کردنش می‌تواند رزرو را به‌خاطر یک ردیف قدیمی بشکند. فرم UI محدودکردن کوپن به چند خدمت را ندارد (API دارد، UI فعلاً همیشه `service_ids: null` می‌فرستد)؛ انتخاب خدمت به بخش بعدی موکول شد.
-**تأیید:** `composer check` (821 Unit، phpcs، PHPStan 9، Deptrac) محلی سبز. `pnpm lint` سبز. `pnpm test` ← 112 passed (17 فایل). `CouponRestTest` (Integration) فقط با CI اجرا می‌شود.
+**تأیید:** `composer check` (821 Unit، phpcs، PHPStan 9، Deptrac) محلی سبز. `pnpm lint` سبز. `pnpm test` ← 112 passed (17 فایل). `pnpm build`، `pnpm size` (admin 31.35KB gz) و `composer test:rename` سبز. **CI سبز روی main (run 36535342752): هر ۱۳ job شامل Integration در ۴ ترکیب (با `CouponRestTest`)، Concurrency، Rename و E2E** (2026-09-29). subagent `reviewer` اجرا نشد (کاربر درخواست agent را رد کرد)؛ بازبینی دستی.
 **مشکلات و باقیمانده:** T3.5: Price rule (نوع time) و E2E کامل (مشتریان، Policy، تعطیلات، فیلدها و کوپن فقط Vitest دارند)، و انتخاب خدمت در فرم کوپن.
 **قدم بعدی:** Price rule زمانی (`WpdbTimeRuleRepository` جدا از `WpdbPricingReader`)، بعد E2E T3.5.
-**Commitها:** (بعد از commit پر می‌شود)
+**Commitها:** `3131f5e feat(booking): admin CRUD for coupons (T3.5 part 5)`
 
 ---
 
