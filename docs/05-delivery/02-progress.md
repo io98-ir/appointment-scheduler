@@ -7,9 +7,9 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M4** سمت مشتری (M3 Admin کامل شد) |
-| **Task در حال انجام** | **T4.2 تا T4.5، T5.1 و T5.2** — کدشان نوشته و (به‌جز T5.2) push شده و منتظر CI سبز است (2026-09-29). CI آخر (T5.1) به‌خاطر lint و PHPStan قرمز بود و Integration با fatal افتاد: در `HoldsTest` بایت BEL (از `\a` اسکریپت Python) بود و نوع `body` در چند تست `mixed` بود؛ همه رفع شد و `composer lint`، `stan`، `deptrac` و 885 تست Unit و 143 تست Vitest محلی سبزند. **T5.2:** `ZarinpalGateway` (v4) و `ZibalGateway` با Port `JsonHttp` (تست با پاسخ ضبط‌شده؛ کلید واقعی امتحان نشد)، `PaymentGateway::callbackAuthority`، Job تطبیق `payments/reconcile` هر 5 دقیقه، `RefundService` (ثبت استرداد دستی، `POST /payments/refunds`)، و **اتصال Booking به Payments**: Contract `PaymentsApi`، `POST /book` با `pay_online` نوبت `pending_payment` می‌سازد و `payment_url` می‌دهد، `UnpaidAppointments` (`paid` و `expire` با قفل ردیف)، Job انقضای 30 دقیقه‌ای، `booking/needs_attention` برای پرداخت دیرهنگام، `GET /payment-options`، بازگشت 302 از callback با `{prefix}_payment`، و ویجت (دکمه «پرداخت آنلاین»، بنر نتیجه؛ 15.5KB gz). تست Integration جدید در `HoldsTest` (5 سناریو) و `FakeGateway` در bootstrap اجرا نشده و فقط CI آن را می‌سنجد. **باقی‌مانده:** `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `needs_attention`؛ صفحه تنظیم merchant (فعلاً `SecretStore`/wp-config، با T6.1) |
+| **Task در حال انجام** | — (T4.2 تا T5.2 کامل و **CI سبز روی main: run 36552515145**، هر 13 job، 2026-09-29). باقی‌مانده‌های T5.2: `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `booking/needs_attention`؛ صفحه تنظیم merchant (فعلاً `SecretStore` یا ثابت wp-config، با T6.1)؛ تست زنده با کلید واقعی پیش از انتشار |
 | **Task بعدی** | **T5.3** — ووکامرس به‌عنوان درگاه (HPOS) با تست Integration؛ اگر ووکامرس در wp-env نصب نیست، اول آن را به `.wp-env.json` اضافه کن. پیش از آن اگر CI قرمز بود، اول همان را رفع کن (`gh run list`) |
-| **آخرین کار انجام‌شده** | **T3.5** کامل (مشتریان، تعطیلات، Policy، فیلدها، کوپن، قیمت زمانی، E2E `settings.spec.ts`)، **T3.6** (داشبورد `/`، گزارش `/reports`، `GET /reports/summary`، CSV)، **T4.1** (`GET /catalog` عمومی، ویجت: خدمت/Variant/شعبه/پرسنل، تقویم ماه شمسی یا میلادی، ساعت‌های خالی، «اولین نوبت خالی»، رویداد `vqy:slot`؛ ویجت 11KB gz). **CI سبز روی main: run 36544899242** (هر ۱۳ job، 2026-09-29) |
+| **آخرین کار انجام‌شده** | **T4.2 تا T4.5** (Hold تا تأیید، OTP، پنل مشتری، shortcode و بلوک)، **T5.1** (هسته پرداخت) و **T5.2** (Zarinpal، Zibal، تطبیق، استرداد دستی، اتصال Booking و ویجت به پرداخت آنلاین). **CI سبز روی main: run 36552515145** (هر 13 job، 2026-09-29). ویجت 15.5KB gz |
 | **Blockerها** | — |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
 | **تله‌های فعلی** | (۱) `Db::getResults()` فقط SQL literal می‌گیرد؛ SQL را داخل هر متد Repository بنویس، نه در متد کمکی. (۲) فایل‌های repo را با Edit ویرایش کن؛ اسکریپت Python روی ویندوز CRLF می‌نویسد و `\a` را BEL می‌کند (phpcs می‌گیرد). داخل heredoc ابزار Bash هم دو backslash پشت سر هم یکی می‌شود و در Python به بایت BEL تبدیل می‌شود (در سشن 24 باعث fatal در همه jobهای Integration شد). کد PHP را فقط با Write/Edit بنویس و بعد از هر اسکریپت، فایل‌های تغییرکرده را برای بایت کنترلی اسکن کن. (۳) `X-WP-Nonce` کهنه هر درخواست مهمان را 403 می‌کند: ویجت قبل از POST nonce تازه می‌گیرد. (۴) دکمه‌های فرم را نام یکتا بده (مثل «Add field»)، وگرنه لوکیتورهای E2E می‌شکنند. (۵) تا پایان اسفند 1405 باید `1406.json` و `ImportHolidays(1406)` اضافه شود. جزئیات بیشتر: `docs/04-engineering/03-implementation-notes.md` |
@@ -23,8 +23,8 @@
 | M1 کاتالوگ و زمان‌بندی | ✅ | 5/5 |
 | M2 هسته رزرو | ✅ | 8/8 |
 | M3 Admin | ✅ | 6/6 |
-| M4 سمت مشتری | 🟨 | 1/5 (T4.2 تا T4.5 منتظر CI) |
-| M5 پرداخت و اعلان | 🟨 | 0/5 (T5.1 و T5.2 منتظر CI) |
+| M4 سمت مشتری | ✅ | 5/5 |
+| M5 پرداخت و اعلان | 🟨 | 2/5 |
 | M6 انتشار 1.0 | ⬜ | 0/6 |
 
 ## جزئیات Taskها
@@ -67,12 +67,12 @@
 | T3.5 | مشتریان، Policy، قیمت، فیلدها | ✅ | `94ce3bb`..`18d2823` و `23f4748`. کوپن و قیمت زمانی هم Repository جدا از `WpdbPricingReader` دارند. E2E در `settings.spec.ts`. انتخاب خدمت در فرم کوپن/قیمت زمانی فقط با API ممکن است (UI بعداً). **CI سبز (run 36544899242)** |
 | T3.6 | داشبورد و گزارش | ✅ | `23f4748`. درآمد = `price_total` نوبت‌های confirmed و completed (پرداخت واقعی با M5). CSV سمت کلاینت. **CI سبز (run 36544899242)** |
 | T4.1 | ویجت: انتخاب و تقویم | ✅ | `33035a6`. `GET /catalog` عمومی. ویجت 11KB gz. **CI سبز (run 36544899242)** |
-| T4.2 | ویجت: Hold تا تأیید | 🟨 | `42b39eb`. Integration سبز؛ lint رفع شد، منتظر CI |
-| T4.3 | OTP | 🟨 | `4d0f662` + رفع lint/تست. منتظر CI. تنظیم `require_phone_verification` پیش‌فرض خاموش |
-| T4.4 | پنل مشتری | 🟨 | `60198eb`. منتظر CI. پرداخت مانده با M5 |
-| T4.5 | Shortcode و Block | 🟨 | `eb4d25e`. منتظر CI. ماژول `Widget` |
-| T5.1 | Payments core | 🟨 | کد نوشته شد، منتظر CI. اتصال به Booking با T5.2 |
-| T5.2 | Zarinpal، Zibal، تطبیق | 🟨 | کد نوشته شد، منتظر CI. HTTP Mock ضبط‌شده؛ استرداد فقط دستی. اتصال Booking همین‌جا انجام شد (implementation-notes §4.17) |
+| T4.2 | ویجت: Hold تا تأیید | ✅ | `42b39eb` + رفع lint. **CI سبز (run 36552515145)** |
+| T4.3 | OTP | ✅ | `4d0f662` + رفع lint/تست. تنظیم `require_phone_verification` پیش‌فرض خاموش. **CI سبز (run 36552515145)** |
+| T4.4 | پنل مشتری | ✅ | `60198eb`. پرداخت مانده هنوز نیست. **CI سبز (run 36552515145)** |
+| T4.5 | Shortcode و Block | ✅ | `eb4d25e`. ماژول `Widget`. **CI سبز (run 36552515145)** |
+| T5.1 | Payments core | ✅ | `684dd67`. **CI سبز (run 36552515145)** |
+| T5.2 | Zarinpal، Zibal، تطبیق | ✅ | `37107d2`. HTTP Mock ضبط‌شده؛ استرداد فقط دستی. اتصال Booking همین‌جا انجام شد (implementation-notes §4.17). **CI سبز (run 36552515145)** شامل 5 سناریوی Integration |
 | T5.3 | ووکامرس | ⬜ | |
 | T5.4 | Notifications core | ⬜ | |
 | T5.5 | SMS Providers | ⬜ | |
