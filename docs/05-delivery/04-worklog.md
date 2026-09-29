@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 (ادامه) — T3.5 تکمیل و T3.6: داشبورد و گزارش
+**Taskها:** T3.5 (تکمیل با E2E)، T3.6
+**انجام شد:** T3.6: `ReportService` (Application) روی port `ReportQuery` با `WpdbReportQuery` (چهار GROUP BY روی `appointments`: وضعیت، روز، خدمت، پرسنل؛ فیلتر دقیق روی `local_date` و بازه `start_at` ایندکس‌دار با یک روز حاشیه)، REST `GET /reports/summary` (`ReportRoutes`). «رزرو‌شده» یعنی `confirmed` و `completed`؛ درآمد مجموع `price_total` همان‌ها؛ نرخ لغو = لغو‌شده‌ها ÷ (رزرو‌شده + no_show + لغو‌شده). UI: `DashboardPage` (امروز، 7 روز، 30 روز، نرخ لغو، نمودار میله‌ای 7 روز و نوبت‌های تأییدشده باقی‌مانده امروز) در `/`، و `ReportsPage` (بازه، جدول هر روز/خدمت/پرسنل، خروجی CSV از `GET /appointments` تا 5000 ردیف با BOM و خنثی‌سازی سلول‌های شبیه فرمول) در `/reports`. E2E T3.5 و T3.6 در `tests/e2e/specs/settings.spec.ts` (فیلد سراسری، کوپن، قیمت زمانی، تعطیلات، داشبورد، گزارش و دانلود CSV).
+**تصمیم‌ها و فرض‌ها:** CSV سمت کلاینت ساخته می‌شود تا route تازه با پاسخ غیر JSON لازم نباشد. «امروز» و «7 روز» تاریخ مرورگر ادمین‌اند. انتخاب خدمت در فرم کوپن و قیمت زمانی به UI اضافه نشد (API دارد)؛ برای T3.5 این را یک بهبود بعدی حساب کردم، نه شرط پایان، چون معیار Task «E2E» بود. درآمد فعلاً مبلغ نوبت است نه پرداخت‌شده (با M5 اصلاح می‌شود).
+**تأیید:** `composer check` (828 Unit) سبز. `pnpm lint` سبز. `pnpm test` ← 122 passed (20 فایل). `pnpm build` و `pnpm size` (admin 33.68KB gz) سبز. `ReportRestTest` و E2E فقط با CI.
+**مشکلات و باقیمانده:** یک اسکریپت Python من فایل `BookingModule.php` را با CRLF نوشت و phpcs گرفت (رفع شد؛ برای ویرایش فایل‌های repo از Edit استفاده کن یا `newline=''` بده).
+**قدم بعدی:** پس از CI سبز، T3.5 و T3.6 ✅ و M3 تمام؛ بعد M4 (T4.1 ویجت).
+**Commitها:** (بعد از commit پر می‌شود)
+
+---
+
 ## 2026-09-29 — سشن 24 — T3.5 (بخش ۶): قیمت زمانی (Price rule) در Admin
 **Taskها:** T3.5 (در حال انجام؛ این بار فقط ردیف‌های `price_rules` از نوع `time`)
 **انجام شد:** Domain: `TimeRuleDefinition` (id، service_id، priority، active، به‌علاوه `TimeRule` موجود که فقط قاعده را می‌سنجد و همه invariantهای بازه، درصد و تاریخ را خودش دارد) و `TimeRuleRepository`. Infrastructure: `WpdbTimeRuleRepository` جدا از `WpdbPricingReader` (دست‌نخورده) که config JSON را دقیقاً به شکلی که reader مستند کرده می‌نویسد؛ ردیف خراب از لیست حذف می‌شود. Application: `TimeRuleAdminService` (capability `manage_bookings`، خدمت باید در کاتالوگ باشد). Presentation: `TimeRuleRoutes` با `GET|POST /time-rules` و `PUT|DELETE /time-rules/{id}`. Admin UI: `packages/admin/src/timeRules/TimeRules.tsx` (لیست + فرم افزودن با چک‌باکس روزهای هفته) در `/settings`. `docs/api.md` و نوع TS `TimeRule` اضافه شدند.

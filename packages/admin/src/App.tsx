@@ -20,6 +20,8 @@ import { CustomersPage } from './customers/CustomersPage';
 import { HolidaysPage } from './holidays/HolidaysPage';
 import { NotFound } from './NotFound';
 import { SettingsPage } from './policies/SettingsPage';
+import { DashboardPage } from './reports/DashboardPage';
+import { ReportsPage } from './reports/ReportsPage';
 import { errorMessage } from './query';
 import { useRoute } from './router';
 import { useTheme, type ThemeChoice } from './theme';
@@ -35,11 +37,14 @@ interface Section {
 
 /**
  * The admin screens, in menu order. A section owns its path and every path
- * below it ("/services/7"). The screens of T3.2–T3.6 replace the
- * placeholders as they are built.
+ * below it ("/services/7").
  */
 const SECTIONS: Section[] = [
-	{ path: '/', title: () => __( 'Dashboard', 'vaqtyar' ), Page: Placeholder },
+	{
+		path: '/',
+		title: () => __( 'Dashboard', 'vaqtyar' ),
+		Page: DashboardPage,
+	},
 	{
 		path: '/calendar',
 		title: () => __( 'Calendar', 'vaqtyar' ),
@@ -80,6 +85,11 @@ const SECTIONS: Section[] = [
 		path: '/locations',
 		title: () => __( 'Locations', 'vaqtyar' ),
 		Page: LocationsPage,
+	},
+	{
+		path: '/reports',
+		title: () => __( 'Reports', 'vaqtyar' ),
+		Page: ReportsPage,
 	},
 	{
 		path: '/holidays',
@@ -187,10 +197,6 @@ export function App( {
 			</QueryClientProvider>
 		</ApiContext.Provider>
 	);
-}
-
-function Placeholder() {
-	return <p>{ __( 'This screen is not built yet.', 'vaqtyar' ) }</p>;
 }
 
 /**

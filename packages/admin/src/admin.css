@@ -311,3 +311,48 @@
 .vqy-appointment__history {
 	padding-inline-start: 1.5em;
 }
+
+.vqy-admin__stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 16px;
+	max-inline-size: 960px;
+}
+
+.vqy-admin__stat {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-block: 12px;
+	padding-inline: 16px;
+	border: 1px solid GrayText;
+	border-radius: 4px;
+}
+
+.vqy-admin__stat strong {
+	font-size: 1.4em;
+}
+
+.vqy-admin__bars {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.vqy-admin__bars li {
+	display: grid;
+	grid-template-columns: 7em 1fr 2em;
+	align-items: center;
+	gap: 8px;
+}
+
+.vqy-admin__bar {
+	display: block;
+	block-size: 12px;
+	min-inline-size: 2px;
+	background: Highlight;
+	border-radius: 2px;
+}

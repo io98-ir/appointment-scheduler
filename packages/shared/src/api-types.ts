@@ -354,6 +354,27 @@ export interface FieldShowIf {
 	equals: string;
 }
 
+/** GET /reports/summary (docs/api.md): the figures for a range of local dates. */
+export interface ReportSummary {
+	from: string;
+	to: string;
+	totals: {
+		/** Confirmed and completed ones. */
+		appointments: number;
+		/** IRR, of those. */
+		revenue: number;
+		cancelled: number;
+		no_show: number;
+		/** Percent, one decimal, of the appointments that were decided. */
+		cancel_rate: number;
+	};
+	/** Every status with at least one appointment. */
+	statuses: Record< string, number >;
+	days: { date: string; appointments: number; revenue: number }[];
+	services: { id: number; appointments: number; revenue: number }[];
+	staff: { id: number; appointments: number; revenue: number }[];
+}
+
 export type CouponType = 'percent' | 'fixed';
 
 /** /coupons: a discount code. `value` is a percent, or rials for `fixed`. */

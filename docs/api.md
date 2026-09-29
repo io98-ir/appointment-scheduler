@@ -207,3 +207,12 @@
 | `DELETE /time-rules/{id}` | حذف واقعی. ناموجود: 404 `time_rule_not_found` |
 
 خطاها: 404 `service_not_found`، 422 `invalid_weekday`، `invalid_time_range` (بازه بیرون از یک روز یا `to` نه بعد از `from`)، `invalid_date_range` (`valid_to` قبل از `valid_from`) و `invalid_percent`.
+
+## گزارش و داشبورد (Admin)
+capability `manage_bookings` لازم است.
+
+| Route | کار |
+|---|---|
+| `GET /reports/summary` | `from` و `to` (تاریخ محلی `YYYY-MM-DD`، هر دو شامل، حداکثر 366 روز و به ترتیب؛ وگرنه 422 `invalid_range`)، `location` (اختیاری). محاسبه بر پایه `local_date` هر نوبت است، نه UTC |
+
+پاسخ: `totals` (`appointments` و `revenue` فقط برای نوبت‌های `confirmed` و `completed`، `cancelled`، `no_show` و `cancel_rate` که درصدِ لغوها از «تصمیم‌گرفته‌شده‌ها» یعنی booked، no_show و cancelled با یک رقم اعشار است)، `statuses` (شمار هر وضعیت)، `days` (هر روز بازه، حتی صفر)، `services` و `staff` (`id`، `appointments`، `revenue`؛ به ترتیب درآمد نزولی). `revenue` مجموع `price_total` ریال است؛ مبلغ واقعاً پرداخت‌شده با M5 می‌آید. خروجی CSV سمت Admin از `GET /appointments` ساخته می‌شود (تا 5000 ردیف، سلول‌های شبیه فرمول با آپوستروف خنثی می‌شوند).

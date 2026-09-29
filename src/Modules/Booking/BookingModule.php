@@ -20,6 +20,7 @@ use Vaqtyar\Modules\Booking\Application\FieldAdminService;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\HoldService;
 use Vaqtyar\Modules\Booking\Application\PolicyAdminService;
+use Vaqtyar\Modules\Booking\Application\ReportService;
 use Vaqtyar\Modules\Booking\Application\TimeRuleAdminService;
 use Vaqtyar\Modules\Booking\Domain\Field\FieldRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Jobs\ActionSchedulerBookingJobs;
@@ -40,6 +41,7 @@ use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbResourceLocker;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbTimeRuleRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\PricingSettings;
 use Vaqtyar\Modules\Booking\Infrastructure\Query\WpdbAppointmentQuery;
+use Vaqtyar\Modules\Booking\Infrastructure\Query\WpdbReportQuery;
 use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentListRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\BookingRoutes;
@@ -47,6 +49,7 @@ use Vaqtyar\Modules\Booking\Presentation\Rest\CouponRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\FieldRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\PolicyRoutes;
+use Vaqtyar\Modules\Booking\Presentation\Rest\ReportRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\TimeRuleRoutes;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
@@ -163,6 +166,10 @@ final class BookingModule implements Module
             )
         );
         $container->singleton(
+            ReportService::class,
+            static fn (Container $c) => new ReportService(new WpdbReportQuery($c->get(Db::class)), new WpAuthorizer())
+        );
+        $container->singleton(
             TimeRuleAdminService::class,
             static fn (Container $c) => new TimeRuleAdminService(
                 new WpAuthorizer(),
@@ -237,6 +244,10 @@ final class BookingModule implements Module
             (new CouponRoutes(
                 $container->get(Router::class),
                 static fn (): CouponAdminService => $container->get(CouponAdminService::class)
+            ))->register();
+            (new ReportRoutes(
+                $container->get(Router::class),
+                static fn (): ReportService => $container->get(ReportService::class)
             ))->register();
             (new TimeRuleRoutes(
                 $container->get(Router::class),
