@@ -343,6 +343,16 @@
 - **CI:** ووکامرس (9.3.3، سازگار با WP 6.6) فقط در job Integration با `.wp-env.override.json` نصب می‌شود (job‌های E2E و concurrency بدون آن، تا onboarding ووکامرس مزاحم نشود). `bootstrap.php` آن را load و نصب می‌کند و HPOS را روشن می‌کند؛ تست‌های ووکامرس بدون آن skip می‌شوند. stubs: `php-stubs/woocommerce-stubs` (dev).
 - **باقیمانده:** سفارش pending رهاشده تا ابد awaiting می‌ماند و Job تطبیق هر 5 دقیقه می‌پرسد (ووکامرس خودش pending را با تنظیم stock لغو می‌کند)؛ اطلاعات صورت‌حساب مشتری در سفارش نیست (Port درگاه اسم و تلفن نمی‌گیرد)؛ استرداد به ووکامرس منتقل نمی‌شود.
 
+## 4.19 اعلان‌ها (T5.4)
+- **ورودی:** ماژول `Notifications` به Jobهای Booking گوش می‌دهد (`booking/appointment_booked`، `_cancelled`، `_rescheduled`، ADR-005) و اطلاعات نوبت را فقط از Contract `Booking\Contracts\AppointmentFactsReader` می‌خواند (نام خدمت، کارمند و شعبه از `Catalog\Contracts\CatalogNames`، ایمیل مشتری از `CustomerSummary::$email`). هر Job نوبت را در لحظه ارسال دوباره می‌خواند، پس پیام هرگز زمان کهنه نمی‌گوید.
+- **Dedup:** کلید `{trigger}:{appointment}:{template}:{start}` در `notification_log` یکتاست و `claim()` یک `INSERT IGNORE` است. پیام ناموفق دوباره claim می‌شود (compare-and-set روی `status = failed`)، پس Job تکراری چیزی را دوبار نمی‌فرستد ولی خطای موقت راه را نمی‌بندد. خطای غیرمنتظره claim را `failed` می‌کند و دوباره پرتاب می‌شود. اگر پردازش وسط `sending` بمیرد ردیف می‌ماند و آن پیام دیگر فرستاده نمی‌شود (ترجیح داده شد به ارسال دوباره).
+- **یادآوری:** هنگام booked و rescheduled برای `start − offset` یک Action تکی زمان‌بندی می‌شود (آرگومان‌ها: نوبت، قالب، `start`؛ همان Action دوباره زمان‌بندی نمی‌شود). هنگام اجرا اگر نوبت جابه‌جا شده (`start` فرق دارد)، لغو یا هنوز confirmed نیست، رها می‌شود. Action قدیمی بعد از جابه‌جایی همین‌طور خودش باطل می‌شود و لازم نیست پاک شود.
+- **ساعات سکوت** (پیش‌فرض 22:00 تا 08:00 به وقت شعبه، `NotificationSettings`) فقط روی یادآوری اثر دارد: یادآوری در پنجره تا پایان آن عقب می‌افتد، مگر پایان پنجره بعد از شروع نوبت باشد که همان لحظه فرستاده می‌شود. پیام‌های رویداد (ثبت، لغو، جابه‌جایی) فوری‌اند.
+- **مخاطب:** مشتری (ایمیل)، کارمند (ایمیل او) و Admin (`NotificationSettings::adminEmail`، خالی یعنی `admin_email` وردپرس). مخاطب بدون نشانی رد می‌شود. مشتری حذف‌شده نه ایمیل دارد و نه تلفن.
+- **کانال:** Port `NotificationChannel` با یک Adapter (`EmailChannel` روی `wp_mail`، متن ساده). کانال‌های بیشتر (SMS، T5.5) روی فیلتر `{prefix}/notifications/channels` اضافه می‌شوند؛ قالبی که کانالش ثبت نشده بی‌صدا رد می‌شود.
+- **انحراف از data-model:** ستون `trigger` به `trigger_type` تغییر کرد (`TRIGGER` در MySQL کلمه رزرو است) و `sms_patterns` با T5.5 و migration جدا می‌آید. هفت قالب فارسی پیش‌فرض در همان migration کاشته می‌شود (فقط اگر جدول خالی باشد).
+- **باقیمانده:** صفحه Admin برای قالب‌ها و تنظیمات (`NotificationSettings`) با T6.1؛ رویداد `confirmed` (تأیید پس از پرداخت یا تأیید دستی) هنوز اعلانی ندارد چون Booking برایش Job نمی‌سازد؛ اعلان `needs_attention`؛ پاکسازی قدیمی‌های `notification_log`.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

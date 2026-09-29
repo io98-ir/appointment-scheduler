@@ -13,7 +13,9 @@ use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Catalog\Application\CatalogReader;
 use Vaqtyar\Modules\Catalog\Application\CatalogService;
 use Vaqtyar\Modules\Catalog\Application\PublicMenu;
+use Vaqtyar\Modules\Catalog\Application\CatalogNameReader;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
+use Vaqtyar\Modules\Catalog\Contracts\CatalogNames;
 use Vaqtyar\Modules\Catalog\Domain\BookableResourceRepository;
 use Vaqtyar\Modules\Catalog\Domain\ExtraRepository;
 use Vaqtyar\Modules\Catalog\Domain\LocationRepository;
@@ -88,6 +90,11 @@ final class CatalogModule implements Module
             $c->get(StaffRepository::class),
             $c->get(LocationRepository::class),
             $c->get(ServiceCategoryRepository::class)
+        ));
+        $container->singleton(CatalogNames::class, static fn (Container $c) => new CatalogNameReader(
+            $c->get(ServiceRepository::class),
+            $c->get(StaffRepository::class),
+            $c->get(LocationRepository::class)
         ));
         $container->singleton(CatalogApi::class, static fn (Container $c) => new CatalogReader(
             $c->get(ServiceRepository::class),

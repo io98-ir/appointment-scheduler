@@ -110,8 +110,10 @@
 ### Notifications
 | جدول | ستون‌های کلیدی | ایندکس |
 |---|---|---|
-| `notification_templates` | `trigger, audience, channel, offset_min NULL, subject, body, sms_patterns JSON, enabled` | (trigger) |
-| `notification_log` | `dedup_key, template_id, channel, provider, recipient_masked, status, provider_ref, error, sent_at` | UNIQUE(dedup_key) |
+| `notification_templates` | `trigger_type, audience, channel, offset_min NULL, subject, body, enabled` (`sms_patterns JSON` با T5.5) | (trigger_type, enabled) |
+| `notification_log` | `dedup_key, template_id, channel, provider, recipient_masked, status (sending/sent/failed), provider_ref, error, sent_at, created_at` | UNIQUE(dedup_key), (created_at) |
+
+> **T5.4:** `trigger` به `trigger_type` تغییر کرد چون `TRIGGER` در MySQL کلمه رزرو است. جزئیات در implementation-notes §4.19.
 
 ## 3. Migration
 - هر ماژول Migrationهای خودش را دارد: کلاس‌هایی در `Infrastructure/Migrations` با نامی که کارشان را می‌گوید (مثل `CreateCatalogTables`، بدون شماره، چون جایگاه در لیست همان نسخه است) که interface `Kernel\Database\Migration` را پیاده می‌کنند و متد `up(Db)` آن‌ها **idempotent** است. ماژول آن‌ها را به ترتیب از `Module::migrations()` برمی‌گرداند. این لیست فقط اضافه‌شدنی است.

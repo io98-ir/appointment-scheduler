@@ -149,6 +149,19 @@
 
 جریان: `PaymentService::start()` درگاه‌ها را به ترتیب امتحان می‌کند (Failover) و یک ردیف `awaiting_callback` می‌سازد؛ callback با `settle()` یک‌بار به `succeeded` یا `failed` می‌رود (درگاه بیرون از قفل استعلام می‌شود و انتقال زیر قفل ردیف انجام می‌شود). پس از commit، action `{prefix}/payments/succeeded` با `($appointmentId, $paymentId)` اجرا می‌شود؛ Booking و Payments فقط از راه رویداد به هم می‌رسند. درگاه‌ها با filter `{prefix}/payments/gateways` ثبت می‌شوند؛ فعلاً فقط `offline`.
 
+## اعلان‌ها (Admin)
+همه routeها capability `manage_notifications` لازم دارند (پیش‌فرض: administrator). `NotificationAdminService` آن را دوباره بررسی می‌کند. `trigger` یکی از `booked`، `cancelled`، `rescheduled`، `reminder`؛ `audience` یکی از `customer`، `staff`، `admin`. `offset_min` (دقیقه پیش از شروع) فقط برای `reminder` لازم است و برای بقیه باید `null` باشد.
+
+| Route | کار |
+|---|---|
+| `GET /notification-templates` | همه قالب‌ها با `{id, trigger, audience, channel, offset_min, subject, body, enabled}` |
+| `POST /notification-templates` | ساخت. پاسخ 201. `channel` باید یکی از کانال‌های ثبت‌شده باشد (فعلاً `email`)، وگرنه 422 `unknown_channel`. `body` الزامی و تا 2000 کاراکتر؛ `subject` تا 191 |
+| `PUT /notification-templates/{id}` | جایگزینی کامل. نبودن: 404 `template_not_found` |
+| `DELETE /notification-templates/{id}` | 204 |
+| `GET /notification-log` | یک صفحه (`page`، `per_page`) با `X-WP-Total`، جدیدترین اول: `{id, template_id, channel, recipient (ماسک‌شده)، status (sending/sent/failed)، provider_ref, error, sent_at, created_at}` |
+
+جای‌نگه‌دارها (در `subject` و `body`): `{code}`، `{customer_name}`، `{service}`، `{staff}`، `{location}`، `{date}`، `{time}`، `{end_time}`، `{party_size}`، `{total}` (ریال، با جداکننده هزار). نام ناشناخته خالی می‌شود.
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

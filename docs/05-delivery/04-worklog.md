@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 26 — T5.4: هسته اعلان‌ها
+**Taskها:** T5.4 (منتظر CI)
+**انجام شد:** ماژول `Notifications` (Domain: `Trigger`، `Audience`، `Template`، `TemplateRenderer`، `QuietHours`، `Preferences`؛ Application: `NotificationService`، `NotificationAdminService` و Portها؛ Infrastructure: `EmailChannel`، `ActionSchedulerReminders`، `WpdbTemplateRepository`، `WpdbNotificationLog`، migration با هفت قالب پیش‌فرض فارسی، `NotificationSettings`؛ REST قالب‌ها و لاگ). Contractهای تازه: `Booking\Contracts\AppointmentFactsReader` و `Catalog\Contracts\CatalogNames`؛ `CustomerSummary` ایمیل هم دارد. جزئیات در implementation-notes §4.19 و `api.md`.
+**تصمیم‌ها و فرض‌ها:** (۱) ساعات سکوت فقط یادآوری را عقب می‌اندازد، و اگر پایان پنجره بعد از شروع نوبت بود یادآوری همان لحظه می‌رود. (۲) پیامی که وسط ارسال بمیرد دوباره فرستاده نمی‌شود (ترجیح به نبودن پیام تکراری). (۳) ستون `trigger` شد `trigger_type` (کلمه رزرو MySQL). (۴) `sms_patterns` با T5.5. (۵) صفحه Admin و تنظیمات با T6.1 و رویداد confirmed بعداً، چون Booking برایش Job نمی‌سازد.
+**تأیید:** محلی: `composer lint` پاک، `composer stan` بدون خطا، `composer deptrac` (هر دو فایل، 0 violation)، `composer test:unit` ← 926 تست سبز (31 تست تازه، با داده‌های `quietCases`). `NotificationStoreTest` (Integration) فقط در CI اجرا می‌شود. CI هنوز به‌خاطر billing گیتهاب (شکست در 6 ثانیه) اجرا نمی‌شود.
+**مشکلات و باقیمانده:** سبز شدن CI برای T5.3 و T5.4؛ باقیمانده‌های بالا.
+**قدم بعدی:** T5.5 (SMS).
+**Commitها:** T5.4 در commit بعدی.
+
+---
+
 ## 2026-09-29 — سشن 25 — T5.3: ووکامرس به‌عنوان درگاه
 **Taskها:** T5.3 (منتظر CI)
 **انجام شد:** `WooCommerceGateway` روی Port `WcOrders` (Application) با `WcOrderStore` (CRUD سفارش ووکامرس، سازگار با HPOS)، `WooCommerceHooks` (اعلام HPOS، settle با `woocommerce_order_status_changed`، بازگشت مشتری به callback خودمان)، `WooCommerceSettings` (پیش‌فرض خاموش) و اتصال در `PaymentsModule`. تست Unit (10 تست، Fake) و Integration با ووکامرس واقعی (5 تست؛ بدون ووکامرس skip). CI: نصب WC 9.3.3 فقط در job Integration با `.wp-env.override.json`؛ `bootstrap.php` آن را load و نصب می‌کند و HPOS را روشن می‌کند. `php-stubs/woocommerce-stubs` به devDependencies و PHPStan اضافه شد.

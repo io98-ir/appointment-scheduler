@@ -14,6 +14,7 @@ use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Booking\Application\AppointmentBrowser;
+use Vaqtyar\Modules\Booking\Application\AppointmentFactsService;
 use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\OnlineCheckout;
@@ -58,7 +59,9 @@ use Vaqtyar\Modules\Booking\Presentation\Rest\PanelRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\PolicyRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\ReportRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\TimeRuleRoutes;
+use Vaqtyar\Modules\Booking\Contracts\AppointmentFactsReader;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
+use Vaqtyar\Modules\Catalog\Contracts\CatalogNames;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
@@ -169,6 +172,14 @@ final class BookingModule implements Module
                 new WpdbAppointmentQuery($c->get(Db::class)),
                 $c->get(CustomerDirectory::class),
                 new WpAuthorizer()
+            )
+        );
+        $container->singleton(
+            AppointmentFactsReader::class,
+            static fn (Container $c) => new AppointmentFactsService(
+                new WpdbAppointmentQuery($c->get(Db::class)),
+                $c->get(CustomerDirectory::class),
+                $c->get(CatalogNames::class)
             )
         );
         $container->singleton(

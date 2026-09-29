@@ -33,7 +33,7 @@ final class WpdbCustomerDirectory implements CustomerDirectory
             return [];
         }
         $rows = $this->db->getResults(
-            'SELECT id, first_name, last_name, phone, deleted_at FROM %i WHERE id IN ('
+            'SELECT id, first_name, last_name, phone, email, deleted_at FROM %i WHERE id IN ('
                 . \implode(',', \array_fill(0, \count($ids), '%d')) . ')',
             Tables::name('customers'),
             ...$ids
@@ -46,7 +46,8 @@ final class WpdbCustomerDirectory implements CustomerDirectory
                 $id,
                 \trim($row->string('first_name') . ' ' . $row->string('last_name')),
                 $row->stringOrNull('phone'),
-                null !== $row->stringOrNull('deleted_at')
+                null !== $row->stringOrNull('deleted_at'),
+                $row->stringOrNull('email')
             );
         }
 

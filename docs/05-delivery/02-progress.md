@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M4** سمت مشتری (M3 Admin کامل شد) |
-| **Task در حال انجام** | — (T5.3 نوشته و بررسی محلی شد، منتظر CI؛ اگر سرخ بود اول همان را رفع کن با `gh run list`). باقی‌مانده‌های T5.2: `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `booking/needs_attention`؛ صفحه تنظیم merchant (با T6.1)؛ تست زنده با کلید واقعی پیش از انتشار |
-| **Task بعدی** | **T5.4** — Notifications core (Template، trigger، audience، یادآوری، ساعات سکوت، dedup، لاگ، Email). پیش از آن CI مربوط به T5.3 را بررسی کن (تست Integration ووکامرس با WC 9.3.3 و HPOS برای اولین بار در CI اجرا می‌شود؛ ر.ک. implementation-notes §4.18) |
+| **Task در حال انجام** | — (T5.3 و T5.4 نوشته و محلی بررسی شدند، منتظر CI؛ اگر سرخ بود اول همان را رفع کن با `gh run list`. Integration تازه: ووکامرس/HPOS و `NotificationStoreTest`). باقی‌مانده‌های T5.4: صفحه Admin قالب‌ها و تنظیمات با T6.1؛ اعلان رویداد confirmed. باقی‌مانده‌های T5.2: `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `booking/needs_attention`؛ صفحه تنظیم merchant (با T6.1)؛ تست زنده با کلید واقعی پیش از انتشار |
+| **Task بعدی** | **T5.5** — SMS Providers (Adapter روی Port `NotificationChannel` و فیلتر `notifications/channels`؛ ستون `sms_patterns` با migration جدا؛ OTP هم باید به آن وصل شود). پیش از آن CI مربوط به T5.3 و T5.4 را بررسی کن (ووکامرس با WC 9.3.3 و HPOS و `NotificationStoreTest` برای اولین بار در CI اجرا می‌شوند) |
 | **آخرین کار انجام‌شده** | **T4.2 تا T4.5** (Hold تا تأیید، OTP، پنل مشتری، shortcode و بلوک)، **T5.1** (هسته پرداخت) و **T5.2** (Zarinpal، Zibal، تطبیق، استرداد دستی، اتصال Booking و ویجت به پرداخت آنلاین). **CI سبز روی main: run 36552515145** (هر 13 job، 2026-09-29). ویجت 15.5KB gz |
 | **Blockerها** | CI اجرا نمی‌شود: GitHub می‌گوید پرداخت حساب ناموفق است یا سقف هزینه پر شده (run 36555809046، 2026-09-29، Billing & plans). تا رفع آن T5.3 فقط محلی تأیید شده (Integration ووکامرس هنوز اجرا نشده) |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
@@ -24,7 +24,7 @@
 | M2 هسته رزرو | ✅ | 8/8 |
 | M3 Admin | ✅ | 6/6 |
 | M4 سمت مشتری | ✅ | 5/5 |
-| M5 پرداخت و اعلان | 🟨 | 3/5 |
+| M5 پرداخت و اعلان | 🟨 | 4/5 |
 | M6 انتشار 1.0 | ⬜ | 0/6 |
 
 ## جزئیات Taskها
@@ -74,7 +74,7 @@
 | T5.1 | Payments core | ✅ | `684dd67`. **CI سبز (run 36552515145)** |
 | T5.2 | Zarinpal، Zibal، تطبیق | ✅ | `37107d2`. HTTP Mock ضبط‌شده؛ استرداد فقط دستی. اتصال Booking همین‌جا انجام شد (implementation-notes §4.17). **CI سبز (run 36552515145)** شامل 5 سناریوی Integration |
 | T5.3 | ووکامرس | ✅ | `WooCommerceGateway` روی Port `WcOrders`؛ سفارش pending با fee line، HPOS، IRR و IRT، settle با status change و بازگشت مشتری. پیش‌فرض خاموش (`WooCommerceSettings`). **منتظر CI** (implementation-notes §4.18) |
-| T5.4 | Notifications core | ⬜ | |
+| T5.4 | Notifications core | ✅ | ماژول `Notifications`: قالب، trigger، audience، یادآوری با Action Scheduler، ساعات سکوت، dedup، لاگ، Email و REST قالب‌ها/لاگ. **منتظر CI** (implementation-notes §4.19) |
 | T5.5 | SMS Providers | ⬜ | |
 | T6.1 | White-label + Onboarding | ⬜ | |
 | T6.2 | Site Health + Status | ⬜ | |

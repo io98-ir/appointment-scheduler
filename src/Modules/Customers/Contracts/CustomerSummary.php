@@ -12,12 +12,14 @@ final class CustomerSummary
 {
     /**
      * @param ?string $phone E.164; null once deleted.
+     * @param ?string $email as stored; callers must not use it for a deleted customer.
      */
     public function __construct(
         public readonly int $id,
         public readonly string $name,
         public readonly ?string $phone,
         public readonly bool $deleted,
+        public readonly ?string $email = null,
     ) {
     }
 }
