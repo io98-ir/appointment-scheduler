@@ -67,9 +67,53 @@ function fakeServer() {
 	const requests: URLSearchParams[] = [];
 	const json = ( body: unknown ) => new Response( JSON.stringify( body ) );
 
-	const fetch = async ( resource: RequestInfo | URL ) => {
+	const posts: { path: string; body: Record< string, unknown > }[] = [];
+	const fetch = async ( resource: RequestInfo | URL, init?: RequestInit ) => {
 		const url = new URL( String( resource ) );
 		const path = url.pathname.replace( '/wp-json/x/v1', '' );
+		if ( init?.method === 'POST' ) {
+			const body = JSON.parse( String( init.body ) ) as Record< string, unknown >;
+			posts.push( { path, body } );
+			if ( path === '/holds' ) {
+				return new Response(
+					JSON.stringify( {
+						token: 'T'.repeat( 43 ),
+						expires_at: new Date( Date.now() + 600000 ).toISOString(),
+						staff_id: 2,
+						start: body.start,
+						end: body.start,
+						price: {
+							total: { amount: 900000, currency: 'IRR' },
+							lines: [
+								{ code: 'base', amount: { amount: 1000000, currency: 'IRR' }, ref: null, qty: 1 },
+								{ code: 'coupon', amount: { amount: -100000, currency: 'IRR' }, ref: 4, qty: 1 },
+							],
+						},
+					} ),
+					{ status: 201 }
+				);
+			}
+
+			return new Response(
+				JSON.stringify( {
+					code: 'AB12CD34',
+					status: 'confirmed',
+					start: '2027-01-10T10:00:00+03:30',
+					end: '2027-01-10T10:30:00+03:30',
+					price: { total: { amount: 900000, currency: 'IRR' }, lines: [] },
+				} ),
+				{ status: 201 }
+			);
+		}
+		if ( path === '/nonce' ) {
+			return json( { nonce: 'fresh-nonce' } );
+		}
+		if ( path === '/service-fields' ) {
+			return json( [
+				{ field_key: 'has_car', type: 'checkbox', label: 'Has a car?', required: false, options: [], show_if: null },
+				{ field_key: 'plate', type: 'text', label: 'Plate number', required: true, options: [], show_if: { field: 'has_car', equals: '1' } },
+			] );
+		}
 		if ( path === '/catalog' ) {
 			return json( MENU );
 		}
@@ -113,7 +157,7 @@ function fakeServer() {
 		} );
 	};
 
-	return { requests, fetch };
+	return { requests, posts, fetch };
 }
 
 async function settle() {
@@ -258,6 +302,71 @@ describe( 'the booking widget', () => {
 			.filter( ( r ) => r.get( 'view' ) === 'day' )
 			.at( -1 );
 		expect( day?.get( 'date' ) ).toBe( '2027-01-10' );
+	} );
+
+	it( 'holds the time, asks for the details and books', async () => {
+		await open();
+		await act( () => days().find( ( day ) => ! day.disabled )?.click() );
+		await settle();
+		await act( () =>
+			container
+				.querySelector< HTMLButtonElement >( '.vqy-widget__slot-list button' )
+				?.click()
+		);
+		const coupon = container.querySelector< HTMLInputElement >( 'input[maxlength="64"]' );
+		await act( () => {
+			if ( coupon ) {
+				coupon.value = 'NOWRUZ';
+				coupon.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+			}
+		} );
+		const next = [ ...container.querySelectorAll( 'button' ) ].find(
+			( element ) => element.textContent === 'Continue'
+		);
+		await act( () => next?.click() );
+		await settle();
+
+		const hold = server.posts.find( ( post ) => post.path === '/holds' );
+		expect( hold?.body ).toMatchObject( { variant: 100, location: 1, coupon: 'NOWRUZ' } );
+		expect( text() ).toContain( 'We are holding this time for you' );
+		expect( text() ).toContain( 'Total: 900,000 IRR' );
+		// A field with a show_if stays hidden until its condition holds.
+		expect( text() ).not.toContain( 'Plate number' );
+
+		const field = ( label: string ) =>
+			[ ...container.querySelectorAll( 'label' ) ]
+				.find( ( element ) => element.textContent?.startsWith( label ) )
+				?.querySelector< HTMLInputElement >( 'input, textarea' );
+		const type = async ( element: HTMLInputElement | null | undefined, value: string ) => {
+			await act( () => {
+				if ( element ) {
+					element.value = value;
+					element.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+				}
+			} );
+		};
+		await type( field( 'First name' ), 'Sara' );
+		await type( field( 'Mobile number' ), '09351112233' );
+		await act( () => field( 'Has a car?' )?.click() );
+		expect( text() ).toContain( 'Plate number' );
+		await type( field( 'Plate number' ), '12A345' );
+		await act( () => {
+			container.querySelector( 'form' )?.dispatchEvent(
+				new Event( 'submit', { bubbles: true, cancelable: true } )
+			);
+		} );
+		await settle();
+
+		const booked = server.posts.find( ( post ) => post.path === '/book' );
+		expect( booked?.body ).toMatchObject( {
+			hold_token: 'T'.repeat( 43 ),
+			first_name: 'Sara',
+			phone: '09351112233',
+			email: null,
+			answers: { has_car: true, plate: '12A345' },
+		} );
+		expect( text() ).toContain( 'Your appointment is booked.' );
+		expect( text() ).toContain( 'Tracking code: AB12CD34' );
 	} );
 
 	it( 'says so when it is not configured', async () => {

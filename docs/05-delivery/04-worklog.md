@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 (ادامه 2) — T4.1 تکمیل و T4.2: Hold تا تأیید در ویجت
+**Taskها:** T4.1 (✅)، T4.2 (در حال انجام)
+**انجام شد:** T4.1: `PublicMenu` (Catalog Application) و `GET /catalog` عمومی با rate limit؛ ویجت Preact: انتخاب خدمت، Variant، شعبه، پرسنل؛ تقویم ماه شمسی یا میلادی (شنبه اول، `month.ts`)؛ رنگ روزها؛ ساعت‌های خالی؛ «اولین نوبت خالی»؛ رویداد `vqy:slot`. T4.2: `InvalidValue` جزئیات گرفت و Router آن را در envelope می‌گذارد؛ `AnswerValidator` کلید فیلد خطادار را برمی‌گرداند (`data.details.field_key`)؛ `CustomerApi::forBooking` (پیدا یا ساخت مشتری با شماره؛ مشتری موجود را تغییر نمی‌دهد)؛ `BookingService::confirmAsGuest` و منبع `widget`؛ `GuestBookingRoutes` با `GET /nonce`، `GET /service-fields` و `POST /book`؛ ویجت `BookingFlow.tsx` (Hold با nonce تازه، تایمر، خلاصه قیمت، کوپن، فرم با فیلدهای سفارشی و `show_if`، صفحه موفقیت با کد پیگیری).
+**تصمیم‌ها و فرض‌ها:** شماره تلفن مهمان هنوز تأیید نمی‌شود؛ T4.3 (OTP) آن را الزامی می‌کند. کوپن قبل از ساخت Hold گرفته می‌شود، چون Hold دوم برای همان اسلات با اولی تصادم می‌کند و route آزادسازی Hold وجود ندارد. E2E مرورگری T4.2 تا T4.5 ممکن نیست (صفحه‌ای برای mount ویجت نیست)؛ با Integration (`HoldsTest`) و Vitest پوشش داده شد.
+**تأیید:** بر اساس درخواست کاربر، تست‌ها دسته‌ای اجرا می‌شوند. CI سبز برای T3.6 و T4.1 (run 36544899242). کد T4.2 هنوز روی CI اجرا نشده.
+**مشکلات و باقیمانده:** اجرای CI برای T4.2 و رفع خطاهای احتمالی. اسکریپت Python فایل‌ها را CRLF می‌نویسد؛ Edit استفاده شود.
+**قدم بعدی:** T4.3 (OTP).
+**Commitها:** `33035a6` (T4.1)؛ T4.2 در commit بعدی.
+
+---
+
 ## 2026-09-29 — سشن 24 (ادامه) — T3.5 تکمیل و T3.6: داشبورد و گزارش
 **Taskها:** T3.5 (تکمیل با E2E)، T3.6
 **انجام شد:** T3.6: `ReportService` (Application) روی port `ReportQuery` با `WpdbReportQuery` (چهار GROUP BY روی `appointments`: وضعیت، روز، خدمت، پرسنل؛ فیلتر دقیق روی `local_date` و بازه `start_at` ایندکس‌دار با یک روز حاشیه)، REST `GET /reports/summary` (`ReportRoutes`). «رزرو‌شده» یعنی `confirmed` و `completed`؛ درآمد مجموع `price_total` همان‌ها؛ نرخ لغو = لغو‌شده‌ها ÷ (رزرو‌شده + no_show + لغو‌شده). UI: `DashboardPage` (امروز، 7 روز، 30 روز، نرخ لغو، نمودار میله‌ای 7 روز و نوبت‌های تأییدشده باقی‌مانده امروز) در `/`، و `ReportsPage` (بازه، جدول هر روز/خدمت/پرسنل، خروجی CSV از `GET /appointments` تا 5000 ردیف با BOM و خنثی‌سازی سلول‌های شبیه فرمول) در `/reports`. E2E T3.5 و T3.6 در `tests/e2e/specs/settings.spec.ts` (فیلد سراسری، کوپن، قیمت زمانی، تعطیلات، داشبورد، گزارش و دانلود CSV).

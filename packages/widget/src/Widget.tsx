@@ -24,6 +24,7 @@ import {
 	weekdayNames,
 	type MonthCursor,
 } from './month';
+import { BookingFlow } from './BookingFlow';
 import { useFetch } from './useFetch';
 
 /**
@@ -103,6 +104,13 @@ export function Widget( {
 		() => api ?? new ApiClient( { baseUrl: config.restUrl ?? '' } ),
 		[ api, config.restUrl ]
 	);
+	// A booking call sends a fresh nonce, never the page's own (it may be cached).
+	const clientFor = ( nonce?: string ): ApiClient =>
+		api ??
+		new ApiClient( {
+			baseUrl: config.restUrl ?? '',
+			...( nonce === undefined ? {} : { nonce } ),
+		} );
 	const calendar: Calendar = config.calendar ?? 'jalali';
 	const digits: Digits = config.digits ?? 'latin';
 	const menu = useFetch< PublicMenu >(
@@ -124,6 +132,10 @@ export function Widget( {
 	const [ cursor, setCursor ] = useState< MonthCursor | null >( null );
 	const [ date, setDate ] = useState< string | null >( null );
 	const [ chosen, setChosen ] = useState< AvailabilitySlot | null >( null );
+	const [ coupon, setCoupon ] = useState( '' );
+	const [ flow, setFlow ] = useState( false );
+	// Bumped when a hold failed, so the free days and starts are read again.
+	const [ refresh, setRefresh ] = useState( 0 );
 
 	const services = menu.data?.services ?? [];
 	const service =
@@ -168,7 +180,7 @@ export function Widget( {
 		staff: staffPick ?? undefined,
 	};
 	const month = useFetch< AvailabilityMonth >(
-		base === null ? null : `${ base }&month=${ grid.start }`,
+		base === null ? null : `${ base }&month=${ grid.start }&r=${ refresh }`,
 		() =>
 			client.get< AvailabilityMonth >( '/availability', {
 				...query,
@@ -178,7 +190,9 @@ export function Widget( {
 			} )
 	);
 	const day = useFetch< AvailabilityDay >(
-		base === null || date === null ? null : `${ base }&day=${ date }`,
+		base === null || date === null
+			? null
+			: `${ base }&day=${ date }&r=${ refresh }`,
 		() =>
 			client.get< AvailabilityDay >( '/availability', {
 				...query,
@@ -188,6 +202,7 @@ export function Widget( {
 	);
 	const [ findError, setFindError ] = useState< string | null >( null );
 	const reset = () => {
+		setFlow( false );
 		setDate( null );
 		setChosen( null );
 	};
@@ -377,7 +392,28 @@ export function Widget( {
 					) }
 				</div>
 			) }
-			{ ready && (
+			{ ready && flow && chosen && (
+				<BookingFlow
+					choice={ {
+						service: service.id,
+						variant: variant.id,
+						location: location.id,
+						staff: staffPick,
+						slot: chosen,
+					} }
+					serviceId={ service.id }
+					coupon={ coupon.trim() }
+					calendar={ calendar }
+					digits={ digits }
+					clientFor={ clientFor }
+					onBack={ () => {
+						setFlow( false );
+						setChosen( null );
+						setRefresh( refresh + 1 );
+					} }
+				/>
+			) }
+			{ ready && ! flow && (
 				<div className="vqy-widget__calendar">
 					<div className="vqy-widget__month">
 						<button
@@ -519,6 +555,25 @@ export function Widget( {
 								formatDigits( time( chosen.start ), digits )
 							) }
 						</p>
+					) }
+					{ chosen && (
+						<div className="vqy-widget__continue">
+							<label htmlFor={ `${ uid }-coupon` }>
+								{ __( 'Coupon code (optional)', 'vaqtyar' ) }
+								<input
+									id={ `${ uid }-coupon` }
+									dir="ltr"
+									value={ coupon }
+									maxLength={ 64 }
+									onInput={ ( event ) =>
+										setCoupon( event.currentTarget.value )
+									}
+								/>
+							</label>
+							<button type="button" onClick={ () => setFlow( true ) }>
+								{ __( 'Continue', 'vaqtyar' ) }
+							</button>
+						</div>
 					) }
 				</div>
 			) }

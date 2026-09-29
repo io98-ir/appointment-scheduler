@@ -526,6 +526,11 @@ final class BookingServiceTest extends TestCase
             {
                 return $this->test->customerCanBook && 9 === $customerId;
             }
+
+            public function forBooking(string $phone, string $firstName, string $lastName, ?string $email): int
+            {
+                return 9;
+            }
         };
 
         return new BookingService(

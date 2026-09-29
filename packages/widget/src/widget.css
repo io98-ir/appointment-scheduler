@@ -100,3 +100,29 @@
 	color: var(--wp--preset--color--vivid-red, currentcolor);
 	font-weight: 600;
 }
+
+.vqy-widget__form,
+.vqy-widget__continue {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin-block-start: 1rem;
+}
+
+.vqy-widget__form label,
+.vqy-widget__continue label {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.vqy-widget__price {
+	margin: 0;
+	padding-inline-start: 1.2em;
+}
+
+.vqy-widget__actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: space-between;
+}

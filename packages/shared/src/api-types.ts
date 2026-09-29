@@ -235,6 +235,27 @@ export interface PlacedHold {
 	price: PriceQuote;
 }
 
+/** GET /service-fields: a custom field the booking form asks for. */
+export interface PublicField {
+	field_key: string;
+	type: FieldType;
+	label: string;
+	required: boolean;
+	options: string[];
+	show_if: FieldShowIf | null;
+}
+
+/** POST /book, 201: what a guest sees of their appointment. */
+export interface GuestBooking {
+	/** The 8-character tracking code. */
+	code: string;
+	status: AppointmentStatus;
+	/** ISO 8601 with the location's offset. */
+	start: string;
+	end: string;
+	price: PriceQuote;
+}
+
 export type CustomerStatus = 'active' | 'blocked';
 
 /** /customers (docs/api.md). */

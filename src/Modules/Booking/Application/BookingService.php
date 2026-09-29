@@ -42,6 +42,9 @@ final class BookingService
     /** appointments.source of a booking made in the admin. */
     public const SOURCE_ADMIN = 'admin';
 
+    /** appointments.source of a guest's booking from the widget. */
+    public const SOURCE_WIDGET = 'widget';
+
     /**
      * @param \Closure(): void $changed Tells availability the occupancies
      *     changed; called after the commit.
@@ -84,6 +87,45 @@ final class BookingService
         if (!$this->authorizer->allows(self::CAPABILITY)) {
             throw new Forbidden(self::CAPABILITY);
         }
+
+        return $this->book($token, $customerId, $customerNote, $userId, self::SOURCE_ADMIN, $answers);
+    }
+
+    /**
+     * A guest's own booking from the widget (T4.2): no capability, since the
+     * hold token is what the guest holds. The customer is found by phone or
+     * made (CustomerApi::forBooking); T4.3 will require the phone to be
+     * verified first. A customer made for a booking that then fails (the hold
+     * expired) stays, like one a staff member created and never booked.
+     *
+     * @param array<string, mixed> $answers custom field answers by field_key.
+     * @throws NotFound hold_not_found, or Conflict / InvalidValue as confirm().
+     */
+    public function confirmAsGuest(
+        HoldToken $token,
+        string $phone,
+        string $firstName,
+        string $lastName,
+        ?string $email,
+        string $customerNote,
+        array $answers = [],
+    ): BookedAppointment {
+        $customerId = $this->customers->forBooking($phone, $firstName, $lastName, $email);
+
+        return $this->book($token, $customerId, $customerNote, null, self::SOURCE_WIDGET, $answers);
+    }
+
+    /**
+     * @param array<string, mixed> $answers
+     */
+    private function book(
+        HoldToken $token,
+        int $customerId,
+        string $customerNote,
+        ?int $userId,
+        string $source,
+        array $answers,
+    ): BookedAppointment {
         // Not under a lock: a customer deleted or blocked a moment later
         // keeps this one appointment, as one booked a moment earlier would.
         if (!$this->customers->canBook($customerId)) {
@@ -96,7 +138,15 @@ final class BookingService
             throw self::notFound();
         }
 
-        $work = function () use ($found, $token, $customerId, $customerNote, $userId, $answers): BookedAppointment {
+        $work = function () use (
+            $found,
+            $token,
+            $customerId,
+            $customerNote,
+            $userId,
+            $source,
+            $answers
+        ): BookedAppointment {
             $this->locker->lock($found->lockKeys, $found->from, $found->to);
             $hold = $this->holds->find($token->hash(), true);
             $now = $this->clock->now();
@@ -132,7 +182,7 @@ final class BookingService
             $id = $this->appointments->add(
                 $appointment,
                 $appointment->created(),
-                self::SOURCE_ADMIN,
+                $source,
                 $userId,
                 $now->getTimestamp()
             );

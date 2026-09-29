@@ -18,6 +18,7 @@ use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\CouponAdminService;
 use Vaqtyar\Modules\Booking\Application\FieldAdminService;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
+use Vaqtyar\Modules\Booking\Application\FieldReader;
 use Vaqtyar\Modules\Booking\Application\HoldService;
 use Vaqtyar\Modules\Booking\Application\PolicyAdminService;
 use Vaqtyar\Modules\Booking\Application\ReportService;
@@ -47,6 +48,7 @@ use Vaqtyar\Modules\Booking\Presentation\Rest\AppointmentRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\BookingRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\CouponRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\FieldRoutes;
+use Vaqtyar\Modules\Booking\Presentation\Rest\GuestBookingRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\PolicyRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\ReportRoutes;
@@ -248,6 +250,12 @@ final class BookingModule implements Module
             (new ReportRoutes(
                 $container->get(Router::class),
                 static fn (): ReportService => $container->get(ReportService::class)
+            ))->register();
+            (new GuestBookingRoutes(
+                $container->get(Router::class),
+                static fn (): BookingService => $container->get(BookingService::class),
+                static fn (): FieldReader => new WpdbFieldReader($container->get(Db::class)),
+                static fn (): CatalogApi => $container->get(CatalogApi::class)
             ))->register();
             (new TimeRuleRoutes(
                 $container->get(Router::class),

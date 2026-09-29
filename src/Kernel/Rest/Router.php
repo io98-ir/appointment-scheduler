@@ -181,7 +181,12 @@ final class Router
         if ($e instanceof InvalidValue) {
             // The code tells the client which rule failed; the Domain has no
             // translated text (principles §3).
-            return $this->error(422, $e->errorCode, \__('A value in the request is not valid.', 'vaqtyar'));
+            return $this->error(
+                422,
+                $e->errorCode,
+                \__('A value in the request is not valid.', 'vaqtyar'),
+                $e->details
+            );
         }
         if ($e instanceof NotFound) {
             return $this->error(404, $e->errorCode, \__('The requested item does not exist.', 'vaqtyar'));

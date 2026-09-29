@@ -82,6 +82,8 @@ final class HoldsTest extends TestCase
     /** @var list<int> */
     private array $users = [];
 
+    private int $service;
+
     private int $variant;
 
     private int $location;
@@ -394,6 +396,138 @@ final class HoldsTest extends TestCase
         );
     }
 
+    public function testAGuestBooksFromTheWidgetAndBecomesACustomer(): void
+    {
+        $token = $this->post(self::inDays(2), '10:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+
+        $booked = $this->guestBook($token, [
+            'first_name' => 'Sara',
+            'last_name' => 'Ahmadi',
+            'phone' => '۰۹۳۵۱۱۱۲۲۳۳',
+            'customer_note' => 'Window seat',
+        ]);
+
+        self::assertSame(201, $booked['status'], (string) \wp_json_encode($booked['body']));
+        self::assertSame(8, \strlen((string) ($booked['body']['code'] ?? '')));
+        self::assertSame('confirmed', $booked['body']['status'] ?? null);
+        self::assertArrayNotHasKey('id', $booked['body']);
+        $db = $this->realDb();
+        self::assertSame(
+            [['source' => 'widget', 'created_by' => null]],
+            $db->getResults('SELECT source, created_by FROM %i', Tables::name('appointments'))
+        );
+        self::assertSame(
+            [['phone' => '+989121234567'], ['phone' => '+989351112233']],
+            $db->getResults('SELECT phone FROM %i ORDER BY id', Tables::name('customers'))
+        );
+    }
+
+    public function testAGuestWithAKnownNumberIsThatCustomerAndCannotRenameThem(): void
+    {
+        $token = $this->post(self::inDays(2), '10:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+
+        $booked = $this->guestBook($token, ['first_name' => 'Someone', 'last_name' => 'Else', 'phone' => '09121234567']);
+
+        self::assertSame(201, $booked['status'], (string) \wp_json_encode($booked['body']));
+        $db = $this->realDb();
+        self::assertSame(
+            [['customer_id' => (string) $this->customer]],
+            $db->getResults('SELECT customer_id FROM %i', Tables::name('appointments'))
+        );
+        self::assertSame(
+            [['first_name' => 'Ali']],
+            $db->getResults('SELECT first_name FROM %i', Tables::name('customers'))
+        );
+    }
+
+    public function testAGuestBookingNeedsTheNonceAndABlockedCustomerIsRefused(): void
+    {
+        $token = $this->post(self::inDays(2), '10:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+
+        $noNonce = $this->guestBook($token, ['first_name' => 'A', 'phone' => '09121234567'], false);
+        self::assertContains($noNonce['status'], [401, 403]);
+
+        $this->realDb()->execute(
+            'UPDATE %i SET status = %s WHERE id = %d',
+            Tables::name('customers'),
+            'blocked',
+            $this->customer
+        );
+        $blocked = $this->guestBook($token, ['first_name' => 'A', 'phone' => '09121234567']);
+        self::assertSame(
+            [422, 'customer_unavailable'],
+            [$blocked['status'], $blocked['body']['code'] ?? null]
+        );
+        $bad = $this->guestBook($token, ['first_name' => 'A', 'phone' => 'not a phone']);
+        self::assertSame([422, 'invalid_phone'], [$bad['status'], $bad['body']['code'] ?? null]);
+    }
+
+    public function testAWrongAnswerNamesItsFieldInTheErrorDetails(): void
+    {
+        $this->realDb()->insert(Tables::name('fields'), [
+            'scope' => 'global',
+            'service_id' => null,
+            'field_key' => 'plate',
+            'type' => 'text',
+            'label' => 'Plate number',
+            'required' => 1,
+            'options' => null,
+            'show_if' => null,
+            'sort' => 0,
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+        $token = $this->post(self::inDays(2), '10:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+
+        $missing = $this->guestBook($token, ['first_name' => 'A', 'phone' => '09351112233']);
+
+        self::assertSame(
+            [422, 'answer_required', ['field_key' => 'plate']],
+            [
+                $missing['status'],
+                $missing['body']['code'] ?? null,
+                ((array) ($missing['body']['data'] ?? []))['details'] ?? null,
+            ]
+        );
+    }
+
+    public function testTheWidgetGetsAFreshNonceAndTheFieldsOfAService(): void
+    {
+        $this->realDb()->insert(Tables::name('fields'), [
+            'scope' => 'global',
+            'service_id' => null,
+            'field_key' => 'plate',
+            'type' => 'text',
+            'label' => 'Plate number',
+            'required' => 1,
+            'options' => null,
+            'show_if' => null,
+            'sort' => 0,
+            'created_at' => '2026-09-27 10:00:00',
+            'updated_at' => '2026-09-27 10:00:00',
+        ]);
+
+        $nonce = $this->guestGet('/nonce');
+        $fields = $this->guestGet('/service-fields', ['service' => $this->service]);
+        $unknown = $this->guestGet('/service-fields', ['service' => 999_999]);
+
+        self::assertSame(200, $nonce['status']);
+        self::assertNotFalse(\wp_verify_nonce((string) ($nonce['body']['nonce'] ?? ''), 'wp_rest'));
+        self::assertSame(
+            [200, ['plate'], [true]],
+            [
+                $fields['status'],
+                \array_column($fields['body'], 'field_key'),
+                \array_column($fields['body'], 'required'),
+            ]
+        );
+        self::assertSame([404, 'service_not_found'], [$unknown['status'], $unknown['body']['code'] ?? null]);
+    }
+
     /**
      * Moving frees the old time and takes the new one; cancelling frees it
      * all. A global policy refuses a late cancel unless staff override it
@@ -597,6 +731,39 @@ final class HoldsTest extends TestCase
     }
 
     /**
+     * POST /book as a guest of the site, who has only the REST nonce.
+     *
+     * @param array<string, mixed> $params without the hold token.
+     * @return array{status: int, body: array<string, mixed>}
+     */
+    private function guestBook(string $token, array $params, bool $nonce = true): array
+    {
+        $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . '/book');
+        $request->set_body_params(['hold_token' => $token] + $params);
+        if ($nonce) {
+            $request->set_header('X-WP-Nonce', \wp_create_nonce('wp_rest'));
+        }
+        $response = \rest_do_request($request);
+        $body = $response->get_data();
+
+        return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
+    }
+
+    /**
+     * @param array<string, mixed> $query
+     * @return array{status: int, body: array<mixed>}
+     */
+    private function guestGet(string $path, array $query = []): array
+    {
+        $request = new \WP_REST_Request('GET', '/' . Identity::REST_NAMESPACE . $path);
+        $request->set_query_params($query);
+        $response = \rest_do_request($request);
+        $body = $response->get_data();
+
+        return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
+    }
+
+    /**
      * A hold and its confirmation, as the logged-in staff member.
      */
     private function bookAt(LocalDate $day, string $time): int
@@ -715,6 +882,7 @@ final class HoldsTest extends TestCase
             [new Variant(null, '', 60, Money::ofRial(1_000_000), true)],
             [new ServiceStaff($this->staff)]
         ));
+        $this->service = (int) $service->id;
         $this->variant = (int) $service->variants[0]->id;
         $this->customer = (int) (new WpdbCustomerRepository($db, $clock))->save(
             new Customer(null, null, 'Ali', 'Karimi', PhoneNumber::fromInput('09121234567'))

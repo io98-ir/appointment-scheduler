@@ -98,6 +98,17 @@
 
 پاسخ (نوع‌ها در `api-types.ts`: `PublicMenu`): `locations` (`id`، `name`، `timezone`، `address`)، `categories` (`id`، `name`)، `services` (`id`، `name`، `category_id`، `description`، `capacity`، `variants` با `id`، `label`، `duration_min`، `price`، `is_default`، و `staff` با `staff_id`، `name`، `title`، `location_id` (`null` یعنی همه شعبه‌ها)، `variant_id` (`null` یعنی همه Variantها)، `duration_min` و `price` اختصاصی پرسنل یا `null`).
 
+## رزرو مهمان از ویجت (عمومی)
+| Route | کار |
+|---|---|
+| `GET /nonce` | یک nonce تازه `wp_rest` برای مهمان، چون nonce صفحه cache‌شده کهنه است. rate limit: 120 در دقیقه |
+| `GET /service-fields?service=` | فیلدهای سفارشی یک خدمت (سراسری‌ها و فیلدهای خود خدمت، به ترتیب `sort`) با `field_key`، `type`، `label`، `required`، `options` و `show_if`. خدمت ناموجود: 404 `service_not_found` |
+| `POST /book` | Hold را به نوبت تبدیل می‌کند |
+
+`POST /book` نیاز به هدر `X-WP-Nonce` (از `GET /nonce`) دارد و rate limit آن 10 در دقیقه برای هر کلاینت است. بدنه: `hold_token`، `phone` (الزامی، ارقام فارسی مشکلی ندارد)، `first_name` و `last_name` (حداقل یکی الزامی است)، `email` (اختیاری)، `customer_note`، `answers` (بر اساس `field_key`؛ checkbox فقط به‌صورت bool در بدنه JSON). مشتری با شماره پیدا یا ساخته می‌شود؛ مشتری موجود نام و ایمیلش را حفظ می‌کند و مهمان نمی‌تواند آن را عوض کند. `source` نوبت `widget` و `created_by` خالی است. **شماره هنوز تأیید نمی‌شود** (OTP در T4.3 می‌آید).
+
+پاسخ 201: فقط `code` (کد پیگیری)، `status`، `start`، `end` و `price`. خطاها: 404 `hold_not_found` (توکن ناشناخته، منقضی یا مصرف‌شده)، 409 `service_unavailable`، 422 `customer_unavailable` (مشتری مسدود)، `invalid_phone`، `invalid_email`، `invalid_name`، و برای پاسخ نامعتبر `answer_required` یا `invalid_answer` که **`data.details.field_key`** فیلد خطادار را نشان می‌دهد.
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

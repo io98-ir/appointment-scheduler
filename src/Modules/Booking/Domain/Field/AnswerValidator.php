@@ -20,7 +20,8 @@ final class AnswerValidator
      *     on a later field never matches.
      * @param array<string, mixed> $raw by field_key, exactly as the client sent them.
      * @return array<string, string> validated answers, one per visible field that was answered.
-     * @throws InvalidValue answer_required or invalid_answer, on the first field that fails.
+     * @throws InvalidValue answer_required or invalid_answer, on the first field that fails, with its
+     *     field_key in the details.
      */
     public static function validate(array $fields, array $raw): array
     {
@@ -30,13 +31,18 @@ final class AnswerValidator
                 continue;
             }
             $value = $raw[$field->key] ?? null;
-            if (null === $value || '' === $value) {
-                if ($field->required) {
-                    throw $field->requiredAnswer();
+            try {
+                if (null === $value || '' === $value) {
+                    if ($field->required) {
+                        throw $field->requiredAnswer();
+                    }
+                    continue;
                 }
-                continue;
+                $answers[$field->key] = $field->validate($value);
+            } catch (InvalidValue $e) {
+                // The client points at the field that failed.
+                throw new InvalidValue($e->errorCode, $e->getMessage(), ['field_key' => $field->key]);
             }
-            $answers[$field->key] = $field->validate($value);
         }
 
         return $answers;
