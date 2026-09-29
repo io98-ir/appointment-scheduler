@@ -16,6 +16,16 @@
 
 ---
 
+## 2026-09-29 — سشن 25 — T5.3: ووکامرس به‌عنوان درگاه
+**Taskها:** T5.3 (منتظر CI)
+**انجام شد:** `WooCommerceGateway` روی Port `WcOrders` (Application) با `WcOrderStore` (CRUD سفارش ووکامرس، سازگار با HPOS)، `WooCommerceHooks` (اعلام HPOS، settle با `woocommerce_order_status_changed`، بازگشت مشتری به callback خودمان)، `WooCommerceSettings` (پیش‌فرض خاموش) و اتصال در `PaymentsModule`. تست Unit (10 تست، Fake) و Integration با ووکامرس واقعی (5 تست؛ بدون ووکامرس skip). CI: نصب WC 9.3.3 فقط در job Integration با `.wp-env.override.json`؛ `bootstrap.php` آن را load و نصب می‌کند و HPOS را روشن می‌کند. `php-stubs/woocommerce-stubs` به devDependencies و PHPStan اضافه شد.
+**تصمیم‌ها و فرض‌ها:** (۱) سفارش pending حکم نیست (awaiting می‌ماند) تا پرداخت دیرتر گم نشود. (۲) فقط IRR و IRT. (۳) پیش‌فرض خاموش تا نصب ووکامرس رفتار رزروها را عوض نکند. (۴) ووکامرس فقط در job Integration نصب می‌شود تا onboarding آن E2E را نشکند. (۵) نسخه 9.3.3 حدسی است برای سازگاری با WP 6.6؛ اگر CI نصب را رد کرد نسخه را عوض کن.
+**تأیید:** محلی: `composer lint`، `stan`، `deptrac`، `test:unit` ← 895 تست سبز. Integration فقط CI (اولین اجرای ووکامرس و HPOS آنجاست؛ `WC_Install::install()` در `setup_theme` بدون تأیید نوشته شده).
+**مشکلات و باقیمانده:** سبز شدن CI؛ سفارش pending رهاشده؛ اطلاعات صورت‌حساب؛ استرداد به ووکامرس.
+**قدم بعدی:** بررسی CI ← T5.4.
+**Commitها:** T5.3 در commit بعدی.
+---
+
 ## 2026-09-29 — سشن 24 (ادامه 7) — T5.2: درگاه‌ها، تطبیق، استرداد و اتصال Booking
 **Taskها:** T5.2 (منتظر CI)، رفع CI سرخ T4.3 تا T5.1
 **انجام شد:** `ZarinpalGateway` و `ZibalGateway` روی Port `JsonHttp`؛ `callbackAuthority` در Port درگاه؛ `PaymentService::settleCallback` و `reconcile`؛ `RefundService` با `POST /payments/refunds`؛ `OnlinePayments` (Contract `PaymentsApi`)؛ در Booking: `UnpaidAppointments`، `OnlineCheckout`، `Actor::system()`، `Appointment::paymentStatus()` (دیگر public readonly نیست)، Job انقضا، شنونده `payments/succeeded` با `booking/needs_attention`، `GET /payment-options` و `pay_online` در `POST /book`؛ callback با `return` به صفحه سایت برمی‌گردد. ویجت: دکمه «پرداخت آنلاین»، هدایت به درگاه، بنر نتیجه. مستندات: `api.md` و implementation-notes §4.17.

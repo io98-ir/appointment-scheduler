@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M4** سمت مشتری (M3 Admin کامل شد) |
-| **Task در حال انجام** | — (T4.2 تا T5.2 کامل و **CI سبز روی main: run 36552515145**، هر 13 job، 2026-09-29). باقی‌مانده‌های T5.2: `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `booking/needs_attention`؛ صفحه تنظیم merchant (فعلاً `SecretStore` یا ثابت wp-config، با T6.1)؛ تست زنده با کلید واقعی پیش از انتشار |
-| **Task بعدی** | **T5.3** — ووکامرس به‌عنوان درگاه (HPOS) با تست Integration؛ اگر ووکامرس در wp-env نصب نیست، اول آن را به `.wp-env.json` اضافه کن. پیش از آن اگر CI قرمز بود، اول همان را رفع کن (`gh run list`) |
+| **Task در حال انجام** | — (T5.3 نوشته و بررسی محلی شد، منتظر CI؛ اگر سرخ بود اول همان را رفع کن با `gh run list`). باقی‌مانده‌های T5.2: `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `booking/needs_attention`؛ صفحه تنظیم merchant (با T6.1)؛ تست زنده با کلید واقعی پیش از انتشار |
+| **Task بعدی** | **T5.4** — Notifications core (Template، trigger، audience، یادآوری، ساعات سکوت، dedup، لاگ، Email). پیش از آن CI مربوط به T5.3 را بررسی کن (تست Integration ووکامرس با WC 9.3.3 و HPOS برای اولین بار در CI اجرا می‌شود؛ ر.ک. implementation-notes §4.18) |
 | **آخرین کار انجام‌شده** | **T4.2 تا T4.5** (Hold تا تأیید، OTP، پنل مشتری، shortcode و بلوک)، **T5.1** (هسته پرداخت) و **T5.2** (Zarinpal، Zibal، تطبیق، استرداد دستی، اتصال Booking و ویجت به پرداخت آنلاین). **CI سبز روی main: run 36552515145** (هر 13 job، 2026-09-29). ویجت 15.5KB gz |
 | **Blockerها** | — |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
@@ -24,7 +24,7 @@
 | M2 هسته رزرو | ✅ | 8/8 |
 | M3 Admin | ✅ | 6/6 |
 | M4 سمت مشتری | ✅ | 5/5 |
-| M5 پرداخت و اعلان | 🟨 | 2/5 |
+| M5 پرداخت و اعلان | 🟨 | 3/5 |
 | M6 انتشار 1.0 | ⬜ | 0/6 |
 
 ## جزئیات Taskها
@@ -73,7 +73,7 @@
 | T4.5 | Shortcode و Block | ✅ | `eb4d25e`. ماژول `Widget`. **CI سبز (run 36552515145)** |
 | T5.1 | Payments core | ✅ | `684dd67`. **CI سبز (run 36552515145)** |
 | T5.2 | Zarinpal، Zibal، تطبیق | ✅ | `37107d2`. HTTP Mock ضبط‌شده؛ استرداد فقط دستی. اتصال Booking همین‌جا انجام شد (implementation-notes §4.17). **CI سبز (run 36552515145)** شامل 5 سناریوی Integration |
-| T5.3 | ووکامرس | ⬜ | |
+| T5.3 | ووکامرس | ✅ | `WooCommerceGateway` روی Port `WcOrders`؛ سفارش pending با fee line، HPOS، IRR و IRT، settle با status change و بازگشت مشتری. پیش‌فرض خاموش (`WooCommerceSettings`). **منتظر CI** (implementation-notes §4.18) |
 | T5.4 | Notifications core | ⬜ | |
 | T5.5 | SMS Providers | ⬜ | |
 | T6.1 | White-label + Onboarding | ⬜ | |

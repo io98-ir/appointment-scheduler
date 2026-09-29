@@ -23,6 +23,25 @@ if (!\is_string($testsDir) || !\is_file("$testsDir/includes/functions.php")) {
 
 require_once "$testsDir/includes/functions.php";
 
+// WooCommerce is optional (ADR-012): the CI integration job installs it next to the plugin (see
+// ci.yml); everywhere else its tests skip themselves. It gets its tables and HPOS on the test site.
+$woocommerce = \dirname(__DIR__, 3) . '/woocommerce/woocommerce.php';
+if (\is_file($woocommerce)) {
+    \tests_add_filter(
+        'muplugins_loaded',
+        static function () use ($woocommerce): void {
+            require $woocommerce;
+        }
+    );
+    \tests_add_filter(
+        'setup_theme',
+        static function (): void {
+            \WC_Install::install();
+            \update_option('woocommerce_custom_orders_table_enabled', 'yes');
+        }
+    );
+}
+
 \tests_add_filter(
     'muplugins_loaded',
     static function (): void {

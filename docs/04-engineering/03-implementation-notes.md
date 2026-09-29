@@ -333,6 +333,16 @@
 - **محدودیت‌های شناخته‌شده:** رویداد `payments/succeeded` بعد از commit فرستاده می‌شود، پس اگر PHP بین commit و شنونده بمیرد، پرداخت موفق است ولی نوبت `pending_payment` می‌ماند تا منقضی شود و به `needs_attention` برسد؛ یعنی جبران آن دست کارمند است. شمارش استفاده کوپن هنگام رزرو انجام می‌شود و با انقضای نوبت برنمی‌گردد. تأیید دستی (`needsApproval`) هنوز تنظیم نیست، پس پرداخت همیشه `confirmed` می‌دهد.
 - **تله ابزار:** `PaymentGateway` در تست‌ها با `class@anonymous` پیاده می‌شود و phpcs برای هر متد با آرایه docblock می‌خواهد (`@param array<string, string> $callbackParams`). فایل `tests/Integration/bootstrap.php` یک `FakeGateway` به همه سایت‌های تست می‌دهد (registry یک‌بار در هر درخواست ساخته می‌شود).
 
+## 4.18 ووکامرس به‌عنوان درگاه (T5.3)
+- **مدل (ADR-012):** هر رزرو یک سفارش pending با یک fee line می‌سازد و مشتری به `get_checkout_payment_url()` می‌رود، پس هر روش پرداختی که فروشگاه دارد کار می‌کند. authority = شناسه سفارش. جدول `payments` ما منبع حقیقت می‌ماند. تنها در Application یک Port (`WcOrders`) هست (دو پیاده‌سازی: `WcOrderStore` واقعی و Fake تست) و تمام منطق (تبدیل واحد، حکم) در `WooCommerceGateway` بدون ووکامرس تست می‌شود.
+- **فقط CRUD سفارش**، نه posts و نه جدول‌ها، پس HPOS و legacy هر دو کار می‌کنند. سازگاری HPOS در `before_woocommerce_init` اعلام می‌شود.
+- **واحد پول:** فقط IRR (بدون تبدیل) و IRT (÷10، اگر مبلغ بر 10 بخش‌پذیر نبود `GatewayException` و درگاه بعدی امتحان می‌شود). ارز دیگر رد می‌شود.
+- **حکم `verify`:** پرداخت‌شده (`is_paid()`) ← موفق؛ لغو/ناموفق/مسترد ← ناموفق؛ pending یا on-hold ← **حکم نیست** (`GatewayException`، پرداخت awaiting می‌ماند، چون مشتری هنوز می‌تواند بپردازد و پرداخت ناموفقِ نهایی، پول بعدی را از دست می‌دهد). سفارش پرداخت‌شده با جمع متفاوت هم حکم نمی‌گیرد و به آدم می‌رسد.
+- **Settle:** با `woocommerce_order_status_changed` (هر درگاه و هر ادمین)، با بازگشت مشتری (`woocommerce_get_return_url` و `woocommerce_get_checkout_order_received_url` او را به callback خودمان با `order=` می‌فرستند) و با Job تطبیق. سفارش‌هایی که مال رزرو نیستند با `NotFound` بی‌صدا رد می‌شوند.
+- **روشن‌شدن:** `WooCommerceSettings::enabled` (پیش‌فرض خاموش) و وجود `wc_create_order`. نصب ووکامرس رفتار رزروها را عوض نمی‌کند. صفحه‌اش با T6.1.
+- **CI:** ووکامرس (9.3.3، سازگار با WP 6.6) فقط در job Integration با `.wp-env.override.json` نصب می‌شود (job‌های E2E و concurrency بدون آن، تا onboarding ووکامرس مزاحم نشود). `bootstrap.php` آن را load و نصب می‌کند و HPOS را روشن می‌کند؛ تست‌های ووکامرس بدون آن skip می‌شوند. stubs: `php-stubs/woocommerce-stubs` (dev).
+- **باقیمانده:** سفارش pending رهاشده تا ابد awaiting می‌ماند و Job تطبیق هر 5 دقیقه می‌پرسد (ووکامرس خودش pending را با تنظیم stock لغو می‌کند)؛ اطلاعات صورت‌حساب مشتری در سفارش نیست (Port درگاه اسم و تلفن نمی‌گیرد)؛ استرداد به ووکامرس منتقل نمی‌شود.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

@@ -142,6 +142,11 @@ jobs:
           package-manager-cache: false
       # vendor/ is installed on the host and mounted into the containers.
       - run: composer install --no-interaction --no-progress
+      # WooCommerce is an optional plugin (ADR-012): only this job has it, for the gateway's tests (T5.3).
+      # Pinned to a release that still supports WP 6.6; an override replaces the plugins list, so "." is repeated.
+      - name: Add WooCommerce to the test site
+        run: |
+          echo '{"plugins":[".","https://downloads.wordpress.org/plugin/woocommerce.9.3.3.zip"]}' > .wp-env.override.json
       - run: npx --yes @wordpress/env@11 start
       - name: Run the integration suite
         run: >-

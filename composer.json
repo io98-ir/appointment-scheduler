@@ -12,6 +12,7 @@
         "brain/monkey": "^2.6",
         "deptrac/deptrac": "^2.0",
         "mockery/mockery": "^1.6",
+        "php-stubs/woocommerce-stubs": "^11.1",
         "php-stubs/wordpress-tests-stubs": "^7.1",
         "phpcompatibility/phpcompatibility-wp": "^2.1",
         "phpstan/phpstan": "^2.1",

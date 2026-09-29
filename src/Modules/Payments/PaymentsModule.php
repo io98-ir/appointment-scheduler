@@ -11,6 +11,7 @@ use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\SecretStore;
+use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Payments\Application\GatewayRegistry;
 use Vaqtyar\Modules\Payments\Application\JsonHttp;
 use Vaqtyar\Modules\Payments\Application\OnlinePayments;
@@ -25,11 +26,16 @@ use Vaqtyar\Modules\Payments\Infrastructure\Migrations\CreatePaymentTables;
 use Vaqtyar\Modules\Payments\Infrastructure\OfflineGateway;
 use Vaqtyar\Modules\Payments\Infrastructure\Persistence\WpdbPaymentRepository;
 use Vaqtyar\Modules\Payments\Infrastructure\Persistence\WpdbRefundRepository;
+use Vaqtyar\Modules\Payments\Infrastructure\WcOrderStore;
+use Vaqtyar\Modules\Payments\Infrastructure\WooCommerceGateway;
+use Vaqtyar\Modules\Payments\Infrastructure\WooCommerceHooks;
+use Vaqtyar\Modules\Payments\Infrastructure\WooCommerceSettings;
 use Vaqtyar\Modules\Payments\Infrastructure\WpJsonHttp;
 use Vaqtyar\Modules\Payments\Infrastructure\ZarinpalGateway;
 use Vaqtyar\Modules\Payments\Infrastructure\ZibalGateway;
 use Vaqtyar\Modules\Payments\Presentation\Rest\PaymentRoutes;
 use Vaqtyar\Shared\Domain\Clock;
+use Vaqtyar\Shared\Domain\NotFound;
 use Vaqtyar\Shared\Domain\TransactionRunner;
 use Vaqtyar\Shared\WpAuthorizer;
 
@@ -38,8 +44,9 @@ use Vaqtyar\Shared\WpAuthorizer;
  * start-callback-verify flow, and the payments and refunds tables. Booking
  * and Payments meet only through events: this module fires
  * `{prefix}/payments/succeeded` and `{prefix}/payments/refunded`, and
- * listens to nothing of Booking's. More gateways (WooCommerce, T5.3) are
- * added to the registry on the `{prefix}/payments/gateways` filter.
+ * listens to nothing of Booking's. More gateways are added to the registry on
+ * the `{prefix}/payments/gateways` filter. WooCommerce (T5.3) is a gateway
+ * too, once WooCommerceSettings turns it on.
  *
  * Zarinpal and Zibal are on when their merchant id is stored as a secret
  * (`zarinpal_merchant`, `zibal_merchant`; a wp-config constant works too).
@@ -78,6 +85,12 @@ final class PaymentsModule implements Module
             $zibal = $secrets->get('zibal_merchant');
             if (null !== $zibal) {
                 $own[] = new ZibalGateway($http, $zibal);
+            }
+            if (
+                \function_exists('wc_create_order')
+                && $c->get(Settings::class)->get(WooCommerceSettings::class)->enabled
+            ) {
+                $own[] = new WooCommerceGateway(new WcOrderStore());
             }
             $gateways = \apply_filters(Hooks::name('payments/gateways'), $own);
 
@@ -142,6 +155,13 @@ final class PaymentsModule implements Module
                 \as_schedule_recurring_action(\time(), self::RECONCILE_EVERY_SECONDS, $reconcile, [], '', true);
             }
         });
+        (new WooCommerceHooks($context->pluginFile, static function (string $orderId) use ($container): void {
+            try {
+                $container->get(PaymentService::class)->settle(WooCommerceGateway::ID, $orderId, []);
+            } catch (NotFound) {
+                // Not the payment of a booking: most orders of a shop.
+            }
+        }))->register();
         \add_action('rest_api_init', static function () use ($container): void {
             (new PaymentRoutes(
                 $container->get(Router::class),

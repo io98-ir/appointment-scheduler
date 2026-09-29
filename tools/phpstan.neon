@@ -16,4 +16,6 @@ parameters:
         - ../vendor/php-stubs/wordpress-tests-stubs/wordpress-tests-stubs.php
         # as_schedule_recurring_action() and the rest of Action Scheduler's API (ADR-005).
         - ../vendor/woocommerce/action-scheduler/functions.php
+        # WC_Order and wc_create_order() for the WooCommerce gateway (T5.3); dev only, WooCommerce is optional.
+        - ../vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
     tmpDir: ../.phpstan.cache
