@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 (ادامه 6) — T5.1: هسته پرداخت
+**Taskها:** T5.1 (منتظر CI)، رفع CI سرخ T4.4/T4.5
+**انجام شد:** ماژول `Payments` با Port درگاه، Registry، `PaymentService` (Failover، settle idempotent)، `OfflineGateway`، جدول‌های `payments` و `refunds`، routeهای callback و تأیید آفلاین، و رویداد `payments/succeeded`. رفع CI: باگ تست (`null ?? 'set'` همیشه `'set'` می‌دهد)، import بلااستفاده، دو خط بلند.
+**تصمیم‌ها و فرض‌ها:** استعلام درگاه بیرون از قفل ردیف است تا HTTP زیر تراکنش نباشد؛ `settle` با `UPDATE … WHERE status = awaiting_callback` جلوی تصادم دو callback را می‌گیرد. Booking و Payments فقط با action به هم می‌رسند. `refunds` همین حالا ساخته شد تا این ماژول migration دوم نخواهد. اتصال به Booking عمداً به T5.2 رفت چون بدون درگاه واقعی قابل امتحان نیست.
+**تأیید:** تست محلی گرفته نشد؛ CI ابزار تأیید است.
+**مشکلات و باقیمانده:** CI سبز؛ اتصال Booking؛ تست Integration ریپازیتوری.
+**قدم بعدی:** T5.2.
+**Commitها:** T5.1 در commit بعدی.
+
+---
+
 ## 2026-09-29 — سشن 24 (ادامه 5) — T4.5: Shortcode و بلوک
 **Taskها:** T4.5 (منتظر CI)
 **انجام شد:** ماژول `Widget` (`WidgetModule`، `Presentation/Embeds`): shortcodeهای `[vaqtyar_booking]` و `[vaqtyar_panel]`، بلوک‌های سمت‌سرور با ویژگی‌های service، variant، location، staff، calendar و digits؛ enqueue شرطی؛ `assets/blocks.js` برای ویرایشگر. deptrac و `vaqtyar.php` به‌روز شدند.

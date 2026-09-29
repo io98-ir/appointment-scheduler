@@ -45,7 +45,9 @@ final class EmbedsTest extends TestCase
         $handle = Identity::SLUG . '-widget';
         self::assertFalse(\wp_script_is($handle, 'enqueued'));
 
-        $html = \do_shortcode('[' . Identity::SLUG . '_booking service="7" staff="x" calendar="gregorian" digits="bogus"]');
+        $html = \do_shortcode(
+            '[' . Identity::SLUG . '_booking service="7" staff="x" calendar="gregorian" digits="bogus"]'
+        );
 
         if (!$this->built()) {
             self::assertSame('', $html, 'A guest sees nothing where the build is missing.');

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Booking\Application;
 
 use Vaqtyar\Modules\Booking\Domain\Appointment\AppointmentStatus;
-use Vaqtyar\Modules\Booking\Domain\Policy\Decision;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\Forbidden;

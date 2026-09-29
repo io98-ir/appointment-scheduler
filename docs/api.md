@@ -139,6 +139,14 @@
 
 هر کدام یک `<div data-{slug}-widget>` یا `<div data-{slug}-panel>` با config به‌صورت JSON می‌نویسد (`restUrl` و ویژگی‌های غیرصفر) که `packages/widget` mount می‌کند. اسکریپت و استایل ویجت (`build/widget.*`) فقط وقتی اولین embed رندر شود enqueue می‌شوند، پس صفحه بدون آن چیزی بارگذاری نمی‌کند. بدون `pnpm build` مهمان چیزی نمی‌بیند و مدیر یک پیام. پوشه `assets/` باید در zip انتشار باشد (T6.6).
 
+## پرداخت
+| Route | کار |
+|---|---|
+| `GET /payments/callback/{gateway}` | عمومی؛ جایی که درگاه مشتری را برمی‌گرداند. `authority` الزامی است و بقیه پارامترهای query به‌صورت متن به adapter درگاه می‌رسد (هیچ‌کدام باور نمی‌شود؛ درگاه استعلام می‌شود). پاسخ: `{id, appointment_id, gateway, amount, status, ref_id}`. تکراری بودن callback بی‌اثر است. درگاه یا authority ناموجود: 404 `payment_not_found`. rate limit: 60 در دقیقه |
+| `POST /payments/offline/confirm` | `authority`؛ فقط با capability `manage_bookings`. ثبت اینکه پرداخت آفلاین دریافت شد |
+
+جریان: `PaymentService::start()` درگاه‌ها را به ترتیب امتحان می‌کند (Failover) و یک ردیف `awaiting_callback` می‌سازد؛ callback با `settle()` یک‌بار به `succeeded` یا `failed` می‌رود (درگاه بیرون از قفل استعلام می‌شود و انتقال زیر قفل ردیف انجام می‌شود). پس از commit، action `{prefix}/payments/succeeded` با `($appointmentId, $paymentId)` اجرا می‌شود؛ Booking و Payments فقط از راه رویداد به هم می‌رسند. درگاه‌ها با filter `{prefix}/payments/gateways` ثبت می‌شوند؛ فعلاً فقط `offline`.
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

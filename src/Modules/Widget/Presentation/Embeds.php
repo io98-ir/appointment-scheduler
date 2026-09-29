@@ -101,7 +101,14 @@ final class Embeds
     public function renderBooking(array|string $atts): string
     {
         $values = \shortcode_atts(
-            ['service' => 0, 'variant' => 0, 'location' => 0, 'staff' => 0, 'calendar' => 'jalali', 'digits' => 'latin'],
+            [
+                'service' => 0,
+                'variant' => 0,
+                'location' => 0,
+                'staff' => 0,
+                'calendar' => 'jalali',
+                'digits' => 'latin',
+            ],
             \is_array($atts) ? $atts : []
         );
 

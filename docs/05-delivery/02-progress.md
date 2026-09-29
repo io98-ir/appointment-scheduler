@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M4** سمت مشتری (M3 Admin کامل شد) |
-| **Task در حال انجام** | **T4.2 تا T4.5** — کدشان نوشته و push شده و منتظر CI سبز است (2026-09-29). **T4.5:** ماژول تازه `Widget` (در `vaqtyar.php` و `tools/deptrac-modules.yaml` ثبت شد) با `Embeds`: Shortcode `[vaqtyar_booking]` و `[vaqtyar_panel]`، بلوک‌های `vaqtyar/booking` و `vaqtyar/panel` (رندر سمت سرور، ویرایشگر ساده `assets/blocks.js` بدون build که نام بلوک‌ها را از attribute تگ خودش می‌خواند)، و enqueue شرطی `build/widget.*` فقط وقتی یک embed رندر شود. تست: `EmbedsTest` (Integration؛ اگر `build/` نباشد مهمان رشته خالی می‌گیرد و تست هر دو حالت را می‌سنجد). **باقی‌مانده:** CI سبز؛ `assets/` باید در zip انتشار بیاید (T6.6)؛ E2E مرورگری ویجت حالا ممکن است (صفحه با shortcode) و برای T6.5 می‌ماند |
-| **Task بعدی** | **M5 — T5.1** Payments core (Port `PaymentGateway`، Registry، جریان start ← callback ← verify، Failover، Offline) |
+| **Task در حال انجام** | **T4.2 تا T4.5 و T5.1** — کدشان نوشته و push شده و منتظر CI سبز است (2026-09-29). CI T4.4/T4.5 چهار خطا داشت (باگ `?? 'set'` روی null در `HoldsTest`، import بلااستفاده، دو خط بلند) که رفع شد. **T5.1 (Payments core):** ماژول `Payments` (`vaqtyar.php`، Deptrac از قبل): Domain `Payment`/`PaymentStatus` (فقط یک‌بار از awaiting_callback خارج می‌شود)، Port `PaymentGateway` + `GatewayRegistry` + `GatewayException`، `PaymentService` (`start` با Failover، `settle` idempotent با استعلام بیرون از قفل و انتقال زیر قفل، `confirmOffline` با capability)، `OfflineGateway`، migration `payments` و `refunds`، `WpdbPaymentRepository`، `GET /payments/callback/{gateway}` و `POST /payments/offline/confirm`، action `{prefix}/payments/succeeded`، filter `{prefix}/payments/gateways`. تست: `PaymentServiceTest`، `GatewayContractTest` (پایه همه درگاه‌ها) و `OfflineGatewayTest`. **ساخته نشد و باقی‌مانده T5.1:** وصل کردن Booking به Payments: ساخت نوبت `pending_payment` در `POST /book` با روش پرداخت، شنیدن `payments/succeeded` برای `paid()`، منقضی‌شدن Hold، و حالت `needs_attention`؛ هیچ‌کدام تا درگاه واقعی (T5.2) قابل امتحان نیست، پس با T5.2 می‌آید. تست Integration ریپازیتوری و migration نوشته نشد |
+| **Task بعدی** | **T5.2** — Adapterهای Zarinpal v4 و Zibal + Job تطبیق + استرداد دستی، و همان وصل‌کردن Booking به Payments. نیاز به تصمیم کاربر: کلید و merchant id واقعی برای تست ندارم، پس با HTTP mock ضبط‌شده می‌نویسم |
 | **آخرین کار انجام‌شده** | **T3.5** کامل (مشتریان، تعطیلات، Policy، فیلدها، کوپن، قیمت زمانی، E2E `settings.spec.ts`)، **T3.6** (داشبورد `/`، گزارش `/reports`، `GET /reports/summary`، CSV)، **T4.1** (`GET /catalog` عمومی، ویجت: خدمت/Variant/شعبه/پرسنل، تقویم ماه شمسی یا میلادی، ساعت‌های خالی، «اولین نوبت خالی»، رویداد `vqy:slot`؛ ویجت 11KB gz). **CI سبز روی main: run 36544899242** (هر ۱۳ job، 2026-09-29) |
 | **Blockerها** | — |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
@@ -24,7 +24,7 @@
 | M2 هسته رزرو | ✅ | 8/8 |
 | M3 Admin | ✅ | 6/6 |
 | M4 سمت مشتری | 🟨 | 1/5 (T4.2 تا T4.5 منتظر CI) |
-| M5 پرداخت و اعلان | ⬜ | 0/5 |
+| M5 پرداخت و اعلان | 🟨 | 0/5 (T5.1 منتظر CI) |
 | M6 انتشار 1.0 | ⬜ | 0/6 |
 
 ## جزئیات Taskها
@@ -70,8 +70,8 @@
 | T4.2 | ویجت: Hold تا تأیید | 🟨 | `42b39eb`. Integration سبز؛ lint رفع شد، منتظر CI |
 | T4.3 | OTP | 🟨 | `4d0f662` + رفع lint/تست. منتظر CI. تنظیم `require_phone_verification` پیش‌فرض خاموش |
 | T4.4 | پنل مشتری | 🟨 | `60198eb`. منتظر CI. پرداخت مانده با M5 |
-| T4.5 | Shortcode و Block | 🟨 | کد نوشته شد، منتظر CI. ماژول `Widget` |
-| T5.1 | Payments core | ⬜ | |
+| T4.5 | Shortcode و Block | 🟨 | `eb4d25e`. منتظر CI. ماژول `Widget` |
+| T5.1 | Payments core | 🟨 | کد نوشته شد، منتظر CI. اتصال به Booking با T5.2 |
 | T5.2 | Zarinpal، Zibal، تطبیق | ⬜ | |
 | T5.3 | ووکامرس | ⬜ | |
 | T5.4 | Notifications core | ⬜ | |

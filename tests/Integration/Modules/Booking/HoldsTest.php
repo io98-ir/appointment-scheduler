@@ -626,9 +626,15 @@ final class HoldsTest extends TestCase
         $cancelled = $this->panel('POST', "/my/appointments/{$mine}/cancel", ['reason' => 'busy'], $session);
         self::assertSame([200, 'cancelled'], [$cancelled['status'], $cancelled['body']['status'] ?? null]);
         $after = $this->panel('GET', '/my/appointments', [], $session);
+        $first = $after['body'][0] ?? [];
         self::assertSame(
-            [null, null],
-            [$after['body'][0]['cancel'] ?? 'set', $after['body'][0]['reschedule'] ?? 'set']
+            [true, true, null, null],
+            [
+                rray_key_exists('cancel', $first),
+                rray_key_exists('reschedule', $first),
+                $first['cancel'] ?? null,
+                $first['reschedule'] ?? null,
+            ]
         );
     }
 
