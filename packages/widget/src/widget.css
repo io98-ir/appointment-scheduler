@@ -17,3 +17,86 @@
 .vqy-widget__title {
 	margin-block: 0;
 }
+
+.vqy-widget__choices {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	margin-block-end: 1rem;
+}
+
+.vqy-widget__choices label {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.vqy-widget__month {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-block-end: 0.5rem;
+}
+
+.vqy-widget__grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 0.25rem;
+	text-align: center;
+}
+
+.vqy-widget__weekday {
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+.vqy-widget__day {
+	min-block-size: 2.5rem;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.vqy-widget__day--available {
+	background: color-mix(in srgb, currentcolor 12%, transparent);
+	font-weight: 600;
+}
+
+.vqy-widget__day--full,
+.vqy-widget__day--closed,
+.vqy-widget__day--unknown {
+	background: transparent;
+	cursor: default;
+	opacity: 0.4;
+}
+
+.vqy-widget__day[aria-pressed="true"],
+.vqy-widget__slot-list button[aria-pressed="true"] {
+	border-color: currentcolor;
+	outline: 2px solid currentcolor;
+}
+
+.vqy-widget__slot-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.vqy-widget__slot-list button {
+	min-block-size: 2.5rem;
+	min-inline-size: 4.5rem;
+	cursor: pointer;
+}
+
+.vqy-widget__chosen {
+	font-weight: 600;
+}
+
+.vqy-widget__error {
+	color: var(--wp--preset--color--vivid-red, currentcolor);
+	font-weight: 600;
+}

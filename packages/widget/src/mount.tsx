@@ -1,3 +1,4 @@
+import type { ApiClient } from '@vaqtyar/shared';
 import { render } from 'preact';
 
 import { Widget, type WidgetConfig } from './Widget';
@@ -8,9 +9,14 @@ import { Widget, type WidgetConfig } from './Widget';
  *
  * @param element
  * @param config
+ * @param api     For tests: the client to use instead of one on config.restUrl.
  */
-export function mount( element: Element, config: WidgetConfig ): () => void {
-	render( <Widget config={ config } />, element );
+export function mount(
+	element: Element,
+	config: WidgetConfig,
+	api?: ApiClient
+): () => void {
+	render( <Widget config={ config } api={ api } />, element );
 
 	return () => render( null, element );
 }

@@ -12,6 +12,7 @@ use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Catalog\Application\CatalogReader;
 use Vaqtyar\Modules\Catalog\Application\CatalogService;
+use Vaqtyar\Modules\Catalog\Application\PublicMenu;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Catalog\Domain\BookableResourceRepository;
 use Vaqtyar\Modules\Catalog\Domain\ExtraRepository;
@@ -28,6 +29,7 @@ use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbServiceRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbStaffRepository;
 use Vaqtyar\Modules\Catalog\Presentation\Rest\CatalogRoutes;
 use Vaqtyar\Modules\Catalog\Presentation\Rest\CrudRoutes;
+use Vaqtyar\Modules\Catalog\Presentation\Rest\PublicMenuRoutes;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\WpAuthorizer;
 
@@ -81,6 +83,12 @@ final class CatalogModule implements Module
             $c->get(ServiceRepository::class),
             $c->get(ExtraRepository::class)
         ));
+        $container->singleton(PublicMenu::class, static fn (Container $c) => new PublicMenu(
+            $c->get(ServiceRepository::class),
+            $c->get(StaffRepository::class),
+            $c->get(LocationRepository::class),
+            $c->get(ServiceCategoryRepository::class)
+        ));
         $container->singleton(CatalogApi::class, static fn (Container $c) => new CatalogReader(
             $c->get(ServiceRepository::class),
             $c->get(StaffRepository::class),
@@ -113,6 +121,10 @@ final class CatalogModule implements Module
             (new CatalogRoutes(
                 new CrudRoutes($container->get(Router::class)),
                 $container->get(CatalogService::class)
+            ))->register();
+            (new PublicMenuRoutes(
+                $container->get(Router::class),
+                static fn (): PublicMenu => $container->get(PublicMenu::class)
             ))->register();
         });
     }

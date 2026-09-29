@@ -93,6 +93,11 @@
 - **409 `slot_taken`:** شروع دیگر آزاد نیست، روی شبکه اسلات نیست، یا بیرون از بازه رزرو است. کلاینت باید availability را دوباره بگیرد.
 - Hold بعد از 10 دقیقه منقضی می‌شود. تمدید (موقع رفتن به درگاه) هر بار 10 دقیقه است و از 20 دقیقه بعد از ساخت جلوتر نمی‌رود.
 
+## منوی عمومی رزرو
+`GET /catalog` بدون ورود در دسترس است (فقط GET) و rate limit دارد: 120 درخواست در دقیقه برای هر کلاینت، مثل `GET /availability`. فقط چیزی که قابل رزرو است برمی‌گردد: شعبه فعال، دسته‌ها، و خدمت فعالی که دست‌کم یک پرسنل قابل رزرو دارد (پرسنل فعال در شعبه فعال یا بدون شعبه). هیچ داده مشتری در آن نیست. حداکثر 200 مورد از هر فهرست خوانده می‌شود.
+
+پاسخ (نوع‌ها در `api-types.ts`: `PublicMenu`): `locations` (`id`، `name`، `timezone`، `address`)، `categories` (`id`، `name`)، `services` (`id`، `name`، `category_id`، `description`، `capacity`، `variants` با `id`، `label`، `duration_min`، `price`، `is_default`، و `staff` با `staff_id`، `name`، `title`، `location_id` (`null` یعنی همه شعبه‌ها)، `variant_id` (`null` یعنی همه Variantها)، `duration_min` و `price` اختصاصی پرسنل یا `null`).
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

@@ -354,6 +354,50 @@ export interface FieldShowIf {
 	equals: string;
 }
 
+/** GET /catalog (docs/api.md): what a customer may pick from, without login. */
+export interface MenuLocation {
+	id: number;
+	name: string;
+	timezone: string;
+	address: string;
+}
+
+export interface MenuVariant {
+	id: number;
+	label: string;
+	duration_min: number;
+	price: Money;
+	is_default: boolean;
+}
+
+/** A staff member's assignment to a service; `variant_id` null covers every variant. */
+export interface MenuStaff {
+	staff_id: number;
+	name: string;
+	title: string;
+	/** Null serves every location. */
+	location_id: number | null;
+	variant_id: number | null;
+	duration_min: number | null;
+	price: Money | null;
+}
+
+export interface MenuService {
+	id: number;
+	name: string;
+	category_id: number | null;
+	description: string;
+	capacity: number;
+	variants: MenuVariant[];
+	staff: MenuStaff[];
+}
+
+export interface PublicMenu {
+	locations: MenuLocation[];
+	categories: { id: number; name: string }[];
+	services: MenuService[];
+}
+
 /** GET /reports/summary (docs/api.md): the figures for a range of local dates. */
 export interface ReportSummary {
 	from: string;

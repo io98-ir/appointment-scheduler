@@ -72,7 +72,7 @@ final class ReportRestTest extends TestCase
         );
         self::assertEquals(
             ['confirmed' => 2, 'completed' => 1, 'cancelled' => 1, 'no_show' => 1, 'pending_payment' => 1],
-            $body['statuses'] ?? null
+            (array) ($body['statuses'] ?? null)
         );
         self::assertSame(
             [
