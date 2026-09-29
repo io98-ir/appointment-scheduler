@@ -109,8 +109,9 @@ final class BookingService
         ?string $email,
         string $customerNote,
         array $answers = [],
+        ?string $sessionToken = null,
     ): BookedAppointment {
-        $customerId = $this->customers->forBooking($phone, $firstName, $lastName, $email);
+        $customerId = $this->customers->forBooking($phone, $firstName, $lastName, $email, $sessionToken);
 
         return $this->book($token, $customerId, $customerNote, null, self::SOURCE_WIDGET, $answers);
     }

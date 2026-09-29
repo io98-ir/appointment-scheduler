@@ -126,3 +126,15 @@
 	gap: 0.5rem;
 	justify-content: space-between;
 }
+
+.vqy-widget__otp {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: 0.5rem;
+}
+
+.vqy-widget__verified {
+	margin: 0;
+	font-weight: 600;
+}

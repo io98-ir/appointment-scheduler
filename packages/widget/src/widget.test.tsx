@@ -67,26 +67,60 @@ function fakeServer() {
 	const requests: URLSearchParams[] = [];
 	const json = ( body: unknown ) => new Response( JSON.stringify( body ) );
 
+	const options = { required: false };
 	const posts: { path: string; body: Record< string, unknown > }[] = [];
 	const fetch = async ( resource: RequestInfo | URL, init?: RequestInit ) => {
 		const url = new URL( String( resource ) );
 		const path = url.pathname.replace( '/wp-json/x/v1', '' );
 		if ( init?.method === 'POST' ) {
-			const body = JSON.parse( String( init.body ) ) as Record< string, unknown >;
+			const body = JSON.parse( String( init.body ) ) as Record<
+				string,
+				unknown
+			>;
 			posts.push( { path, body } );
+			if ( path === '/otp/request' ) {
+				return new Response(
+					JSON.stringify( { expires_in: 300, resend_after: 60 } ),
+					{ status: 202 }
+				);
+			}
+			if ( path === '/otp/verify' ) {
+				return json( {
+					token: 'SESSION',
+					expires_at: '2027-01-01T00:00:00Z',
+				} );
+			}
 			if ( path === '/holds' ) {
 				return new Response(
 					JSON.stringify( {
 						token: 'T'.repeat( 43 ),
-						expires_at: new Date( Date.now() + 600000 ).toISOString(),
+						expires_at: new Date(
+							Date.now() + 600000
+						).toISOString(),
 						staff_id: 2,
 						start: body.start,
 						end: body.start,
 						price: {
 							total: { amount: 900000, currency: 'IRR' },
 							lines: [
-								{ code: 'base', amount: { amount: 1000000, currency: 'IRR' }, ref: null, qty: 1 },
-								{ code: 'coupon', amount: { amount: -100000, currency: 'IRR' }, ref: 4, qty: 1 },
+								{
+									code: 'base',
+									amount: {
+										amount: 1000000,
+										currency: 'IRR',
+									},
+									ref: null,
+									qty: 1,
+								},
+								{
+									code: 'coupon',
+									amount: {
+										amount: -100000,
+										currency: 'IRR',
+									},
+									ref: 4,
+									qty: 1,
+								},
 							],
 						},
 					} ),
@@ -100,7 +134,10 @@ function fakeServer() {
 					status: 'confirmed',
 					start: '2027-01-10T10:00:00+03:30',
 					end: '2027-01-10T10:30:00+03:30',
-					price: { total: { amount: 900000, currency: 'IRR' }, lines: [] },
+					price: {
+						total: { amount: 900000, currency: 'IRR' },
+						lines: [],
+					},
 				} ),
 				{ status: 201 }
 			);
@@ -108,10 +145,30 @@ function fakeServer() {
 		if ( path === '/nonce' ) {
 			return json( { nonce: 'fresh-nonce' } );
 		}
+		if ( path === '/otp/config' ) {
+			return json( { required: options.required, code_length: 6 } );
+		}
+		if ( path === '/captcha' ) {
+			return json( { a: 3, b: 4, token: 'captcha-token' } );
+		}
 		if ( path === '/service-fields' ) {
 			return json( [
-				{ field_key: 'has_car', type: 'checkbox', label: 'Has a car?', required: false, options: [], show_if: null },
-				{ field_key: 'plate', type: 'text', label: 'Plate number', required: true, options: [], show_if: { field: 'has_car', equals: '1' } },
+				{
+					field_key: 'has_car',
+					type: 'checkbox',
+					label: 'Has a car?',
+					required: false,
+					options: [],
+					show_if: null,
+				},
+				{
+					field_key: 'plate',
+					type: 'text',
+					label: 'Plate number',
+					required: true,
+					options: [],
+					show_if: { field: 'has_car', equals: '1' },
+				},
 			] );
 		}
 		if ( path === '/catalog' ) {
@@ -157,7 +214,7 @@ function fakeServer() {
 		} );
 	};
 
-	return { requests, posts, fetch };
+	return { requests, posts, options, fetch };
 }
 
 async function settle() {
@@ -306,14 +363,22 @@ describe( 'the booking widget', () => {
 
 	it( 'holds the time, asks for the details and books', async () => {
 		await open();
-		await act( () => days().find( ( day ) => ! day.disabled )?.click() );
+		await act( () =>
+			days()
+				.find( ( day ) => ! day.disabled )
+				?.click()
+		);
 		await settle();
 		await act( () =>
 			container
-				.querySelector< HTMLButtonElement >( '.vqy-widget__slot-list button' )
+				.querySelector< HTMLButtonElement >(
+					'.vqy-widget__slot-list button'
+				)
 				?.click()
 		);
-		const coupon = container.querySelector< HTMLInputElement >( 'input[maxlength="64"]' );
+		const coupon = container.querySelector< HTMLInputElement >(
+			'input[maxlength="64"]'
+		);
 		await act( () => {
 			if ( coupon ) {
 				coupon.value = 'NOWRUZ';
@@ -327,7 +392,11 @@ describe( 'the booking widget', () => {
 		await settle();
 
 		const hold = server.posts.find( ( post ) => post.path === '/holds' );
-		expect( hold?.body ).toMatchObject( { variant: 100, location: 1, coupon: 'NOWRUZ' } );
+		expect( hold?.body ).toMatchObject( {
+			variant: 100,
+			location: 1,
+			coupon: 'NOWRUZ',
+		} );
 		expect( text() ).toContain( 'We are holding this time for you' );
 		expect( text() ).toContain( 'Total: 900,000 IRR' );
 		// A field with a show_if stays hidden until its condition holds.
@@ -337,11 +406,16 @@ describe( 'the booking widget', () => {
 			[ ...container.querySelectorAll( 'label' ) ]
 				.find( ( element ) => element.textContent?.startsWith( label ) )
 				?.querySelector< HTMLInputElement >( 'input, textarea' );
-		const type = async ( element: HTMLInputElement | null | undefined, value: string ) => {
+		const type = async (
+			element: HTMLInputElement | null | undefined,
+			value: string
+		) => {
 			await act( () => {
 				if ( element ) {
 					element.value = value;
-					element.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+					element.dispatchEvent(
+						new Event( 'input', { bubbles: true } )
+					);
 				}
 			} );
 		};
@@ -351,9 +425,11 @@ describe( 'the booking widget', () => {
 		expect( text() ).toContain( 'Plate number' );
 		await type( field( 'Plate number' ), '12A345' );
 		await act( () => {
-			container.querySelector( 'form' )?.dispatchEvent(
-				new Event( 'submit', { bubbles: true, cancelable: true } )
-			);
+			container
+				.querySelector( 'form' )
+				?.dispatchEvent(
+					new Event( 'submit', { bubbles: true, cancelable: true } )
+				);
 		} );
 		await settle();
 
@@ -367,6 +443,87 @@ describe( 'the booking widget', () => {
 		} );
 		expect( text() ).toContain( 'Your appointment is booked.' );
 		expect( text() ).toContain( 'Tracking code: AB12CD34' );
+	} );
+
+	it( 'verifies the phone with a captcha and a code before booking, when the site asks for it', async () => {
+		server.options.required = true;
+		await open();
+		await act( () =>
+			days()
+				.find( ( day ) => ! day.disabled )
+				?.click()
+		);
+		await settle();
+		await act( () =>
+			container
+				.querySelector< HTMLButtonElement >(
+					'.vqy-widget__slot-list button'
+				)
+				?.click()
+		);
+		const button = ( label: string ) =>
+			[ ...container.querySelectorAll( 'button' ) ].find(
+				( element ) => element.textContent === label
+			);
+		const field = ( label: string ) =>
+			[ ...container.querySelectorAll( 'label' ) ]
+				.find( ( element ) => element.textContent?.startsWith( label ) )
+				?.querySelector< HTMLInputElement >( 'input' );
+		const type = async (
+			element: HTMLInputElement | null | undefined,
+			value: string
+		) => {
+			await act( () => {
+				if ( element ) {
+					element.value = value;
+					element.dispatchEvent(
+						new Event( 'input', { bubbles: true } )
+					);
+				}
+			} );
+		};
+		await act( () => button( 'Continue' )?.click() );
+		await settle();
+
+		const confirm = button( 'Confirm booking' ) as HTMLButtonElement;
+		expect( confirm.disabled ).toBe( true );
+		await type( field( 'First name' ), 'Sara' );
+		await type( field( 'Mobile number' ), '09351112233' );
+		await act( () => button( 'Send a verification code' )?.click() );
+		await settle();
+		expect( text() ).toContain( 'What is 3 + 4?' );
+
+		await type( field( 'What is' ), '7' );
+		await act( () => button( 'Send code' )?.click() );
+		await settle();
+		expect(
+			server.posts.find( ( post ) => post.path === '/otp/request' )?.body
+		).toEqual( {
+			phone: '09351112233',
+			captcha_token: 'captcha-token',
+			captcha_answer: '7',
+		} );
+
+		await type( field( 'Code we sent you' ), '123456' );
+		await act( () => button( 'Verify' )?.click() );
+		await settle();
+		expect( text() ).toContain( 'Your phone number is verified.' );
+		expect(
+			( button( 'Confirm booking' ) as HTMLButtonElement ).disabled
+		).toBe( false );
+
+		await act( () => {
+			container
+				.querySelector( 'form' )
+				?.dispatchEvent(
+					new Event( 'submit', { bubbles: true, cancelable: true } )
+				);
+		} );
+		await settle();
+		expect(
+			server.posts.find( ( post ) => post.path === '/book' )?.body
+		).toMatchObject( { session_token: 'SESSION', phone: '09351112233' } );
+		expect( text() ).toContain( 'Your appointment is booked.' );
 	} );
 
 	it( 'says so when it is not configured', async () => {

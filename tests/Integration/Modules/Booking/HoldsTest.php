@@ -26,6 +26,7 @@ use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbLocationRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbServiceRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbStaffRepository;
 use Vaqtyar\Modules\Customers\CustomersModule;
+use Vaqtyar\Modules\Customers\Infrastructure\LoginSettings;
 use Vaqtyar\Modules\Customers\Domain\Customer;
 use Vaqtyar\Modules\Customers\Domain\CustomerStatus;
 use Vaqtyar\Modules\Customers\Infrastructure\Persistence\WpdbCustomerRepository;
@@ -77,6 +78,7 @@ final class HoldsTest extends TestCase
         'fields',
         'policies',
         'customers',
+        'otp_codes',
     ];
 
     /** @var list<int> */
@@ -428,7 +430,10 @@ final class HoldsTest extends TestCase
         $token = $this->post(self::inDays(2), '10:00')['body']['token'] ?? null;
         self::assertIsString($token);
 
-        $booked = $this->guestBook($token, ['first_name' => 'Someone', 'last_name' => 'Else', 'phone' => '09121234567']);
+        $booked = $this->guestBook(
+            $token,
+            ['first_name' => 'Someone', 'last_name' => 'Else', 'phone' => '09121234567']
+        );
 
         self::assertSame(201, $booked['status'], (string) \wp_json_encode($booked['body']));
         $db = $this->realDb();
@@ -526,6 +531,91 @@ final class HoldsTest extends TestCase
             ]
         );
         self::assertSame([404, 'service_not_found'], [$unknown['status'], $unknown['body']['code'] ?? null]);
+    }
+
+    public function testAVerifiedPhoneIsRequiredWhenTheSiteAsksForIt(): void
+    {
+        $settings = new Settings();
+        $settings->save(new LoginSettings(true));
+        $code = null;
+        \add_action(
+            Hooks::name('customers/otp'),
+            static function (string $phone, string $sent) use (&$code): void {
+                $code = $sent;
+            },
+            10,
+            2
+        );
+        try {
+            $token = $this->post(self::inDays(2), '10:00')['body']['token'] ?? null;
+            self::assertIsString($token);
+            $guest = ['first_name' => 'Sara', 'phone' => '09351112233'];
+
+            $unverified = $this->guestBook($token, $guest);
+            self::assertSame(
+                [422, 'phone_not_verified'],
+                [$unverified['status'], $unverified['body']['code'] ?? null]
+            );
+
+            $captcha = $this->guestGet('/captcha')['body'];
+            $asked = $this->guestPost('/otp/request', [
+                'phone' => '09351112233',
+                'captcha_token' => (string) ($captcha['token'] ?? ''),
+                'captcha_answer' => (string) ((int) ($captcha['a'] ?? 0) + (int) ($captcha['b'] ?? 0)),
+            ]);
+            self::assertSame(202, $asked['status'], (string) \wp_json_encode($asked['body']));
+            self::assertIsString($code);
+            self::assertArrayNotHasKey('code', $asked['body']);
+
+            $wrong = $this->guestPost('/otp/verify', [
+                'phone' => '09351112233',
+                'code' => '000000' === $code ? '111111' : '000000',
+            ]);
+            self::assertSame([422, 'invalid_code'], [$wrong['status'], $wrong['body']['code'] ?? null]);
+
+            $verified = $this->guestPost('/otp/verify', ['phone' => '09351112233', 'code' => $code]);
+            self::assertSame(200, $verified['status'], (string) \wp_json_encode($verified['body']));
+            $session = (string) ($verified['body']['token'] ?? '');
+
+            $other = $this->guestBook($token, ['phone' => '09121234567'] + $guest + ['session_token' => $session]);
+            self::assertSame(
+                [422, 'phone_not_verified'],
+                [$other['status'], $other['body']['code'] ?? null]
+            );
+            $booked = $this->guestBook($token, $guest + ['session_token' => $session]);
+            self::assertSame(201, $booked['status'], (string) \wp_json_encode($booked['body']));
+        } finally {
+            $settings->save(new LoginSettings(false));
+            \remove_all_actions(Hooks::name('customers/otp'));
+        }
+    }
+
+    public function testACodeIsNotSentWithoutTheCaptchaAnswer(): void
+    {
+        $sent = false;
+        \add_action(Hooks::name('customers/otp'), static function () use (&$sent): void {
+            $sent = true;
+        });
+        try {
+            $captcha = $this->guestGet('/captcha')['body'];
+
+            $refused = $this->guestPost('/otp/request', [
+                'phone' => '09351112233',
+                'captcha_token' => (string) ($captcha['token'] ?? ''),
+                'captcha_answer' => '99',
+            ]);
+            $config = $this->guestGet('/otp/config');
+
+            self::assertSame([422, 'invalid_captcha'], [$refused['status'], $refused['body']['code'] ?? null]);
+            self::assertFalse($sent);
+            self::assertSame([200, false, 6], [
+                $config['status'],
+                $config['body']['required'] ?? null,
+                $config['body']['code_length'] ?? null,
+            ]);
+        } finally {
+            \remove_all_actions(Hooks::name('customers/otp'));
+        }
     }
 
     /**
@@ -743,6 +833,23 @@ final class HoldsTest extends TestCase
         if ($nonce) {
             $request->set_header('X-WP-Nonce', \wp_create_nonce('wp_rest'));
         }
+        $response = \rest_do_request($request);
+        $body = $response->get_data();
+
+        return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
+    }
+
+    /**
+     * A public POST with the REST nonce, as the widget sends it.
+     *
+     * @param array<string, mixed> $params
+     * @return array{status: int, body: array<string, mixed>}
+     */
+    private function guestPost(string $path, array $params): array
+    {
+        $request = new \WP_REST_Request('POST', '/' . Identity::REST_NAMESPACE . $path);
+        $request->set_body_params($params);
+        $request->set_header('X-WP-Nonce', \wp_create_nonce('wp_rest'));
         $response = \rest_do_request($request);
         $body = $response->get_data();
 

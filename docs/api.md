@@ -109,6 +109,16 @@
 
 پاسخ 201: فقط `code` (کد پیگیری)، `status`، `start`، `end` و `price`. خطاها: 404 `hold_not_found` (توکن ناشناخته، منقضی یا مصرف‌شده)، 409 `service_unavailable`، 422 `customer_unavailable` (مشتری مسدود)، `invalid_phone`، `invalid_email`، `invalid_name`، و برای پاسخ نامعتبر `answer_required` یا `invalid_answer` که **`data.details.field_key`** فیلد خطادار را نشان می‌دهد.
 
+## ورود با شماره (OTP، عمومی)
+| Route | کار |
+|---|---|
+| `GET /otp/config` | `{required, code_length}`؛ `required` یعنی رزرو مهمان شماره تأییدشده می‌خواهد (تنظیم `customer_login`، پیش‌فرض خاموش تا وقتی پیامک یا درگاه خود سایت آماده است) |
+| `GET /captcha` | `{a, b, token}`: جمع دو رقم. توکن امضاشده و 120 ثانیه معتبر است و چیزی ذخیره نمی‌شود |
+| `POST /otp/request` | `phone`، `captcha_token`، `captcha_answer` و هدر `X-WP-Nonce`. کد 6 رقمی می‌فرستد. پاسخ 202 با `{expires_in: 300, resend_after: 60}`. کد هرگز در پاسخ نیست و معلوم نمی‌کند شماره مشتری دارد یا نه. حداکثر 5 درخواست در دقیقه برای هر کلاینت؛ برای هر شماره یک کد در دقیقه و 3 کد در 10 دقیقه (429 `otp_rate_limited` با `Retry-After`). captcha غلط: 422 `invalid_captcha` |
+| `POST /otp/verify` | `phone`، `code` (ارقام فارسی مشکلی ندارد) و هدر `X-WP-Nonce`. پاسخ 200 با `{token, expires_at}`؛ `token` نشست 30 دقیقه‌ای همان شماره است. کد غلط، منقضی یا مصرف‌شده: 422 `invalid_code` (بدون اینکه بگوید کدام). کد 5 حدس مجاز دارد و 5 دقیقه عمر می‌کند و یک‌بار مصرف است |
+
+نشست شماره یک توکن امضاشده (HMAC با `wp_salt('auth')`) از شماره و انقضاست. `POST /book` آن را در `session_token` می‌گیرد و اگر `required` باشد و توکن مال همین شماره نباشد، 422 `phone_not_verified` می‌دهد. کد را هیچ‌جا نمی‌نویسیم؛ فقط action `{prefix}/customers/otp` با `($phone, $code)` صدا زده می‌شود تا سایت آن را با درگاه خودش بفرستد (فرستنده‌های پیامک از T5.5 می‌آیند).
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

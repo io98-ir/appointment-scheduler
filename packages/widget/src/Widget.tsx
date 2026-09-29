@@ -570,7 +570,10 @@ export function Widget( {
 									}
 								/>
 							</label>
-							<button type="button" onClick={ () => setFlow( true ) }>
+							<button
+								type="button"
+								onClick={ () => setFlow( true ) }
+							>
 								{ __( 'Continue', 'vaqtyar' ) }
 							</button>
 						</div>

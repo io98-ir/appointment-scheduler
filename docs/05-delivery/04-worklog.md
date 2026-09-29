@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 (ادامه 3) — T4.3: OTP، نشست شماره و captcha
+**Taskها:** T4.3 (منتظر CI)، T4.2 (رفع lint)
+**انجام شد:** Customers: migration `CreateOtpCodesTable`؛ پورت‌های `OtpStore` (با `WpdbOtpStore`) و `OtpSender` (با `HookOtpSender`)؛ `OtpService`؛ `PhoneSessions` و `Captcha` (بدون ذخیره، امضا با `wp_salt('auth')`)؛ `OtpRoutes`. `CustomerApi::forBooking` توکن نشست را می‌گیرد و وقتی `LoginSettings::requirePhoneVerification` روشن است شماره را با آن تطبیق می‌دهد (`phone_not_verified`). `POST /book` پارامتر `session_token` گرفت. ویجت: `PhoneCheck.tsx` (captcha، ارسال کد، تأیید) داخل `BookingFlow`. تست‌ها: `OtpServiceTest` (Unit)، دو تست Integration در `HoldsTest`، یک تست Vitest.
+**تصمیم‌ها و فرض‌ها:** کد هرگز در پاسخ یا لاگ نیست؛ فقط action `customers/otp` (تا فرستنده‌های پیامک T5.5). تنظیم پیش‌فرض خاموش است چون بدون کانال ارسال، روشن‌کردنش رزرو را قفل می‌کند. captcha بدون ذخیره فقط جلوی اسکریپت ساده را می‌گیرد؛ سد اصلی rate limit هر کلاینت و هر شماره است. برای رزرو شمارش حدس‌ها قبل از مقایسه ثبت می‌شود تا حدس‌های موازی از سقف رد نشوند.
+**تأیید:** بنا به درخواست کاربر تست محلی گرفته نشد؛ CI ابزار تأیید است. CI T4.2: Integration سبز، lint قرمز که رفع شد.
+**مشکلات و باقیمانده:** سبز شدن CI برای T4.2 و T4.3.
+**قدم بعدی:** T4.4.
+**Commitها:** T4.3 در commit بعدی.
+
+---
+
 ## 2026-09-29 — سشن 24 (ادامه 2) — T4.1 تکمیل و T4.2: Hold تا تأیید در ویجت
 **Taskها:** T4.1 (✅)، T4.2 (در حال انجام)
 **انجام شد:** T4.1: `PublicMenu` (Catalog Application) و `GET /catalog` عمومی با rate limit؛ ویجت Preact: انتخاب خدمت، Variant، شعبه، پرسنل؛ تقویم ماه شمسی یا میلادی (شنبه اول، `month.ts`)؛ رنگ روزها؛ ساعت‌های خالی؛ «اولین نوبت خالی»؛ رویداد `vqy:slot`. T4.2: `InvalidValue` جزئیات گرفت و Router آن را در envelope می‌گذارد؛ `AnswerValidator` کلید فیلد خطادار را برمی‌گرداند (`data.details.field_key`)؛ `CustomerApi::forBooking` (پیدا یا ساخت مشتری با شماره؛ مشتری موجود را تغییر نمی‌دهد)؛ `BookingService::confirmAsGuest` و منبع `widget`؛ `GuestBookingRoutes` با `GET /nonce`، `GET /service-fields` و `POST /book`؛ ویجت `BookingFlow.tsx` (Hold با nonce تازه، تایمر، خلاصه قیمت، کوپن، فرم با فیلدهای سفارشی و `show_if`، صفحه موفقیت با کد پیگیری).

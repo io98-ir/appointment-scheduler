@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M4** سمت مشتری (M3 Admin کامل شد) |
-| **Task در حال انجام** | **T4.2** — ویجت: Hold با تایمر ← فرم ← قیمت ← تأیید. **کد نوشته و push نشده/تست‌نشده** (2026-09-29): backend `POST /book`، `GET /nonce`، `GET /service-fields`، `BookingService::confirmAsGuest`، `CustomerApi::forBooking`، `field_key` در جزئیات خطای 422؛ ویجت `BookingFlow.tsx` با تایمر، خلاصه قیمت، کوپن و فرم. **باقی‌مانده T4.2:** سبز شدن CI (Integration در `HoldsTest`، Vitest ویجت)، و صفحه موفقیت با کد پیگیری که ساخته شده. E2E مرورگری تا T4.5 (Shortcode) ممکن نیست چون صفحه‌ای برای mount ویجت نیست؛ معیار «رزرو مهمان» با تست Integration و Vitest پوشش داده شد |
-| **Task بعدی** | T4.3 — OTP (درخواست و تأیید کد، rate limit، هش، انقضا، نشست مشتری، Captcha داخلی) |
+| **Task در حال انجام** | **T4.2** و **T4.3** — کدشان نوشته و push شد و منتظر CI سبز است. T4.2 (2026-09-29): `POST /book`، `GET /nonce`، `GET /service-fields`، `confirmAsGuest`، `field_key` در خطای 422، ویجت `BookingFlow.tsx` (Hold، تایمر، قیمت، کوپن، فرم). CI اول T4.2: Integration سبز، فقط lint قرمز (prettier، nested ternary، یک خط بلند) که رفع شد. T4.3 (همان روز): جدول `otp_codes` (migration در Customers)، `OtpService` (کد 6 رقمی، 5 دقیقه، 5 حدس، یک کد در دقیقه و 3 در 10 دقیقه برای هر شماره)، `PhoneSessions` (نشست امضاشده 30 دقیقه‌ای)، `Captcha` داخلی (جمع دو رقم امضاشده)، `HookOtpSender` (کد فقط به action `{prefix}/customers/otp` می‌رود تا T5.5 پیامک بیاید)، `GET /otp/config`، `GET /captcha`، `POST /otp/request|verify`، تنظیم `customer_login.require_phone_verification` (پیش‌فرض **خاموش**؛ روشن‌کردنش UI ندارد و با T6.1 می‌آید)، `session_token` در `/book`، ویجت `PhoneCheck.tsx`. **باقی‌مانده:** CI سبز برای هر دو (تست‌های تازه: `OtpServiceTest`، `HoldsTest`، `widget.test.tsx`). E2E مرورگری تا T4.5 ممکن نیست (صفحه‌ای برای mount ویجت نیست) |
+| **Task بعدی** | T4.4 — پنل مشتری (نوبت‌ها، لغو و تغییر با نمایش Decision، پرداخت مانده؛ با `session_token` همین OTP) |
 | **آخرین کار انجام‌شده** | **T3.5** کامل (مشتریان، تعطیلات، Policy، فیلدها، کوپن، قیمت زمانی، E2E `settings.spec.ts`)، **T3.6** (داشبورد `/`، گزارش `/reports`، `GET /reports/summary`، CSV)، **T4.1** (`GET /catalog` عمومی، ویجت: خدمت/Variant/شعبه/پرسنل، تقویم ماه شمسی یا میلادی، ساعت‌های خالی، «اولین نوبت خالی»، رویداد `vqy:slot`؛ ویجت 11KB gz). **CI سبز روی main: run 36544899242** (هر ۱۳ job، 2026-09-29) |
 | **Blockerها** | — |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
@@ -23,7 +23,7 @@
 | M1 کاتالوگ و زمان‌بندی | ✅ | 5/5 |
 | M2 هسته رزرو | ✅ | 8/8 |
 | M3 Admin | ✅ | 6/6 |
-| M4 سمت مشتری | 🟨 | 1/5 (T4.2 در حال انجام) |
+| M4 سمت مشتری | 🟨 | 1/5 (T4.2 و T4.3 منتظر CI) |
 | M5 پرداخت و اعلان | ⬜ | 0/5 |
 | M6 انتشار 1.0 | ⬜ | 0/6 |
 
@@ -67,8 +67,8 @@
 | T3.5 | مشتریان، Policy، قیمت، فیلدها | ✅ | `94ce3bb`..`18d2823` و `23f4748`. کوپن و قیمت زمانی هم Repository جدا از `WpdbPricingReader` دارند. E2E در `settings.spec.ts`. انتخاب خدمت در فرم کوپن/قیمت زمانی فقط با API ممکن است (UI بعداً). **CI سبز (run 36544899242)** |
 | T3.6 | داشبورد و گزارش | ✅ | `23f4748`. درآمد = `price_total` نوبت‌های confirmed و completed (پرداخت واقعی با M5). CSV سمت کلاینت. **CI سبز (run 36544899242)** |
 | T4.1 | ویجت: انتخاب و تقویم | ✅ | `33035a6`. `GET /catalog` عمومی. ویجت 11KB gz. **CI سبز (run 36544899242)** |
-| T4.2 | ویجت: Hold تا تأیید | 🟨 | کد نوشته شد (backend و ویجت)، CI هنوز اجرا نشده |
-| T4.3 | OTP | ⬜ | |
+| T4.2 | ویجت: Hold تا تأیید | 🟨 | `42b39eb`. Integration سبز؛ lint رفع شد، منتظر CI |
+| T4.3 | OTP | 🟨 | کد نوشته و push شد، منتظر CI. تنظیم `require_phone_verification` پیش‌فرض خاموش |
 | T4.4 | پنل مشتری | ⬜ | |
 | T4.5 | Shortcode و Block | ⬜ | |
 | T5.1 | Payments core | ⬜ | |

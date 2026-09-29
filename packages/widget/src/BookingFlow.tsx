@@ -14,6 +14,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { useEffect, useId, useState } from 'preact/hooks';
 
+import { PhoneCheck } from './PhoneCheck';
 import type { SlotChoice } from './Widget';
 import { useFetch } from './useFetch';
 
@@ -55,8 +56,7 @@ export function visibleFields(
 			? shown.find( ( item ) => item.field_key === condition.field )
 			: undefined;
 		const value = condition ? answers[ condition.field ] : undefined;
-		const normalized =
-			typeof value === 'boolean' ? ( value ? '1' : '0' ) : value ?? '';
+		const normalized = normalize( value );
 		if (
 			condition === null ||
 			( seen !== undefined && normalized === condition.equals )
@@ -66,6 +66,19 @@ export function visibleFields(
 	}
 
 	return shown;
+}
+
+/**
+ * An answer as a show_if compares it: a checkbox is "1" or "0".
+ *
+ * @param value
+ */
+function normalize( value: string | boolean | undefined ): string {
+	if ( typeof value === 'boolean' ) {
+		return value ? '1' : '0';
+	}
+
+	return value ?? '';
 }
 
 function secondsLeft( expiresAt: string ): number {
@@ -82,13 +95,13 @@ function secondsLeft( expiresAt: string ): number {
  * REST nonce, since a cached page's is stale.
  *
  * @param props
- * @param props.choice   The start the customer picked.
+ * @param props.choice    The start the customer picked.
  * @param props.serviceId
- * @param props.coupon   A code to apply when the hold is placed, or "".
+ * @param props.coupon    A code to apply when the hold is placed, or "".
  * @param props.calendar
  * @param props.digits
  * @param props.clientFor A client that sends the given nonce.
- * @param props.onBack   Back to choosing a time, after an expired or taken hold.
+ * @param props.onBack    Back to choosing a time, after an expired or taken hold.
  */
 export function BookingFlow( {
 	choice,
@@ -111,14 +124,19 @@ export function BookingFlow( {
 	const placed = useFetch< Placed >(
 		`hold:${ choice.slot.start }:${ choice.staff ?? '' }:${ coupon }`,
 		async () => {
-			const { nonce } = await clientFor().get< { nonce: string } >( '/nonce' );
-			const hold = await clientFor( nonce ).post< PlacedHold >( '/holds', {
-				variant: choice.variant,
-				location: choice.location,
-				start: choice.slot.start,
-				staff: choice.staff ?? undefined,
-				coupon: coupon === '' ? undefined : coupon,
-			} );
+			const { nonce } = await clientFor().get< { nonce: string } >(
+				'/nonce'
+			);
+			const hold = await clientFor( nonce ).post< PlacedHold >(
+				'/holds',
+				{
+					variant: choice.variant,
+					location: choice.location,
+					start: choice.slot.start,
+					staff: choice.staff ?? undefined,
+					coupon: coupon === '' ? undefined : coupon,
+				}
+			);
 
 			return { nonce, hold };
 		}
@@ -128,6 +146,10 @@ export function BookingFlow( {
 			service: serviceId,
 		} )
 	);
+	const otp = useFetch< { required: boolean } >( 'otp-config', () =>
+		clientFor().get< { required: boolean } >( '/otp/config' )
+	);
+	const [ session, setSession ] = useState< string | null >( null );
 	const [ firstName, setFirstName ] = useState( '' );
 	const [ lastName, setLastName ] = useState( '' );
 	const [ phone, setPhone ] = useState( '' );
@@ -158,7 +180,9 @@ export function BookingFlow( {
 		return (
 			<div className="vqy-widget__done" role="status">
 				<p>
-					<strong>{ __( 'Your appointment is booked.', 'vaqtyar' ) }</strong>
+					<strong>
+						{ __( 'Your appointment is booked.', 'vaqtyar' ) }
+					</strong>
 				</p>
 				<p>
 					{ sprintf(
@@ -194,7 +218,7 @@ export function BookingFlow( {
 			</div>
 		);
 	}
-	if ( ! placed.data ) {
+	if ( ! placed.data || otp.loading ) {
 		return <p>{ __( 'Reserving your time…', 'vaqtyar' ) }</p>;
 	}
 
@@ -221,6 +245,7 @@ export function BookingFlow( {
 					phone,
 					email: email.trim() === '' ? null : email.trim(),
 					customer_note: note,
+					session_token: session,
 					answers: Object.fromEntries(
 						shown
 							.filter( ( field ) => field.field_key in answers )
@@ -233,7 +258,9 @@ export function BookingFlow( {
 			);
 		} catch ( failure ) {
 			setError(
-				failure instanceof Error ? failure : new Error( String( failure ) )
+				failure instanceof Error
+					? failure
+					: new Error( String( failure ) )
 			);
 		} finally {
 			setBusy( false );
@@ -241,15 +268,21 @@ export function BookingFlow( {
 	};
 
 	return (
-		<form className="vqy-widget__form" onSubmit={ ( e ) => void submit( e ) }>
+		<form
+			className="vqy-widget__form"
+			onSubmit={ ( e ) => void submit( e ) }
+		>
 			<p className="vqy-widget__timer" role="timer">
 				{ expired
 					? __( 'Your reserved time has expired.', 'vaqtyar' )
 					: sprintf(
 							/* translators: %s: minutes and seconds left, e.g. 9:41. */
-							__( 'We are holding this time for you: %s', 'vaqtyar' ),
+							__(
+								'We are holding this time for you: %s',
+								'vaqtyar'
+							),
 							formatDigits( `${ minutes }:${ seconds }`, digits )
-					  ) }
+						) }
 			</p>
 			<ul className="vqy-widget__price">
 				{ hold.price.lines.map( ( line, index ) => (
@@ -297,9 +330,23 @@ export function BookingFlow( {
 					value={ phone }
 					required
 					maxLength={ 32 }
-					onInput={ ( e ) => setPhone( e.currentTarget.value ) }
+					onInput={ ( e ) => {
+						setPhone( e.currentTarget.value );
+						setSession( null );
+					} }
 				/>
 			</label>
+			{ otp.data?.required && (
+				<PhoneCheck
+					key={ phone }
+					phone={ phone }
+					nonce={ nonce }
+					clientFor={ clientFor }
+					digits={ digits }
+					verified={ session !== null }
+					onVerified={ setSession }
+				/>
+			) }
 			<label htmlFor={ `${ uid }-email` }>
 				{ __( 'Email (optional)', 'vaqtyar' ) }
 				<input
@@ -341,7 +388,14 @@ export function BookingFlow( {
 				<button type="button" onClick={ onBack }>
 					{ __( 'Back', 'vaqtyar' ) }
 				</button>
-				<button type="submit" disabled={ busy || expired }>
+				<button
+					type="submit"
+					disabled={
+						busy ||
+						expired ||
+						( otp.data?.required === true && session === null )
+					}
+				>
 					{ __( 'Confirm booking', 'vaqtyar' ) }
 				</button>
 			</div>

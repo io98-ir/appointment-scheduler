@@ -21,7 +21,8 @@ use Vaqtyar\Shared\Domain\NotFound;
  *     POST /book                   a hold and the customer's details become an appointment
  *
  * All are public. POST /book needs the nonce and is rate limited per client;
- * the phone is not verified yet (OTP is T4.3). The reply is only what the
+ * the phone must be verified (session_token from POST /otp/verify) when the
+ * site requires it. The reply is only what the
  * customer needs: the tracking code, the time and the price.
  */
 final class GuestBookingRoutes
@@ -38,6 +39,7 @@ final class GuestBookingRoutes
         'email' => ['type' => ['string', 'null'], 'maxLength' => 191, 'default' => null],
         'customer_note' => ['type' => 'string', 'maxLength' => 2000, 'default' => ''],
         'answers' => ['type' => 'object', 'additionalProperties' => true, 'default' => []],
+        'session_token' => ['type' => ['string', 'null'], 'maxLength' => 300, 'default' => null],
     ];
 
     /**
@@ -112,6 +114,7 @@ final class GuestBookingRoutes
     {
         $email = $request->get_param('email');
         $answers = $request->get_param('answers');
+        $session = $request->get_param('session_token');
         $booked = ($this->service)()->confirmAsGuest(
             HoldToken::fromString(self::string($request->get_param('hold_token'))),
             self::string($request->get_param('phone')),
@@ -119,7 +122,8 @@ final class GuestBookingRoutes
             \sanitize_text_field(self::string($request->get_param('last_name'))),
             \is_string($email) ? $email : null,
             \sanitize_textarea_field(self::string($request->get_param('customer_note'))),
-            \is_array($answers) ? $answers : []
+            \is_array($answers) ? $answers : [],
+            \is_string($session) ? $session : null
         );
         $full = AppointmentJson::of($booked->id, $booked->appointment);
 

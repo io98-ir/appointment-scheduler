@@ -7,14 +7,22 @@ namespace Vaqtyar\Modules\Customers\Application;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Modules\Customers\Domain\Customer;
 use Vaqtyar\Modules\Customers\Domain\CustomerRepository;
+use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\Email;
 use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\PhoneNumber;
 
 final class CustomerReader implements CustomerApi
 {
-    public function __construct(private readonly CustomerRepository $customers)
-    {
+    /**
+     * @param \Closure(): bool $requiresVerification Whether a booking needs a verified phone (T4.3).
+     */
+    public function __construct(
+        private readonly CustomerRepository $customers,
+        private readonly PhoneSessions $sessions,
+        private readonly Clock $clock,
+        private readonly \Closure $requiresVerification,
+    ) {
     }
 
     public function canBook(int $customerId): bool
@@ -22,9 +30,19 @@ final class CustomerReader implements CustomerApi
         return $this->customers->find($customerId)?->canBook() ?? false;
     }
 
-    public function forBooking(string $phone, string $firstName, string $lastName, ?string $email): int
-    {
+    public function forBooking(
+        string $phone,
+        string $firstName,
+        string $lastName,
+        ?string $email,
+        ?string $sessionToken = null,
+    ): int {
         $number = PhoneNumber::fromInput($phone);
+        if (($this->requiresVerification)()
+            && $this->sessions->phoneOf($sessionToken, $this->clock->now()->getTimestamp()) !== $number->e164
+        ) {
+            throw new InvalidValue('phone_not_verified', 'The phone number has not been verified.');
+        }
         $existing = $this->customers->findByPhone($number);
         if (null !== $existing) {
             if (!$existing->canBook() || null === $existing->id) {
