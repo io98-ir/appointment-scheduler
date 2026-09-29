@@ -18,6 +18,8 @@ use Vaqtyar\Modules\Payments\Application\OnlinePayments;
 use Vaqtyar\Modules\Payments\Application\PaymentGateway;
 use Vaqtyar\Modules\Payments\Application\PaymentRepository;
 use Vaqtyar\Modules\Payments\Application\PaymentService;
+use Vaqtyar\Modules\Payments\Application\PaymentSettingsService;
+use Vaqtyar\Modules\Payments\Application\PaymentSettingsStore;
 use Vaqtyar\Modules\Payments\Application\RefundRepository;
 use Vaqtyar\Modules\Payments\Application\RefundService;
 use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
@@ -26,6 +28,7 @@ use Vaqtyar\Modules\Payments\Infrastructure\Migrations\CreatePaymentTables;
 use Vaqtyar\Modules\Payments\Infrastructure\OfflineGateway;
 use Vaqtyar\Modules\Payments\Infrastructure\Persistence\WpdbPaymentRepository;
 use Vaqtyar\Modules\Payments\Infrastructure\Persistence\WpdbRefundRepository;
+use Vaqtyar\Modules\Payments\Infrastructure\SettingsPaymentStore;
 use Vaqtyar\Modules\Payments\Infrastructure\WcOrderStore;
 use Vaqtyar\Modules\Payments\Infrastructure\WooCommerceGateway;
 use Vaqtyar\Modules\Payments\Infrastructure\WooCommerceHooks;
@@ -34,6 +37,7 @@ use Vaqtyar\Modules\Payments\Infrastructure\WpJsonHttp;
 use Vaqtyar\Modules\Payments\Infrastructure\ZarinpalGateway;
 use Vaqtyar\Modules\Payments\Infrastructure\ZibalGateway;
 use Vaqtyar\Modules\Payments\Presentation\Rest\PaymentRoutes;
+use Vaqtyar\Modules\Payments\Presentation\Rest\PaymentSettingsRoutes;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\NotFound;
 use Vaqtyar\Shared\Domain\TransactionRunner;
@@ -50,7 +54,7 @@ use Vaqtyar\Shared\WpAuthorizer;
  *
  * Zarinpal and Zibal are on when their merchant id is stored as a secret
  * (`zarinpal_merchant`, `zibal_merchant`; a wp-config constant works too).
- * The settings screen for them comes with onboarding (T6.1).
+ * They are set on the settings screen and in the setup wizard (T6.1).
  */
 final class PaymentsModule implements Module
 {
@@ -73,6 +77,14 @@ final class PaymentsModule implements Module
             RefundRepository::class,
             static fn (Container $c) => new WpdbRefundRepository($c->get(Db::class))
         );
+        $container->singleton(PaymentSettingsStore::class, static fn (Container $c) => new SettingsPaymentStore(
+            $c->get(SecretStore::class),
+            $c->get(Settings::class)
+        ));
+        $container->singleton(PaymentSettingsService::class, static fn (Container $c) => new PaymentSettingsService(
+            new WpAuthorizer(),
+            $c->get(PaymentSettingsStore::class)
+        ));
         $container->singleton(JsonHttp::class, static fn () => new WpJsonHttp());
         $container->singleton(GatewayRegistry::class, static function (Container $c): GatewayRegistry {
             $secrets = $c->get(SecretStore::class);
@@ -139,7 +151,7 @@ final class PaymentsModule implements Module
      */
     public function capabilities(): array
     {
-        return [];
+        return [PaymentSettingsService::CAPABILITY => ['administrator']];
     }
 
     public function boot(Context $context): void
@@ -167,6 +179,10 @@ final class PaymentsModule implements Module
                 $container->get(Router::class),
                 static fn (): PaymentService => $container->get(PaymentService::class),
                 static fn (): RefundService => $container->get(RefundService::class)
+            ))->register();
+            (new PaymentSettingsRoutes(
+                $container->get(Router::class),
+                $container->get(PaymentSettingsService::class)
             ))->register();
         });
     }

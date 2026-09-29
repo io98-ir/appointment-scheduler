@@ -6,6 +6,9 @@ namespace Vaqtyar\Tests\Integration\Modules\Admin;
 
 use Vaqtyar\Kernel\Caps;
 use Vaqtyar\Kernel\Identity;
+use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Shared\Domain\Brand;
 use Vaqtyar\Modules\Admin\Presentation\AdminPage;
 
 /**
@@ -44,7 +47,7 @@ final class AdminPageTest extends \WP_UnitTestCase
 
     public function testRendersTheElementTheAppMountsInto(): void
     {
-        $page = new AdminPage(self::BUILT);
+        $page = new AdminPage(self::BUILT, new Settings());
 
         \ob_start();
         $page->render();
@@ -59,7 +62,7 @@ final class AdminPageTest extends \WP_UnitTestCase
     public function testHandsTheAppTheRestBaseAndANonce(): void
     {
         \wp_set_current_user(self::userWithRole('administrator'));
-        $page = new AdminPage(self::BUILT);
+        $page = new AdminPage(self::BUILT, new Settings());
 
         \ob_start();
         $page->render();
@@ -74,10 +77,49 @@ final class AdminPageTest extends \WP_UnitTestCase
         self::assertSame(1, \wp_verify_nonce($nonce, 'wp_rest'));
     }
 
+    public function testHandsTheAppTheOwnersBrandAndTheProductName(): void
+    {
+        \wp_set_current_user(self::userWithRole('administrator'));
+        $settings = new Settings();
+        $settings->save(new BrandSettings(Brand::of('Salon Nima', '', '#112233')));
+        $page = new AdminPage(self::BUILT, $settings);
+
+        \ob_start();
+        $page->render();
+        $html = (string) \ob_get_clean();
+
+        self::assertSame(1, \preg_match('/data-config="([^"]*)"/', $html, $match));
+        $config = \json_decode(\html_entity_decode($match[1] ?? '', \ENT_QUOTES), true);
+        self::assertIsArray($config);
+        self::assertSame(
+            ['name' => 'Salon Nima', 'logo_url' => '', 'color' => '#112233'],
+            $config['brand'] ?? null
+        );
+        self::assertSame(Identity::NAME, $config['product_name'] ?? null);
+        $settings->save(new BrandSettings());
+    }
+
+    public function testTheMenuTakesTheOwnersNameOnceItIsSet(): void
+    {
+        \wp_set_current_user(self::userWithRole('administrator'));
+        $settings = new Settings();
+        $settings->save(new BrandSettings(Brand::of('Salon Nima', '', '')));
+
+        (new AdminPage(self::BUILT, $settings))->register();
+
+        $titles = [];
+        foreach ((array) $GLOBALS['menu'] as $item) {
+            $title = \is_array($item) ? ($item[0] ?? '') : '';
+            $titles[] = \is_string($title) ? $title : '';
+        }
+        self::assertContains('Salon Nima', $titles);
+        $settings->save(new BrandSettings());
+    }
+
     public function testLoadsTheBuildOnItsOwnPageOnly(): void
     {
         \wp_set_current_user(self::userWithRole('administrator'));
-        $page = new AdminPage(self::BUILT);
+        $page = new AdminPage(self::BUILT, new Settings());
         $page->register();
         $hookSuffix = \get_plugin_page_hookname(Identity::SLUG, '');
 
@@ -99,7 +141,7 @@ final class AdminPageTest extends \WP_UnitTestCase
     public function testWithoutABuildItSaysSoInsteadOfABlankPage(): void
     {
         \wp_set_current_user(self::userWithRole('administrator'));
-        $page = new AdminPage(__DIR__ . '/no-build/plugin.php');
+        $page = new AdminPage(__DIR__ . '/no-build/plugin.php', new Settings());
         $page->register();
 
         \ob_start();

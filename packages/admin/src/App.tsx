@@ -1,5 +1,9 @@
-import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
-import type { ApiClient } from '@vaqtyar/shared';
+import {
+	QueryClientProvider,
+	useQuery,
+	type QueryClient,
+} from '@tanstack/react-query';
+import type { ApiClient, Brand } from '@vaqtyar/shared';
 import { SelectControl, SnackbarList } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { Component } from '@wordpress/element';
@@ -19,13 +23,14 @@ import { ServicesPage } from './catalog/ServicesPage';
 import { CustomersPage } from './customers/CustomersPage';
 import { HolidaysPage } from './holidays/HolidaysPage';
 import { NotFound } from './NotFound';
+import { SetupWizard } from './setup/SetupWizard';
 import { SettingsPage } from './policies/SettingsPage';
 import { DashboardPage } from './reports/DashboardPage';
 import { ReportsPage } from './reports/ReportsPage';
 import { errorMessage } from './query';
 import { useRoute } from './router';
 import { useTheme, type ThemeChoice } from './theme';
-import type { ErrorInfo, ReactNode } from 'react';
+import type { CSSProperties, ErrorInfo, ReactNode } from 'react';
 
 interface Section {
 	path: string;
@@ -97,6 +102,12 @@ const SECTIONS: Section[] = [
 		Page: HolidaysPage,
 	},
 	{
+		path: '/setup',
+		title: () => __( 'Setup', 'vaqtyar' ),
+		Page: SetupWizard,
+		menu: false,
+	},
+	{
 		path: '/settings',
 		title: () => __( 'Settings', 'vaqtyar' ),
 		Page: SettingsPage,
@@ -118,12 +129,54 @@ export function sectionOf( route: string ): Section | undefined {
 	);
 }
 
+const NO_BRAND: Brand = { name: '', logo_url: '', color: '' };
+
+/**
+ * The owner's name and logo at the start of the header (white-label, T6.1).
+ * It follows a save on the settings screen without a reload.
+ *
+ * @param props
+ * @param props.api         The REST client.
+ * @param props.initial     The brand the page was rendered with.
+ * @param props.productName What an empty brand name means.
+ */
+function BrandMark( {
+	api,
+	initial,
+	productName,
+}: {
+	api: ApiClient;
+	initial: Brand;
+	productName: string;
+} ) {
+	const { data } = useQuery( {
+		queryKey: [ '/brand' ],
+		queryFn: () => api.get< Brand >( '/brand' ),
+		initialData: initial,
+		staleTime: Infinity,
+	} );
+	const name = data.name || productName;
+
+	return (
+		<span className="vqy-admin__brand">
+			{ data.logo_url && (
+				<img className="vqy-admin__logo" src={ data.logo_url } alt="" />
+			) }
+			{ name }
+		</span>
+	);
+}
+
 export function App( {
 	api,
 	queryClient,
+	brand = NO_BRAND,
+	productName = '',
 }: {
 	api: ApiClient;
 	queryClient: QueryClient;
+	brand?: Brand;
+	productName?: string;
 } ) {
 	const route = useRoute();
 	const section = sectionOf( route );
@@ -132,8 +185,25 @@ export function App( {
 	return (
 		<ApiContext.Provider value={ api }>
 			<QueryClientProvider client={ queryClient }>
-				<div className="vqy-admin" data-theme={ theme }>
+				<div
+					className="vqy-admin"
+					data-theme={ theme }
+					style={
+						brand.color
+							? ( {
+									'--vqy-accent': brand.color,
+								} as CSSProperties )
+							: undefined
+					}
+				>
 					<header className="vqy-admin__header">
+						{ productName !== '' && (
+							<BrandMark
+								api={ api }
+								initial={ brand }
+								productName={ productName }
+							/>
+						) }
 						<nav
 							className="vqy-admin__nav"
 							aria-label={ __( 'Sections', 'vaqtyar' ) }

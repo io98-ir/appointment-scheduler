@@ -7,6 +7,7 @@ namespace Vaqtyar\Modules\Widget;
 use Vaqtyar\Kernel\Container;
 use Vaqtyar\Kernel\Context;
 use Vaqtyar\Kernel\Module;
+use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Widget\Presentation\Embeds;
 
 /**
@@ -44,7 +45,7 @@ final class WidgetModule implements Module
 
     public function boot(Context $context): void
     {
-        $embeds = new Embeds($context->pluginFile);
+        $embeds = new Embeds($context->pluginFile, $context->container->get(Settings::class));
         \add_action('init', [$embeds, 'register']);
         \add_action('enqueue_block_editor_assets', [$embeds, 'enqueueEditor']);
     }

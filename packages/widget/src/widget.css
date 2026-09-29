@@ -1,6 +1,7 @@
 /*
  * The widget's design tokens. A theme can override any of them; the defaults
  * follow the theme's own colors (theme.json presets) where it has them.
+ * --vqy-accent is the owner's brand colour, set inline by the embed when chosen.
  * Logical properties only, so RTL and LTR need no separate rules.
  */
 .vqy-widget {
@@ -59,7 +60,7 @@
 }
 
 .vqy-widget__day--available {
-	background: color-mix(in srgb, currentcolor 12%, transparent);
+	background: color-mix(in srgb, var(--vqy-accent, currentcolor) 12%, transparent);
 	font-weight: 600;
 }
 
@@ -73,8 +74,8 @@
 
 .vqy-widget__day[aria-pressed="true"],
 .vqy-widget__slot-list button[aria-pressed="true"] {
-	border-color: currentcolor;
-	outline: 2px solid currentcolor;
+	border-color: var(--vqy-accent, currentcolor);
+	outline: 2px solid var(--vqy-accent, currentcolor);
 }
 
 .vqy-widget__slot-list {

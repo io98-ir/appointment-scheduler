@@ -74,7 +74,12 @@ describe( 'readConfig', () => {
 	it( 'reads the config the page rendered', () => {
 		expect(
 			readConfig( element( '{"restUrl":"https://a.test/","nonce":"n"}' ) )
-		).toEqual( { restUrl: 'https://a.test/', nonce: 'n' } );
+		).toEqual( {
+			restUrl: 'https://a.test/',
+			nonce: 'n',
+			brand: { name: '', logo_url: '', color: '' },
+			productName: '',
+		} );
 	} );
 
 	it.each( [ undefined, '', 'not json', '{"restUrl":1,"nonce":"n"}' ] )(

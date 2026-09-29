@@ -16,6 +16,16 @@
 
 ---
 
+## 2026-09-30 — سشن 28 — T6.1: White-label و Onboarding
+**Taskها:** T6.1 (منتظر CI و E2E)
+**انجام شد:** `Shared\Domain\Brand` و `Kernel\Settings\BrandSettings`؛ ماژول Admin: `SetupService`، `SetupStore`، `OnboardingSettings`، `GET/PUT /brand` و `GET/PUT /onboarding`؛ ماژول Payments: `PaymentSettingsService`، `PaymentSettingsStore`، capability `manage_payments`، `GET/PUT /payments/settings`. منوی wp-admin نام برند را می‌گیرد، `AdminPage` برند و نام محصول را به برنامه می‌دهد و رسانه وردپرس را برای انتخاب لوگو بارگذاری می‌کند؛ ویجت رنگ برند را با `--vqy-accent` روی عنصر embed می‌گیرد. رابط: `BrandForm`، `SmsSettingsForm`، `PaymentSettingsForm` در صفحه Settings، `SetupWizard` در `#/setup` (برند، شعبه و ساعت، اولین خدمت با یک پرسنل، پیامک، پرداخت، پایان)، `SetupPrompt` روی داشبورد و نام و لوگوی برند در هدر. جزئیات در implementation-notes §4.21 و `api.md`.
+**تصمیم‌ها و فرض‌ها:** (۱) برند در Kernel است تا Widget و Admin بدون وابستگی به هم آن را بخوانند؛ رنگ فقط `#rrggbb` چون در `style` چاپ می‌شود. (۲) ویزارد هر مرحله را رد‌شدنی می‌گذارد و همه فرم‌ها در Settings هم هستند. (۳) ساعت کاری ویزارد ثابت است (شنبه تا پنجشنبه)، برنامه دقیق‌تر با Locations و Staff. (۴) پیامک در ویزارد فقط یک سرویس‌دهنده را اول ترتیب می‌گذارد؛ ویرایش پترن‌ها و ترتیب چندگانه با API است، نه UI. (۵) capability جدید `manage_payments` برای تنظیم درگاه.
+**تأیید:** محلی: `composer check` سبز (lint، PHPStan، Deptrac، unit 988 تست)، `pnpm lint` (شامل typecheck)، `pnpm vitest run` ← 150 تست، `pnpm build`، `pnpm size` (ویجت 15.47KB، admin 36.84KB gz). Integration (`SetupRestTest`، `AdminPageTest`، `EmbedsTest`) و E2E (`setup.spec.ts`) فقط در CI؛ CI هنوز به‌خاطر billing گیتهاب اجرا نمی‌شود.
+**مشکلات و باقیمانده:** CI برای T5.3 تا T6.1؛ تست زنده پیامک و درگاه با کلید واقعی؛ «ماژول‌های قابل خاموش‌کردن» با T6.2؛ رنگ هدر Admin بعد از ذخیره با reload عوض می‌شود. درس ابزار: `prettier` بدون پیکربندی مخزن فایل‌ها را به سبک دیگر بازنویسی می‌کند؛ فقط `pnpm exec wp-scripts format <مسیر>` استفاده شود.
+**قدم بعدی:** T6.2 (Site Health و System Status).
+**Commitها:** T6.1 در commit بعدی.
+
+---
 ## 2026-09-30 — سشن 27 — T5.5: پیامک
 **Taskها:** T5.5 (منتظر CI)
 **انجام شد:** در ماژول `Notifications`: Port `SmsProvider` و چهار Adapter (`KavenegarProvider`، `IpPanelProvider`، `SmsIrProvider`، `MelipayamakProvider`) روی Port `SmsHttp`؛ `SmsSender` با Failover؛ `SmsChannel` (کانال `sms` فقط وقتی ثبت می‌شود که یک سرویس‌دهنده تنظیم باشد)؛ `SmsPattern` (کد پترن و نام جای‌نگه‌دارها) در قالب‌ها با ستون `sms_patterns` و migration `AddSmsPatterns` که چهار قالب پیامکی پیش‌فرض هم می‌کارد؛ `OtpSms` روی action `customers/otp`؛ `SmsAdminService` با `GET/PUT /sms` و `POST /sms/test`. کلیدها در `SecretStore` (`sms_*`)، ترتیب و خط ارسال در `SmsSettings`. جزئیات در implementation-notes §4.20 و `api.md`.

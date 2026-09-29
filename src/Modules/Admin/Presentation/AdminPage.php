@@ -6,6 +6,10 @@ namespace Vaqtyar\Modules\Admin\Presentation;
 
 use Vaqtyar\Kernel\Caps;
 use Vaqtyar\Kernel\Identity;
+use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Modules\Admin\Application\SetupService;
+use Vaqtyar\Shared\Domain\Brand;
 
 /**
  * The plugin's page in wp-admin: one element that the admin app
@@ -15,7 +19,7 @@ use Vaqtyar\Kernel\Identity;
 final class AdminPage
 {
     /** Opens the plugin's admin app (short name, Caps::name()). */
-    public const CAPABILITY = 'access_admin';
+    public const CAPABILITY = SetupService::CAPABILITY;
 
     private const ENTRY = 'admin';
 
@@ -24,7 +28,7 @@ final class AdminPage
     /**
      * @param string $pluginFile The main plugin file; the build is in build/ next to it.
      */
-    public function __construct(private readonly string $pluginFile)
+    public function __construct(private readonly string $pluginFile, private readonly Settings $settings)
     {
     }
 
@@ -33,10 +37,10 @@ final class AdminPage
      */
     public function register(): void
     {
+        $name = $this->brand()->displayName(Identity::NAME);
         $this->hookSuffix = \add_menu_page(
-            // The brand from the white-label settings replaces the default name in T6.1.
-            Identity::NAME,
-            Identity::NAME,
+            $name,
+            $name,
             Caps::name(self::CAPABILITY),
             Identity::SLUG,
             [$this, 'render'],
@@ -58,6 +62,8 @@ final class AdminPage
             return;
         }
 
+        // The media library, for choosing the logo.
+        \wp_enqueue_media();
         $handle = self::handle();
         \wp_enqueue_script(
             $handle,
@@ -99,12 +105,23 @@ final class AdminPage
         $config = [
             'restUrl' => \rest_url(Identity::REST_NAMESPACE . '/'),
             'nonce' => \wp_create_nonce('wp_rest'),
+            'brand' => [
+                'name' => $this->brand()->name,
+                'logo_url' => $this->brand()->logoUrl,
+                'color' => $this->brand()->color,
+            ],
+            'product_name' => Identity::NAME,
         ];
         \printf(
             '<div class="wrap"><div id="%s" data-config="%s"></div></div>',
             \esc_attr(Identity::SLUG . '-admin'),
             \esc_attr((string) \wp_json_encode($config))
         );
+    }
+
+    private function brand(): Brand
+    {
+        return $this->settings->get(BrandSettings::class)->brand;
     }
 
     /**

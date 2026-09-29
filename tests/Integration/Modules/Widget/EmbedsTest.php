@@ -6,6 +6,9 @@ namespace Vaqtyar\Tests\Integration\Modules\Widget;
 
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Kernel\Identity;
+use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Shared\Domain\Brand;
 
 /**
  * The shortcodes and blocks that put the widget and the panel on a page
@@ -64,6 +67,25 @@ final class EmbedsTest extends TestCase
         self::assertStringContainsString(Identity::REST_NAMESPACE, \is_string($restUrl) ? $restUrl : '');
         self::assertTrue(\wp_script_is($handle, 'enqueued'));
         self::assertTrue(\wp_style_is($handle, 'enqueued'));
+    }
+
+    public function testTheOwnersColourIsAStyleOnTheElementAndNothingElseIsAdded(): void
+    {
+        if (!$this->built()) {
+            self::markTestSkipped('The widget is not built.');
+        }
+        $settings = new Settings();
+        $none = \do_shortcode('[' . Identity::SLUG . '_booking]');
+        self::assertStringNotContainsString('-accent', $none);
+
+        $settings->save(new BrandSettings(Brand::of('', '', '#112233')));
+        try {
+            $html = \do_shortcode('[' . Identity::SLUG . '_booking]');
+        } finally {
+            $settings->save(new BrandSettings());
+        }
+
+        self::assertStringContainsString(' style="--' . Identity::PREFIX . '-accent:#112233"', $html);
     }
 
     public function testThePanelHasItsOwnElement(): void

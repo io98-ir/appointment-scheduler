@@ -502,3 +502,37 @@ export interface FieldDefinition {
 	show_if: FieldShowIf | null;
 	sort: number;
 }
+
+/** /brand: the owner's own look; "" means the default (T6.1). */
+export interface Brand {
+	name: string;
+	logo_url: string;
+	/** "#rrggbb" or "". */
+	color: string;
+}
+
+/** /payments/settings: never a merchant id, only whether it is set. */
+export interface PaymentSettings {
+	gateways: Array< {
+		id: string;
+		/** The secret name a PUT sets, e.g. "zarinpal_merchant". */
+		secret: string;
+		set: boolean;
+		/** Defined in wp-config.php, so read-only here. */
+		fixed: boolean;
+	} >;
+	woocommerce: { available: boolean; enabled: boolean };
+}
+
+/** GET /sms: never a key, only whether it is set. */
+export interface SmsOverview {
+	/** The failover order; a provider that is not listed is off. */
+	order: string[];
+	senders: Record< string, string >;
+	otp_patterns: Record< string, string >;
+	providers: Array< {
+		id: string;
+		configured: boolean;
+		secrets: Array< { name: string; set: boolean; fixed: boolean } >;
+	} >;
+}

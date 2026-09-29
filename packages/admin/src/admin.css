@@ -356,3 +356,30 @@
 	background: Highlight;
 	border-radius: 2px;
 }
+
+.vqy-admin__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 1.1em;
+	font-weight: 600;
+}
+
+.vqy-admin__logo {
+	block-size: 32px;
+	inline-size: auto;
+}
+
+.vqy-admin__steps {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.vqy-admin__steps li[aria-current="step"] {
+	border-block-end: 2px solid var(--vqy-accent);
+	font-weight: 600;
+}

@@ -13,7 +13,7 @@ import './admin.css';
  */
 const element = document.getElementById( `${ SLUG }-admin` );
 if ( element ) {
-	const { restUrl, nonce } = readConfig( element );
+	const { restUrl, nonce, brand, productName } = readConfig( element );
 	const queryClient = createQueryClient( ( message ) =>
 		dispatch( noticesStore ).createErrorNotice( message, {
 			type: 'snackbar',
@@ -24,6 +24,8 @@ if ( element ) {
 		<App
 			api={ new ApiClient( { baseUrl: restUrl, nonce } ) }
 			queryClient={ queryClient }
+			brand={ brand }
+			productName={ productName }
 		/>
 	);
 }

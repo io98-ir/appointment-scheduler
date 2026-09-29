@@ -172,6 +172,18 @@
 
 جای‌نگه‌دارها (در `subject` و `body`): `{code}`، `{customer_name}`، `{service}`، `{staff}`، `{location}`، `{date}`، `{time}`، `{end_time}`، `{party_size}`، `{total}` (ریال، با جداکننده هزار). نام ناشناخته خالی می‌شود.
 
+## برند، Onboarding و تنظیم درگاه (Admin، T6.1)
+| Route | توضیح |
+|---|---|
+| `GET /brand` | `{name, logo_url, color}`؛ رشته خالی یعنی پیش‌فرض (نام محصول، بدون لوگو، رنگ تم) |
+| `PUT /brand` | جایگزینی. `name` تا 60 کاراکتر بدون `<` و `>`، `logo_url` آدرس http یا https تا 500 کاراکتر، `color` به شکل `#rrggbb` (به حروف کوچک ذخیره می‌شود). خطاها: 422 `invalid_brand_name`، `invalid_brand_logo`، `invalid_brand_color` |
+| `GET /onboarding` | `{done}`: آیا ویزارد نصب تمام یا رد شده است |
+| `PUT /onboarding` | `done` (بولی، الزامی). `false` ویزارد را دوباره نشان می‌دهد |
+| `GET /payments/settings` | `{gateways: [{id, secret, set, fixed}], woocommerce: {available, enabled}}`. `id` یکی از `zarinpal` و `zibal`؛ `secret` نام secret همان درگاه؛ `fixed` یعنی مقدار در wp-config.php تعریف شده. merchant id هرگز برنمی‌گردد |
+| `PUT /payments/settings` | `secrets` (مثل `{zarinpal_merchant: "…"}`؛ نیامدن یعنی بدون تغییر، رشته خالی یعنی حذف) و `woocommerce` (بولی؛ نیامدن یعنی بدون تغییر). merchant id فقط حروف، رقم و خط تیره تا 64 کاراکتر است. خطاها: 422 `unknown_secret`، `secret_in_config`، `invalid_merchant`؛ اگر یکی رد شود هیچ‌کدام ذخیره نمی‌شود |
+
+`/brand` و `/onboarding` capability `access_admin` و `/payments/settings` capability `manage_payments` لازم دارند (پیش‌فرض: administrator)؛ سرویس Application هر دو را دوباره بررسی می‌کند. نام و رنگ برند در منوی wp-admin، هدر برنامه Admin و ویجت (متغیر CSS `--vqy-accent` روی عنصر embed) اعمال می‌شود.
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Widget\Presentation;
 
 use Vaqtyar\Kernel\Identity;
+use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\Settings;
 
 /**
  * Puts the booking widget and the customer panel on a page (T4.5), as a
@@ -27,7 +29,7 @@ final class Embeds
     /**
      * @param string $pluginFile The main plugin file; the build is in build/ next to it.
      */
-    public function __construct(private readonly string $pluginFile)
+    public function __construct(private readonly string $pluginFile, private readonly Settings $settings)
     {
     }
 
@@ -186,11 +188,15 @@ final class Embeds
         // The query parameter Payments' return redirect carries the outcome in.
         $config['paymentParam'] = Identity::PREFIX . '_payment';
 
+        // The owner's accent colour (T6.1); a value Brand has validated as #rrggbb.
+        $color = $this->settings->get(BrandSettings::class)->brand->color;
+
         return \sprintf(
-            '<div data-%s-%s="%s"></div>',
+            '<div data-%s-%s="%s"%s></div>',
             \esc_attr(Identity::SLUG),
             \esc_attr(self::BOOKING === $kind ? self::ENTRY : $kind),
-            \esc_attr((string) \wp_json_encode($config))
+            \esc_attr((string) \wp_json_encode($config)),
+            '' === $color ? '' : ' style="--' . Identity::PREFIX . '-accent:' . \esc_attr($color) . '"'
         );
     }
 

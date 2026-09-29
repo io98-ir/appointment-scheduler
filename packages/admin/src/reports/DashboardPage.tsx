@@ -6,6 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { useApi } from '../api';
 import { rial, when } from '../appointments/AppointmentsPage';
 import { errorMessage } from '../query';
+import { SetupPrompt } from '../setup/SetupPrompt';
 import { daysAgo } from './dates';
 
 type Days = ReportSummary[ 'days' ];
@@ -88,6 +89,7 @@ export function DashboardPage() {
 
 	return (
 		<>
+			<SetupPrompt />
 			<div className="vqy-admin__stats">
 				<Stat
 					title={ __( 'Today', 'vaqtyar' ) }
@@ -132,9 +134,7 @@ export function DashboardPage() {
 							<span
 								className="vqy-admin__bar"
 								style={ {
-									inlineSize: `${
-										( day.appointments / busiest ) * 100
-									}%`,
+									inlineSize: `${ ( day.appointments / busiest ) * 100 }%`,
 								} }
 							/>
 							<span>{ day.appointments }</span>

@@ -6,6 +6,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from '../App';
+import { settingsAnswer } from '../setup/settingsAnswers';
 
 (
 	globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -40,6 +41,10 @@ function fakeServer() {
 		const url = new URL( String( resource ) );
 		const path = url.pathname.replace( '/wp-json/x/v1', '' );
 		const method = init?.method ?? 'GET';
+		const answer = settingsAnswer( path, method );
+		if ( answer ) {
+			return answer;
+		}
 
 		if ( path.startsWith( '/policies/' ) ) {
 			return json( { config: null } );
