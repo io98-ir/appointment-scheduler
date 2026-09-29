@@ -25,6 +25,7 @@ use Vaqtyar\Modules\Catalog\Domain\Variant;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbLocationRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbServiceRepository;
 use Vaqtyar\Modules\Catalog\Infrastructure\Persistence\WpdbStaffRepository;
+use Vaqtyar\Modules\Customers\Application\PhoneSessions;
 use Vaqtyar\Modules\Customers\CustomersModule;
 use Vaqtyar\Modules\Customers\Infrastructure\LoginSettings;
 use Vaqtyar\Modules\Customers\Domain\Customer;
@@ -590,6 +591,47 @@ final class HoldsTest extends TestCase
         }
     }
 
+    public function testACustomerSeesAndChangesOnlyTheirOwnAppointments(): void
+    {
+        $this->logInAs('administrator');
+        $mine = $this->bookAt(self::inDays(3), '10:00');
+        $other = (int) (new WpdbCustomerRepository($this->realDb(), new SystemClock()))->save(
+            new Customer(null, null, 'Sara', 'Ahmadi', PhoneNumber::fromInput('09351112233'))
+        )->id;
+        $token = $this->post(self::inDays(3), '12:00')['body']['token'] ?? null;
+        self::assertIsString($token);
+        $theirs = $this->book($token, [], $other)['body']['id'] ?? null;
+        self::assertIsInt($theirs);
+        \wp_set_current_user(0);
+        $session = (new PhoneSessions(\wp_salt('auth')))->issue('+989121234567', \time())['token'];
+
+        $list = $this->panel('GET', '/my/appointments', [], $session);
+        self::assertSame(200, $list['status'], (string) \wp_json_encode($list['body']));
+        self::assertSame([$mine], \array_column($list['body'], 'id'));
+        self::assertSame(
+            [true, true],
+            [$list['body'][0]['cancel']['allowed'] ?? null, $list['body'][0]['reschedule']['allowed'] ?? null]
+        );
+
+        self::assertContains($this->panel('GET', '/my/appointments', [], null)['status'], [401, 403]);
+        self::assertContains($this->panel('GET', '/my/appointments', [], 'x.y')['status'], [401, 403]);
+        $foreign = $this->panel('POST', "/my/appointments/{$theirs}/cancel", [], $session);
+        self::assertSame([404, 'appointment_not_found'], [$foreign['status'], $foreign['body']['code'] ?? null]);
+
+        $newStart = self::inDays(4)->toString() . 'T11:00:00+03:30';
+        $moved = $this->panel('POST', "/my/appointments/{$mine}/reschedule", ['start' => $newStart], $session);
+        self::assertSame(200, $moved['status'], (string) \wp_json_encode($moved['body']));
+        self::assertSame($newStart, $moved['body']['start'] ?? null);
+
+        $cancelled = $this->panel('POST', "/my/appointments/{$mine}/cancel", ['reason' => 'busy'], $session);
+        self::assertSame([200, 'cancelled'], [$cancelled['status'], $cancelled['body']['status'] ?? null]);
+        $after = $this->panel('GET', '/my/appointments', [], $session);
+        self::assertSame(
+            [null, null],
+            [$after['body'][0]['cancel'] ?? 'set', $after['body'][0]['reschedule'] ?? 'set']
+        );
+    }
+
     public function testACodeIsNotSentWithoutTheCaptchaAnswer(): void
     {
         $sent = false;
@@ -832,6 +874,30 @@ final class HoldsTest extends TestCase
         $request->set_body_params(['hold_token' => $token] + $params);
         if ($nonce) {
             $request->set_header('X-WP-Nonce', \wp_create_nonce('wp_rest'));
+        }
+        $response = \rest_do_request($request);
+        $body = $response->get_data();
+
+        return ['status' => $response->get_status(), 'body' => \is_array($body) ? $body : []];
+    }
+
+    /**
+     * A call of the customer panel: the REST nonce and, if given, the phone session.
+     *
+     * @param array<string, mixed> $params
+     * @return array{status: int, body: array<mixed>}
+     */
+    private function panel(string $method, string $path, array $params, ?string $session): array
+    {
+        $request = new \WP_REST_Request($method, '/' . Identity::REST_NAMESPACE . $path);
+        if ('GET' === $method) {
+            $request->set_query_params($params);
+        } else {
+            $request->set_body_params($params);
+        }
+        $request->set_header('X-WP-Nonce', \wp_create_nonce('wp_rest'));
+        if (null !== $session) {
+            $request->set_header('X-Phone-Session', $session);
         }
         $response = \rest_do_request($request);
         $body = $response->get_data();

@@ -119,6 +119,17 @@
 
 نشست شماره یک توکن امضاشده (HMAC با `wp_salt('auth')`) از شماره و انقضاست. `POST /book` آن را در `session_token` می‌گیرد و اگر `required` باشد و توکن مال همین شماره نباشد، 422 `phone_not_verified` می‌دهد. کد را هیچ‌جا نمی‌نویسیم؛ فقط action `{prefix}/customers/otp` با `($phone, $code)` صدا زده می‌شود تا سایت آن را با درگاه خودش بفرستد (فرستنده‌های پیامک از T5.5 می‌آیند).
 
+## پنل مشتری (عمومی، با نشست شماره)
+مشتری همان نشست شماره `POST /otp/verify` است که در هدر `X-Phone-Session` می‌آید، و هدر `X-WP-Nonce` نشان می‌دهد درخواست از خود سایت است. rate limit: 60 در دقیقه برای هر کلاینت. نشست نامعتبر، منقضی یا شماره‌ای که مشتری قابل‌رزرو ندارد: 401 یا 403.
+
+| Route | کار |
+|---|---|
+| `GET /my/appointments` | تازه‌ترین 50 نوبت همان مشتری (همان شکل `GET /appointments` بدون نام مشتری)، هر کدام با `cancel` و `reschedule`: `{allowed, reason_code, refund_percent, refund}` (Policy، booking-engine §6). برای نوبتی که شروع شده، لغو یا کامل شده و امثالش هر دو `null` است |
+| `POST /my/appointments/{id}/cancel` | `reason` اختیاری. پاسخ: نوبت و `decision`. نوبت مشتری دیگر: 404 `appointment_not_found`. Policy اجازه ندهد: 409 با کد دلیل (`policy.cancel_window_passed` و امثالش) |
+| `POST /my/appointments/{id}/reschedule` | `start` (ISO با offset، از `GET /availability` همان Variant، شعبه و پرسنل). خطاها: 409 `slot_taken` یا `policy.reschedule_window_passed` و `policy.reschedule_limit_reached` |
+
+مشتری هرگز Override ندارد و فقط نوبت خودش را می‌بیند. ویجت آن را با `<div data-{slug}-panel>` می‌گیرد (Shortcode در T4.5).
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

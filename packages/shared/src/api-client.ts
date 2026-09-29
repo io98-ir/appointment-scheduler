@@ -12,6 +12,11 @@ export interface ApiClientConfig {
 	 * guest request into a 403: leave it out for guests.
 	 */
 	nonce?: string;
+	/**
+	 * A phone session token (POST /otp/verify), for the customer panel: sent as
+	 * X-Phone-Session, which names the customer.
+	 */
+	session?: string;
 	/** For tests. */
 	fetch?: typeof fetch;
 }
@@ -123,6 +128,9 @@ export class ApiClient {
 		};
 		if ( this.config.nonce !== undefined ) {
 			headers[ 'X-WP-Nonce' ] = this.config.nonce;
+		}
+		if ( this.config.session !== undefined ) {
+			headers[ 'X-Phone-Session' ] = this.config.session;
 		}
 		if ( body !== undefined ) {
 			headers[ 'Content-Type' ] = 'application/json';

@@ -1,8 +1,11 @@
+import { ApiError } from '@vaqtyar/shared';
 import { useEffect, useState } from 'preact/hooks';
 
 export interface Fetched< T > {
 	data: T | undefined;
 	error: string | undefined;
+	/** The HTTP status of an API error; undefined for anything else. */
+	status: number | undefined;
 	loading: boolean;
 }
 
@@ -20,21 +23,37 @@ export function useFetch< T >(
 	const [ state, setState ] = useState< Fetched< T > >( {
 		data: undefined,
 		error: undefined,
+		status: undefined,
 		loading: key !== null,
 	} );
 
 	useEffect( () => {
 		if ( key === null ) {
-			setState( { data: undefined, error: undefined, loading: false } );
+			setState( {
+				data: undefined,
+				error: undefined,
+				status: undefined,
+				loading: false,
+			} );
 
 			return undefined;
 		}
 		let current = true;
-		setState( { data: undefined, error: undefined, loading: true } );
+		setState( {
+			data: undefined,
+			error: undefined,
+			status: undefined,
+			loading: true,
+		} );
 		load().then(
 			( data ) => {
 				if ( current ) {
-					setState( { data, error: undefined, loading: false } );
+					setState( {
+						data,
+						error: undefined,
+						status: undefined,
+						loading: false,
+					} );
 				}
 			},
 			( error: unknown ) => {
@@ -45,6 +64,10 @@ export function useFetch< T >(
 							error instanceof Error
 								? error.message
 								: String( error ),
+						status:
+							error instanceof ApiError
+								? error.status
+								: undefined,
 						loading: false,
 					} );
 				}

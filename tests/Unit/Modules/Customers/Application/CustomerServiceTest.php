@@ -7,6 +7,7 @@ namespace Vaqtyar\Tests\Unit\Modules\Customers\Application;
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Customers\Application\CustomerReader;
 use Vaqtyar\Modules\Customers\Application\CustomerService;
+use Vaqtyar\Modules\Customers\Application\PhoneSessions;
 use Vaqtyar\Modules\Customers\Domain\Customer;
 use Vaqtyar\Modules\Customers\Domain\CustomerRepository;
 use Vaqtyar\Modules\Customers\Domain\CustomerStatus;
@@ -15,6 +16,7 @@ use Vaqtyar\Shared\Domain\Conflict;
 use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\NotFound;
 use Vaqtyar\Shared\Domain\PhoneNumber;
+use Vaqtyar\Shared\SystemClock;
 
 /**
  * The use cases behind the admin customer API: authorization, existence and
@@ -237,7 +239,12 @@ final class CustomerServiceTest extends TestCase
         $this->service->save(
             new Customer(null, null, 'Ali', '', PhoneNumber::fromInput('09122222222'), status: CustomerStatus::Blocked)
         );
-        $reader = new CustomerReader($this->repository);
+        $reader = new CustomerReader(
+            $this->repository,
+            new PhoneSessions('key'),
+            new SystemClock(),
+            static fn (): bool => false
+        );
 
         self::assertSame([true, false, false], [$reader->canBook(1), $reader->canBook(2), $reader->canBook(3)]);
     }

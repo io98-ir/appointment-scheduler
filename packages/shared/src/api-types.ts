@@ -245,6 +245,22 @@ export interface PublicField {
 	show_if: FieldShowIf | null;
 }
 
+/** What a policy says about a change (booking-engine §6). */
+export interface PolicyDecision {
+	allowed: boolean;
+	/** Why not, e.g. "policy.cancel_window_passed"; null when allowed. */
+	reason_code: string | null;
+	refund_percent: number;
+	refund: Money;
+}
+
+/** GET /my/appointments: an appointment of the signed-in customer. */
+export interface PanelAppointment extends AppointmentListItem {
+	/** Null once the appointment can no longer be changed. */
+	cancel: PolicyDecision | null;
+	reschedule: PolicyDecision | null;
+}
+
 /** POST /book, 201: what a guest sees of their appointment. */
 export interface GuestBooking {
 	/** The 8-character tracking code. */

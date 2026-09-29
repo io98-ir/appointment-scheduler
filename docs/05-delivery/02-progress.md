@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **فاز فعلی** | **M4** سمت مشتری (M3 Admin کامل شد) |
-| **Task در حال انجام** | **T4.2** و **T4.3** — کدشان نوشته و push شد و منتظر CI سبز است. T4.2 (2026-09-29): `POST /book`، `GET /nonce`، `GET /service-fields`، `confirmAsGuest`، `field_key` در خطای 422، ویجت `BookingFlow.tsx` (Hold، تایمر، قیمت، کوپن، فرم). CI اول T4.2: Integration سبز، فقط lint قرمز (prettier، nested ternary، یک خط بلند) که رفع شد. T4.3 (همان روز): جدول `otp_codes` (migration در Customers)، `OtpService` (کد 6 رقمی، 5 دقیقه، 5 حدس، یک کد در دقیقه و 3 در 10 دقیقه برای هر شماره)، `PhoneSessions` (نشست امضاشده 30 دقیقه‌ای)، `Captcha` داخلی (جمع دو رقم امضاشده)، `HookOtpSender` (کد فقط به action `{prefix}/customers/otp` می‌رود تا T5.5 پیامک بیاید)، `GET /otp/config`، `GET /captcha`، `POST /otp/request|verify`، تنظیم `customer_login.require_phone_verification` (پیش‌فرض **خاموش**؛ روشن‌کردنش UI ندارد و با T6.1 می‌آید)، `session_token` در `/book`، ویجت `PhoneCheck.tsx`. **باقی‌مانده:** CI سبز برای هر دو (تست‌های تازه: `OtpServiceTest`، `HoldsTest`، `widget.test.tsx`). E2E مرورگری تا T4.5 ممکن نیست (صفحه‌ای برای mount ویجت نیست) |
-| **Task بعدی** | T4.4 — پنل مشتری (نوبت‌ها، لغو و تغییر با نمایش Decision، پرداخت مانده؛ با `session_token` همین OTP) |
+| **Task در حال انجام** | **T4.2، T4.3 و T4.4** — کدشان نوشته و push شده و منتظر CI سبز است (2026-09-29). CI اول T4.3 قرمز بود (import نوع در `PhoneCheck.tsx`، سازنده جدید `CustomerReader` در یک تست، `strtr` ارقام فارسی در تست، دو `if` چندخطی برای phpcs) و رفع شد. **T4.4** (پنل مشتری): `CustomerApi::customerOfSession`، `AppointmentService::decisions` (پیش‌نمایش Policy بدون قفل)، `CustomerPanel` و `PanelAppointment`، `PanelRoutes` (`GET /my/appointments`، `POST /my/appointments/{id}/cancel|reschedule` با هدر `X-Phone-Session` و nonce)، `ApiClient` گزینه `session`، ویجت `Panel.tsx` (ورود با OTP، فهرست، لغو با تأیید و درصد استرداد، جابجایی با انتخاب تاریخ و ساعت، خروج)، `mountPanel` و attribute `data-{slug}-panel`. «پرداخت مانده» به M5 موکول شد (پرداخت هنوز وجود ندارد). تست‌ها: `HoldsTest` (پنل)، `panel.test.tsx` |
+| **Task بعدی** | T4.5 — Shortcode و بلوک گوتنبرگ برای ویجت و پنل، بارگذاری شرطی asset، و enqueue با `restUrl`. بعد از آن M5 |
 | **آخرین کار انجام‌شده** | **T3.5** کامل (مشتریان، تعطیلات، Policy، فیلدها، کوپن، قیمت زمانی، E2E `settings.spec.ts`)، **T3.6** (داشبورد `/`، گزارش `/reports`، `GET /reports/summary`، CSV)، **T4.1** (`GET /catalog` عمومی، ویجت: خدمت/Variant/شعبه/پرسنل، تقویم ماه شمسی یا میلادی، ساعت‌های خالی، «اولین نوبت خالی»، رویداد `vqy:slot`؛ ویجت 11KB gz). **CI سبز روی main: run 36544899242** (هر ۱۳ job، 2026-09-29) |
 | **Blockerها** | — |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
@@ -23,7 +23,7 @@
 | M1 کاتالوگ و زمان‌بندی | ✅ | 5/5 |
 | M2 هسته رزرو | ✅ | 8/8 |
 | M3 Admin | ✅ | 6/6 |
-| M4 سمت مشتری | 🟨 | 1/5 (T4.2 و T4.3 منتظر CI) |
+| M4 سمت مشتری | 🟨 | 1/5 (T4.2، T4.3 و T4.4 منتظر CI) |
 | M5 پرداخت و اعلان | ⬜ | 0/5 |
 | M6 انتشار 1.0 | ⬜ | 0/6 |
 
@@ -68,8 +68,8 @@
 | T3.6 | داشبورد و گزارش | ✅ | `23f4748`. درآمد = `price_total` نوبت‌های confirmed و completed (پرداخت واقعی با M5). CSV سمت کلاینت. **CI سبز (run 36544899242)** |
 | T4.1 | ویجت: انتخاب و تقویم | ✅ | `33035a6`. `GET /catalog` عمومی. ویجت 11KB gz. **CI سبز (run 36544899242)** |
 | T4.2 | ویجت: Hold تا تأیید | 🟨 | `42b39eb`. Integration سبز؛ lint رفع شد، منتظر CI |
-| T4.3 | OTP | 🟨 | کد نوشته و push شد، منتظر CI. تنظیم `require_phone_verification` پیش‌فرض خاموش |
-| T4.4 | پنل مشتری | ⬜ | |
+| T4.3 | OTP | 🟨 | `4d0f662` + رفع lint/تست. منتظر CI. تنظیم `require_phone_verification` پیش‌فرض خاموش |
+| T4.4 | پنل مشتری | 🟨 | کد نوشته شد، منتظر CI. پرداخت مانده با M5 |
 | T4.5 | Shortcode و Block | ⬜ | |
 | T5.1 | Payments core | ⬜ | |
 | T5.2 | Zarinpal، Zibal، تطبیق | ⬜ | |

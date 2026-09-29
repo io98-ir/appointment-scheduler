@@ -16,6 +16,7 @@ use Vaqtyar\Modules\Booking\Application\AppointmentBrowser;
 use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\CouponAdminService;
+use Vaqtyar\Modules\Booking\Application\CustomerPanel;
 use Vaqtyar\Modules\Booking\Application\FieldAdminService;
 use Vaqtyar\Modules\Booking\Application\HoldPricing;
 use Vaqtyar\Modules\Booking\Application\FieldReader;
@@ -50,6 +51,7 @@ use Vaqtyar\Modules\Booking\Presentation\Rest\CouponRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\FieldRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\GuestBookingRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\HoldRoutes;
+use Vaqtyar\Modules\Booking\Presentation\Rest\PanelRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\PolicyRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\ReportRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\TimeRuleRoutes;
@@ -168,6 +170,15 @@ final class BookingModule implements Module
             )
         );
         $container->singleton(
+            CustomerPanel::class,
+            static fn (Container $c) => new CustomerPanel(
+                $c->get(CustomerApi::class),
+                new WpdbAppointmentQuery($c->get(Db::class)),
+                $c->get(AppointmentService::class),
+                $c->get(Clock::class)
+            )
+        );
+        $container->singleton(
             ReportService::class,
             static fn (Container $c) => new ReportService(new WpdbReportQuery($c->get(Db::class)), new WpAuthorizer())
         );
@@ -246,6 +257,10 @@ final class BookingModule implements Module
             (new CouponRoutes(
                 $container->get(Router::class),
                 static fn (): CouponAdminService => $container->get(CouponAdminService::class)
+            ))->register();
+            (new PanelRoutes(
+                $container->get(Router::class),
+                static fn (): CustomerPanel => $container->get(CustomerPanel::class)
             ))->register();
             (new ReportRoutes(
                 $container->get(Router::class),

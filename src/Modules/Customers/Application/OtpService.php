@@ -72,10 +72,11 @@ final class OtpService
         }
         // Counted before the comparison, so parallel guesses cannot beat the limit.
         $this->store->recordAttempt($stored->id);
-        if (1 !== \preg_match('/^\d{' . self::CODE_LENGTH . '}$/D', $code)
-            || !\hash_equals($stored->hash, $this->hash($phone->e164, $code))
-            || !$this->store->consume($stored->id, $now)
-        ) {
+        $shaped = 1 === \preg_match('/^\d{' . self::CODE_LENGTH . '}$/D', $code);
+        if (!$shaped || !\hash_equals($stored->hash, $this->hash($phone->e164, $code))) {
+            return null;
+        }
+        if (!$this->store->consume($stored->id, $now)) {
             return null;
         }
 

@@ -177,6 +177,27 @@ final class AppointmentService
     }
 
     /**
+     * What the policy would say to cancelling and to moving the appointment
+     * now, for the customer panel to show before they choose. Changes
+     * nothing and locks nothing.
+     *
+     * @return array{cancel: Decision, reschedule: Decision}
+     * @throws NotFound appointment_not_found, also for someone else's.
+     */
+    public function decisions(int $id, Actor $actor): array
+    {
+        $stored = $this->find($id, $actor);
+        $appointment = $stored->appointment;
+        $now = $this->clock->now()->getTimestamp();
+        $policy = $this->policies->forService($appointment->serviceId);
+
+        return [
+            'cancel' => $policy->cancel($appointment->start, $now, Money::zero()),
+            'reschedule' => $policy->reschedule($appointment->start, $now, $stored->rescheduled),
+        ];
+    }
+
+    /**
      * Staff record that the customer did not come. The time stays taken:
      * it has passed.
      *

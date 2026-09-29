@@ -30,6 +30,17 @@ final class CustomerReader implements CustomerApi
         return $this->customers->find($customerId)?->canBook() ?? false;
     }
 
+    public function customerOfSession(?string $sessionToken): ?int
+    {
+        $phone = $this->sessions->phoneOf($sessionToken, $this->clock->now()->getTimestamp());
+        if (null === $phone) {
+            return null;
+        }
+        $customer = $this->customers->findByPhone(PhoneNumber::fromInput($phone));
+
+        return null !== $customer && $customer->canBook() ? $customer->id : null;
+    }
+
     public function forBooking(
         string $phone,
         string $firstName,
@@ -38,9 +49,8 @@ final class CustomerReader implements CustomerApi
         ?string $sessionToken = null,
     ): int {
         $number = PhoneNumber::fromInput($phone);
-        if (($this->requiresVerification)()
-            && $this->sessions->phoneOf($sessionToken, $this->clock->now()->getTimestamp()) !== $number->e164
-        ) {
+        $verified = $this->sessions->phoneOf($sessionToken, $this->clock->now()->getTimestamp()) === $number->e164;
+        if (($this->requiresVerification)() && !$verified) {
             throw new InvalidValue('phone_not_verified', 'The phone number has not been verified.');
         }
         $existing = $this->customers->findByPhone($number);

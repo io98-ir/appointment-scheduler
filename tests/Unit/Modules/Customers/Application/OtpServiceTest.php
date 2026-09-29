@@ -8,9 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Customers\Application\Captcha;
 use Vaqtyar\Modules\Customers\Application\OtpSender;
 use Vaqtyar\Modules\Customers\Application\OtpService;
-use Vaqtyar\Modules\Customers\Application\OtpStore;
 use Vaqtyar\Modules\Customers\Application\PhoneSessions;
-use Vaqtyar\Modules\Customers\Application\StoredOtp;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\PhoneNumber;
 
@@ -21,9 +19,6 @@ final class OtpServiceTest extends TestCase
 
     private int $now = self::START;
 
-    /** @var list<array{id: int, phone: string, hash: string, expires: int, created: int, attempts: int, used: bool}> */
-    private array $rows = [];
-
     /** @var list<string> */
     private array $sent = [];
 
@@ -32,7 +27,7 @@ final class OtpServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->service = new OtpService(
-            $this->store(),
+            new InMemoryOtpStore(),
             new class ($this->sent) implements OtpSender {
                 /** @param list<string> $sent */
                 public function __construct(private array &$sent)
@@ -72,7 +67,10 @@ final class OtpServiceTest extends TestCase
     {
         $phone = PhoneNumber::fromInput('09121234567');
         $this->service->request($phone);
-        $persian = \strtr($this->sent[0], '0123456789', '۰۱۲۳۴۵۶۷۸۹');
+        $persian = \strtr($this->sent[0], [
+            '0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴',
+            '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹',
+        ]);
 
         self::assertNotNull($this->service->verify($phone, ' ' . $persian . ' '));
     }
@@ -149,7 +147,11 @@ final class OtpServiceTest extends TestCase
         self::assertFalse($captcha->verify($issued['token'], 'abc', $this->now));
         self::assertFalse($captcha->verify('bad', '5', $this->now));
         self::assertFalse(
-            $captcha->verify($issued['token'], (string) ($issued['a'] + $issued['b']), $this->now + Captcha::TTL_SECONDS + 1)
+            $captcha->verify(
+                $issued['token'],
+                (string) ($issued['a'] + $issued['b']),
+                $this->now + Captcha::TTL_SECONDS + 1
+            )
         );
         self::assertFalse(
             (new Captcha('other'))->verify($issued['token'], (string) ($issued['a'] + $issued['b']), $this->now)
@@ -173,76 +175,5 @@ final class OtpServiceTest extends TestCase
     public function now(): int
     {
         return $this->now;
-    }
-
-    private function store(): OtpStore
-    {
-        return new class ($this->rows, $this) implements OtpStore {
-            /** @param list<array{id: int, phone: string, hash: string, expires: int, created: int, attempts: int, used: bool}> $rows */
-            public function __construct(private array &$rows, private readonly OtpServiceTest $test)
-            {
-            }
-
-            public function countSince(string $phone, int $since): int
-            {
-                return \count(\array_filter(
-                    $this->rows,
-                    static fn (array $r): bool => $r['phone'] === $phone && $r['created'] >= $since
-                ));
-            }
-
-            public function lastCreatedAt(string $phone): ?int
-            {
-                $times = \array_column(
-                    \array_filter($this->rows, static fn (array $r): bool => $r['phone'] === $phone),
-                    'created'
-                );
-
-                return [] === $times ? null : \max($times);
-            }
-
-            public function add(string $phone, string $hash, int $expiresAt, int $now): void
-            {
-                $this->rows[] = [
-                    'id' => \count($this->rows) + 1,
-                    'phone' => $phone,
-                    'hash' => $hash,
-                    'expires' => $expiresAt,
-                    'created' => $now,
-                    'attempts' => 0,
-                    'used' => false,
-                ];
-            }
-
-            public function latest(string $phone, int $now): ?StoredOtp
-            {
-                foreach (\array_reverse($this->rows) as $r) {
-                    if ($r['phone'] === $phone && !$r['used'] && $r['expires'] > $now) {
-                        return new StoredOtp($r['id'], $r['hash'], $r['attempts']);
-                    }
-                }
-
-                return null;
-            }
-
-            public function recordAttempt(int $id): void
-            {
-                ++$this->rows[$id - 1]['attempts'];
-            }
-
-            public function consume(int $id, int $now): bool
-            {
-                if ($this->rows[$id - 1]['used']) {
-                    return false;
-                }
-                $this->rows[$id - 1]['used'] = true;
-
-                return true;
-            }
-
-            public function purgeBefore(int $before): void
-            {
-            }
-        };
     }
 }

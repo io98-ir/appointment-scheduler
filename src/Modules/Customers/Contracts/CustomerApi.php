@@ -34,4 +34,11 @@ interface CustomerApi
         ?string $email,
         ?string $sessionToken = null,
     ): int;
+
+    /**
+     * The customer a phone session (OtpService::verify) belongs to, for the
+     * customer panel (T4.4); null when the token is missing, forged or
+     * expired, or the number has no customer who can book.
+     */
+    public function customerOfSession(?string $sessionToken): ?int;
 }

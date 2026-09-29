@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-29 — سشن 24 (ادامه 4) — T4.4: پنل مشتری
+**Taskها:** T4.4 (منتظر CI)، رفع CI سرخ T4.3
+**انجام شد:** `AppointmentService::decisions()` (Policy لغو و جابجایی بدون قفل و بدون تغییر)؛ `CustomerPanel` (نوبت‌های مشتری از روی نشست شماره، لغو و جابجایی از راه `AppointmentService` با `Actor::customer` که خودش مالکیت را می‌سنجد)؛ `PanelRoutes` زیر `/my/appointments`؛ `CustomerApi::customerOfSession`. ویجت: `Panel.tsx`، `mountPanel`، گزینه `session` در `ApiClient`، و `status` در `useFetch` برای خروج خودکار با 401 و 403.
+**تصمیم‌ها و فرض‌ها:** نشست در `sessionStorage` نگه داشته می‌شود (تا بسته شدن تب، 29 دقیقه). «پرداخت مانده» ساخته نشد چون پرداخت تا M5 نیست. پنل همیشه OTP می‌خواهد، مستقل از تنظیم `require_phone_verification`، چون داده شخصی نشان می‌دهد. مشتری Override ندارد.
+**تأیید:** بنا به درخواست کاربر تست محلی گرفته نشد؛ CI ابزار تأیید است. CI T4.3 قرمز بود و رفع شد.
+**مشکلات و باقیمانده:** سبز شدن CI.
+**قدم بعدی:** T4.5.
+**Commitها:** T4.4 در commit بعدی.
+
+---
+
 ## 2026-09-29 — سشن 24 (ادامه 3) — T4.3: OTP، نشست شماره و captcha
 **Taskها:** T4.3 (منتظر CI)، T4.2 (رفع lint)
 **انجام شد:** Customers: migration `CreateOtpCodesTable`؛ پورت‌های `OtpStore` (با `WpdbOtpStore`) و `OtpSender` (با `HookOtpSender`)؛ `OtpService`؛ `PhoneSessions` و `Captcha` (بدون ذخیره، امضا با `wp_salt('auth')`)؛ `OtpRoutes`. `CustomerApi::forBooking` توکن نشست را می‌گیرد و وقتی `LoginSettings::requirePhoneVerification` روشن است شماره را با آن تطبیق می‌دهد (`phone_not_verified`). `POST /book` پارامتر `session_token` گرفت. ویجت: `PhoneCheck.tsx` (captcha، ارسال کد، تأیید) داخل `BookingFlow`. تست‌ها: `OtpServiceTest` (Unit)، دو تست Integration در `HoldsTest`، یک تست Vitest.

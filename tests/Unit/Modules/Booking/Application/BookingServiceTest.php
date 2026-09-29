@@ -527,6 +527,11 @@ final class BookingServiceTest extends TestCase
                 return $this->test->customerCanBook && 9 === $customerId;
             }
 
+            public function customerOfSession(?string $sessionToken): ?int
+            {
+                return null;
+            }
+
             public function forBooking(
                 string $phone,
                 string $firstName,

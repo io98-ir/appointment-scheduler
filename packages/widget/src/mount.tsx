@@ -1,6 +1,7 @@
 import type { ApiClient } from '@vaqtyar/shared';
 import { render } from 'preact';
 
+import { Panel } from './Panel';
 import { Widget, type WidgetConfig } from './Widget';
 
 /**
@@ -17,6 +18,23 @@ export function mount(
 	api?: ApiClient
 ): () => void {
 	render( <Widget config={ config } api={ api } />, element );
+
+	return () => render( null, element );
+}
+
+/**
+ * Renders the customer panel into an element (T4.4), like mount().
+ *
+ * @param element
+ * @param config
+ * @param api     For tests.
+ */
+export function mountPanel(
+	element: Element,
+	config: WidgetConfig,
+	api?: ApiClient
+): () => void {
+	render( <Panel config={ config } api={ api } />, element );
 
 	return () => render( null, element );
 }

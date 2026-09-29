@@ -1,4 +1,4 @@
-import type { ApiClient, formatDigits, type Digits } from '@vaqtyar/shared';
+import { formatDigits, type ApiClient, type Digits } from '@vaqtyar/shared';
 import { __, sprintf } from '@wordpress/i18n';
 import { useId, useState } from 'preact/hooks';
 
