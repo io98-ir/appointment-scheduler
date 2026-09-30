@@ -78,6 +78,62 @@ function Modules( { modules }: { modules: ModuleSwitch[] } ) {
 }
 
 /**
+ * Whether deleting the plugin from WordPress also deletes every booking,
+ * customer and setting (T6.5). Off until the owner turns it on.
+ *
+ * @param props
+ * @param props.enabled The choice from GET /status.
+ */
+function DeleteData( { enabled }: { enabled: boolean } ) {
+	const api = useApi();
+	const client = useQueryClient();
+	const { createSuccessNotice } = useDispatch( noticesStore );
+	const save = useMutation( {
+		mutationFn: ( deleteOnUninstall: boolean ) =>
+			api.put< { delete_on_uninstall: boolean } >( '/data', {
+				delete_on_uninstall: deleteOnUninstall,
+			} ),
+		onSuccess: ( saved ) => {
+			client.setQueryData< SystemStatus >( [ '/status' ], ( current ) =>
+				current
+					? {
+							...current,
+							delete_on_uninstall: saved.delete_on_uninstall,
+						}
+					: current
+			);
+			void createSuccessNotice( __( 'Saved.', 'vaqtyar' ), {
+				type: 'snackbar',
+			} );
+		},
+	} );
+
+	return (
+		<div className="vqy-admin__form">
+			{ save.isError && (
+				<Notice status="error" isDismissible={ false }>
+					{ errorMessage( save.error ) }
+				</Notice>
+			) }
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __(
+					'Delete all data when the plugin is deleted',
+					'vaqtyar'
+				) }
+				help={ __(
+					'Deleting the plugin from the Plugins screen then removes every booking, customer, payment and setting for good. Off keeps them, so a reinstall finds everything as it was.',
+					'vaqtyar'
+				) }
+				checked={ enabled }
+				disabled={ save.isPending }
+				onChange={ ( value ) => save.mutate( value ) }
+			/>
+		</div>
+	);
+}
+
+/**
  * System status (T6.2): what the server offers the plugin, the state of the
  * job queue, recent errors and the optional modules. WordPress Site Health
  * carries the same checks under Tools.
@@ -100,6 +156,7 @@ export function StatusPage() {
 		);
 	}
 	const { versions, checks, queue, modules, errors } = status.data;
+	const deleteOnUninstall = status.data.delete_on_uninstall;
 
 	return (
 		<>
@@ -145,6 +202,9 @@ export function StatusPage() {
 
 			<h2>{ __( 'Optional modules', 'vaqtyar' ) }</h2>
 			<Modules modules={ modules } />
+
+			<h2>{ __( 'Data', 'vaqtyar' ) }</h2>
+			<DeleteData enabled={ deleteOnUninstall } />
 
 			<h2>{ __( 'Recent errors', 'vaqtyar' ) }</h2>
 			{ errors.length === 0 ? (

@@ -187,8 +187,9 @@
 ## System Status و ماژول‌ها (Admin، T6.2)
 | Route | توضیح |
 |---|---|
-| `GET /status` | `{versions: {plugin, wordpress, php, database}, checks: [{id, status, label, description}], queue: {pending, late, failed}, schema: {owner: count}, modules: [{id, switchable, enabled}], errors: [{at, channel, message}]}`. `status` یکی از `good`، `recommended`، `critical`؛ `at` به UTC؛ `errors` ده خطای آخر لاگ، جدیدترین اول |
+| `GET /status` | `{versions: {plugin, wordpress, php, database}, checks: [{id, status, label, description}], queue: {pending, late, failed}, schema: {owner: count}, modules: [{id, switchable, enabled}], delete_on_uninstall, errors: [{at, channel, message}]}`. `status` یکی از `good`، `recommended`، `critical`؛ `at` به UTC؛ `errors` ده خطای آخر لاگ، جدیدترین اول |
 | `PUT /modules/{id}` | `enabled` (بولی، الزامی). پاسخ `{modules}` بعد از تغییر. اثرش از درخواست بعد است. خطا: 422 `module_not_switchable` برای ماژول هسته یا ناشناخته |
+| `PUT /data` | `delete_on_uninstall` (بولی، الزامی): آیا حذف افزونه از وردپرس همه داده‌اش را هم پاک کند (پیش‌فرض خیر). پاسخ `{delete_on_uninstall}`. نیاز به `manage_system`. رفتار uninstall: implementation-notes §4.24 |
 
 هر دو capability `manage_system` می‌خواهند (پیش‌فرض: administrator) و `StatusService` دوباره بررسی می‌کند. ماژول‌های خاموش‌شدنی: `notifications` و `widget`. همین بررسی‌ها زیر Tools ← Site Health هم هستند (تست direct با کلید `{PREFIX}_{id}`).
 

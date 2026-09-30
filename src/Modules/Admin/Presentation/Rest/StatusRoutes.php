@@ -14,6 +14,7 @@ use Vaqtyar\Modules\Admin\Presentation\HealthText;
  *
  *     GET /status                versions, health checks, queue, schema, modules and recent errors
  *     PUT /modules/{id}          {enabled}: turn a switchable module on or off (from the next request)
+ *     PUT /data                  {delete_on_uninstall}: whether deleting the plugin deletes its data
  *
  * Each needs the system capability, which StatusService checks again.
  */
@@ -40,9 +41,22 @@ final class StatusRoutes
                 'queue' => $report['queue'],
                 'schema' => (object) $report['schema'],
                 'modules' => $report['modules'],
+                'delete_on_uninstall' => $report['delete_on_uninstall'],
                 'errors' => $report['errors'],
             ];
         }, $allowed);
+
+        $this->router->add(
+            '/data',
+            'PUT',
+            fn (\WP_REST_Request $request): array => [
+                'delete_on_uninstall' => $this->service->setDeleteOnUninstall(
+                    true === $request->get_param('delete_on_uninstall')
+                ),
+            ],
+            $allowed,
+            ['delete_on_uninstall' => ['type' => 'boolean', 'required' => true]]
+        );
 
         $this->router->add(
             '/modules/(?P<id>[a-z][a-z0-9_]*)',

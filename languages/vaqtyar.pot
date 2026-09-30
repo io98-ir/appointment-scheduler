@@ -47,7 +47,7 @@ msgstr ""
 msgid "%1$s requires WordPress %2$s or newer. This site runs WordPress %3$s."
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:201
+#: packages/admin/src/status/StatusPage.tsx:261
 msgid "%1$s: %2$d"
 msgstr ""
 
@@ -301,7 +301,7 @@ msgstr ""
 msgid "April"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:159
+#: packages/admin/src/status/StatusPage.tsx:219
 msgid "Area"
 msgstr ""
 
@@ -644,7 +644,11 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:191
+#: packages/admin/src/status/StatusPage.tsx:206
+msgid "Data"
+msgstr ""
+
+#: packages/admin/src/status/StatusPage.tsx:251
 msgid "Database"
 msgstr ""
 
@@ -676,6 +680,10 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+#: packages/admin/src/status/StatusPage.tsx:120
+msgid "Delete all data when the plugin is deleted"
+msgstr ""
+
 #: packages/admin/src/catalog/CatalogList.tsx:163
 msgid "Delete this item?"
 msgstr ""
@@ -686,6 +694,13 @@ msgstr ""
 #: packages/admin/src/coupons/Coupons.tsx:78
 #: packages/admin/src/fields/Fields.tsx:72
 msgid "Deleted."
+msgstr ""
+
+#: packages/admin/src/status/StatusPage.tsx:124
+msgid ""
+"Deleting the plugin from the Plugins screen then removes every booking, "
+"customer, payment and setting for good. Off keeps them, so a reinstall "
+"finds everything as it was."
 msgstr ""
 
 #: packages/admin/src/appointments/AppointmentsPage.tsx:47
@@ -776,7 +791,7 @@ msgstr ""
 msgid "Extra minutes"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:140
+#: packages/admin/src/status/StatusPage.tsx:197
 msgid "Failed this week"
 msgstr ""
 
@@ -871,7 +886,7 @@ msgstr ""
 msgid "Has terms per option."
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:106
+#: packages/admin/src/status/StatusPage.tsx:163
 msgid "Health"
 msgstr ""
 
@@ -940,7 +955,7 @@ msgstr ""
 msgid "January"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:124
+#: packages/admin/src/status/StatusPage.tsx:181
 msgid "Job queue"
 msgstr ""
 
@@ -1086,7 +1101,7 @@ msgstr ""
 msgid "Merchant id"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:160
+#: packages/admin/src/status/StatusPage.tsx:220
 msgid "Message"
 msgstr ""
 
@@ -1233,7 +1248,7 @@ msgstr ""
 msgid "No customers."
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:152
+#: packages/admin/src/status/StatusPage.tsx:212
 msgid "No errors were logged."
 msgstr ""
 
@@ -1376,7 +1391,7 @@ msgstr ""
 msgid "Option %d"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:146
+#: packages/admin/src/status/StatusPage.tsx:203
 msgid "Optional modules"
 msgstr ""
 
@@ -1404,7 +1419,7 @@ msgstr ""
 msgid "Ordibehesht"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:134
+#: packages/admin/src/status/StatusPage.tsx:191
 msgid "Overdue"
 msgstr ""
 
@@ -1474,7 +1489,7 @@ msgstr ""
 msgid "Pick a colour"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:179
+#: packages/admin/src/status/StatusPage.tsx:239
 msgid "Plugin"
 msgstr ""
 
@@ -1523,7 +1538,7 @@ msgstr ""
 msgid "Reason"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:149
+#: packages/admin/src/status/StatusPage.tsx:209
 msgid "Recent errors"
 msgstr ""
 
@@ -1642,7 +1657,7 @@ msgstr ""
 msgid "Saved. It applies from the next page load."
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:195
+#: packages/admin/src/status/StatusPage.tsx:255
 msgid "Schema"
 msgstr ""
 
@@ -2038,7 +2053,7 @@ msgstr ""
 msgid "Time"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:158
+#: packages/admin/src/status/StatusPage.tsx:218
 msgid "Time (UTC)"
 msgstr ""
 
@@ -2148,11 +2163,11 @@ msgstr ""
 msgid "Verify"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:175
+#: packages/admin/src/status/StatusPage.tsx:235
 msgid "Versions"
 msgstr ""
 
-#: packages/admin/src/status/StatusPage.tsx:128
+#: packages/admin/src/status/StatusPage.tsx:185
 msgid "Waiting"
 msgstr ""
 

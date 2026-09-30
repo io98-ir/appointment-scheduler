@@ -555,6 +555,8 @@ export interface SystemStatus {
 	/** Migrations run per owner (a module id, or "kernel"). */
 	schema: Record< string, number >;
 	modules: ModuleSwitch[];
+	/** Whether deleting the plugin also deletes its data; off until the owner opts in. */
+	delete_on_uninstall: boolean;
 	/** Newest first; `at` is UTC, "Y-m-d H:i:s". */
 	errors: Array< { at: string; channel: string; message: string } >;
 }

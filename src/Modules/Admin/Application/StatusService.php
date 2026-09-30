@@ -26,6 +26,7 @@ final class StatusService
         private readonly Authorizer $authorizer,
         private readonly StatusSource $source,
         private readonly ModuleSwitches $modules,
+        private readonly DataPolicy $data,
         private readonly HealthEvaluator $evaluator = new HealthEvaluator(),
     ) {
     }
@@ -37,6 +38,7 @@ final class StatusService
      *     queue: array{pending: int, late: int, failed: int},
      *     schema: array<string, int>,
      *     modules: list<array{id: string, switchable: bool, enabled: bool}>,
+     *     delete_on_uninstall: bool,
      *     errors: list<array{at: string, channel: string, message: string}>
      * }
      */
@@ -55,8 +57,21 @@ final class StatusService
             ],
             'schema' => $this->source->schema(),
             'modules' => $this->modules->entries(),
+            'delete_on_uninstall' => $this->data->deleteOnUninstall(),
             'errors' => $this->source->recentErrors(self::RECENT_ERRORS),
         ];
+    }
+
+    /**
+     * Whether deleting the plugin from WordPress also deletes every booking,
+     * customer and setting. Off until the owner turns it on.
+     */
+    public function setDeleteOnUninstall(bool $delete): bool
+    {
+        $this->authorize();
+        $this->data->setDeleteOnUninstall($delete);
+
+        return $this->data->deleteOnUninstall();
     }
 
     /**

@@ -35,6 +35,7 @@ final class StatusRestTest extends TestCase
             \wp_delete_user($id);
         }
         \delete_option(Options::key('settings_modules'));
+        \delete_option(Options::key('settings_data'));
         // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals -- as in setUp().
         $GLOBALS['wp_rest_server'] = null;
         parent::tearDown();
@@ -52,6 +53,7 @@ final class StatusRestTest extends TestCase
     {
         yield 'read status' => ['GET', '/status'];
         yield 'turn a module off' => ['PUT', '/modules/widget'];
+        yield 'choose to delete the data on uninstall' => ['PUT', '/data'];
     }
 
     /**
@@ -61,7 +63,7 @@ final class StatusRestTest extends TestCase
     {
         $this->logInAs('editor');
 
-        $response = $this->request($method, $path, ['enabled' => false]);
+        $response = $this->request($method, $path, ['enabled' => false, 'delete_on_uninstall' => true]);
 
         self::assertSame([403, 'rest_forbidden'], [$response['status'], $response['body']['code'] ?? null]);
     }
@@ -75,7 +77,7 @@ final class StatusRestTest extends TestCase
 
         self::assertSame(200, $response['status']);
         self::assertSame(
-            ['versions', 'checks', 'queue', 'schema', 'modules', 'errors'],
+            ['versions', 'checks', 'queue', 'schema', 'modules', 'delete_on_uninstall', 'errors'],
             \array_keys($body)
         );
         $checks = $body['checks'];
@@ -123,6 +125,20 @@ final class StatusRestTest extends TestCase
         self::assertContains('notifications', $switchable);
         self::assertContains('widget', $switchable);
         self::assertNotContains('booking', $switchable);
+    }
+
+    public function testDataIsKeptOnUninstallUntilTheOwnerChoosesOtherwise(): void
+    {
+        $this->logInAs('administrator');
+        self::assertFalse($this->request('GET', '/status')['body']['delete_on_uninstall']);
+
+        $on = $this->request('PUT', '/data', ['delete_on_uninstall' => true]);
+        self::assertSame([200, ['delete_on_uninstall' => true]], [$on['status'], $on['body']]);
+        self::assertSame(['delete_on_uninstall' => true], \get_option(Options::key('settings_data')));
+        self::assertTrue($this->request('GET', '/status')['body']['delete_on_uninstall']);
+
+        $off = $this->request('PUT', '/data', ['delete_on_uninstall' => false]);
+        self::assertSame(['delete_on_uninstall' => false], $off['body']);
     }
 
     public function testAModuleIsTurnedOffAndOnAgain(): void

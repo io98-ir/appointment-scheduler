@@ -385,6 +385,14 @@
 - **ریسک‌های پذیرفته‌شده** (captcha ساده، SMS pumping، پر کردن ساعت‌ها با Hold، nonce مهمان): [07-security-review.md §3](../05-delivery/07-security-review.md). هر تغییر در rate limit عمومی باید آن فهرست را به‌روز کند.
 - **Plugin Check** فقط در CI اجرا می‌شود (job `plugin-check`)؛ `ExceptionNotEscaped` به‌عمد ignore شده (§6 همین سند، سیاست Exception).
 
+## 4.24 Uninstall، ارتقا و E2E طلایی (T6.5)
+- **`uninstall.php` تا T6.5 خالی بود.** حالا `Kernel\Uninstaller::run()` را صدا می‌زند، بعد از اینکه PHP و `vendor/` را بررسی کرد (روی میزبان ناسازگار چیزی بارگذاری نمی‌شود). فایل هنوز باید روی PHP 7.0 parse شود، پس سینتکس جدید ندارد.
+- **فقط با انتخاب صریح مالک** (`DataSettings::deleteOnUninstall`، پیش‌فرض خاموش؛ سوییچ در System status با `PUT /data` و capability `manage_system`). وقتی روشن است، برای هر سایت: capabilityها از همه نقش‌ها، jobهای Action Scheduler با hook `vaqtyar/…` (و لاگ‌هایشان؛ جدول‌های AS مشترک‌اند و دست نمی‌خورند)، همه جدول‌های `{prefix}vqy_*`، و در پایان همه optionها و transientهای `vqy_*` (آخر، تا شکست وسط کار انتخاب را نگه دارد). **با پیشوند پیدا می‌شوند، نه با فهرست،** پس ماژول تازه هم پاک می‌شود و uninstall به ماژول‌ها نیاز ندارد. در multisite هر سایت با انتخاب خودش.
+- **`Tables::prefix()` و `Tables::external()`** ساخته شدند: اولی پیشوند جدول‌های ما، دومی جدول افزونه‌ی دیگر (Action Scheduler، `options`).
+- **تست uninstall PHPUnit نیست** چون حذف جدول‌های افزونه همه تست‌های بعدی را می‌شکند. job `uninstall` در CI دو بار `tests/Uninstall/run.php` را با `wp eval-file` اجرا می‌کند: `keep` (بدون انتخاب: هیچ‌چیز نرود) و `delete` (داده ما برود، option و job افزونه‌ی دیگر و جدول‌های هسته بماند). خود `uninstall.php` واقعی اجرا می‌شود.
+- **تست ارتقا** (`tests/Integration/Kernel/UpgradeTest.php`): نسخه‌ای قدیمی‌تر از این schema منتشر نشده، پس «نسخه قبل» با برگرداندن آخرین مرحله دو ماژول ساخته می‌شود (ستون و قالب‌های پیامکی notifications، ایندکس `start_at` نوبت‌ها) با یک قالب ایمیل ویرایش‌شده توسط مالک؛ بعد `Migrator` واقعی آن را به‌روز می‌کند. داده مالک نباید عوض شود و اجرای دوباره نباید قالب پیامکی تکراری بسازد. **از اولین انتشار واقعی به بعد، هر migration تازه باید به همین شیوه تست شود.**
+- **E2E طلایی** (`tests/e2e/specs/golden.spec.ts`): ویجت روی یک صفحه خدمت را نشان می‌دهد؛ مهمان بدون login با nonce (`/nonce` ← `/availability` ← `/holds` ← `/book`) نوبت می‌گیرد، Hold دوباره قابل استفاده نیست؛ پذیرش در Admin پیدا و لغو می‌کند و زمان آزاد می‌شود. کلیک‌های خود ویجت را تست کامپوننت پوشش می‌دهد؛ OTP و پنل مشتری در E2E نیستند (نیاز به پیامک).
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

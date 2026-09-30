@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Tests\Unit\Modules\Admin;
 
 use PHPUnit\Framework\TestCase;
+use Vaqtyar\Modules\Admin\Application\DataPolicy;
 use Vaqtyar\Modules\Admin\Application\ModuleSwitches;
 use Vaqtyar\Modules\Admin\Application\StatusService;
 use Vaqtyar\Modules\Admin\Application\StatusSource;
@@ -67,14 +68,28 @@ final class StatusServiceTest extends TestCase
         self::assertSame([], $switches->disabled);
     }
 
+    public function testDeletingDataOnUninstallIsOffUntilTheOwnerTurnsItOn(): void
+    {
+        $data = new MemoryDataPolicy();
+        $service = $this->service(new MemoryModuleSwitches(), true, $data);
+
+        self::assertFalse($service->report()['delete_on_uninstall']);
+        self::assertTrue($service->setDeleteOnUninstall(true));
+        self::assertTrue($data->delete);
+        self::assertTrue($service->report()['delete_on_uninstall']);
+        self::assertFalse($service->setDeleteOnUninstall(false));
+    }
+
     public function testEveryCallChecksTheCapability(): void
     {
         $switches = new MemoryModuleSwitches();
-        $service = $this->service($switches, false);
+        $data = new MemoryDataPolicy();
+        $service = $this->service($switches, false, $data);
 
         $calls = [
             static fn () => $service->report(),
             static fn () => $service->setModuleEnabled('widget', false),
+            static fn () => $service->setDeleteOnUninstall(true),
         ];
         foreach ($calls as $call) {
             try {
@@ -85,9 +100,10 @@ final class StatusServiceTest extends TestCase
             }
         }
         self::assertSame([], $switches->disabled);
+        self::assertFalse($data->delete);
     }
 
-    private function service(ModuleSwitches $switches, bool $allowed): StatusService
+    private function service(ModuleSwitches $switches, bool $allowed, ?DataPolicy $data = null): StatusService
     {
         $source = new class implements StatusSource {
             public function facts(): HealthFacts
@@ -130,6 +146,6 @@ final class StatusServiceTest extends TestCase
             }
         };
 
-        return new StatusService($authorizer, $source, $switches);
+        return new StatusService($authorizer, $source, $switches, $data ?? new MemoryDataPolicy());
     }
 }

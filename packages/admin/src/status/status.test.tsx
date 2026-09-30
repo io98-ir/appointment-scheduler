@@ -47,6 +47,7 @@ const STATUS: SystemStatus = {
 		{ id: 'notifications', switchable: true, enabled: true },
 		{ id: 'widget', switchable: true, enabled: true },
 	],
+	delete_on_uninstall: false,
 	errors: [
 		{
 			at: '2026-09-30 10:00:00',
@@ -90,6 +91,12 @@ describe( 'the system status screen', () => {
 				);
 			}
 
+			if ( path === '/data' ) {
+				return new Response(
+					JSON.stringify( { delete_on_uninstall: true } )
+				);
+			}
+
 			return new Response( '[]' );
 		};
 		act( () =>
@@ -130,13 +137,41 @@ describe( 'the system status screen', () => {
 		expect( text ).toContain( 'booking: 5' );
 	} );
 
-	it( 'offers a toggle for the optional modules only', async () => {
+	it( 'offers a toggle for the optional modules only, then the one for the data', async () => {
 		await flush();
 
 		const toggles = [
 			...container.querySelectorAll( 'input[type="checkbox"]' ),
 		];
-		expect( toggles ).toHaveLength( 2 );
+		expect( toggles ).toHaveLength( 3 );
+	} );
+
+	it( 'keeps the data on uninstall until the owner opts in, then says so', async () => {
+		await flush();
+		const data = container.querySelectorAll(
+			'input[type="checkbox"]'
+		)[ 2 ] as HTMLInputElement;
+		expect( data.checked ).toBe( false );
+
+		await act( async () => {
+			data.click();
+		} );
+		await flush();
+
+		expect(
+			requests.find( ( request ) => request.method === 'PUT' )
+		).toEqual( {
+			method: 'PUT',
+			path: '/data',
+			body: JSON.stringify( { delete_on_uninstall: true } ),
+		} );
+		expect(
+			(
+				container.querySelectorAll(
+					'input[type="checkbox"]'
+				)[ 2 ] as HTMLInputElement
+			 ).checked
+		).toBe( true );
 	} );
 
 	it( 'turns a module off and shows it off', async () => {

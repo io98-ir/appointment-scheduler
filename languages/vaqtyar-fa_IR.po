@@ -1128,6 +1128,15 @@ msgstr "ذخیرهٔ تنظیمات پیامک"
 msgid "Saved."
 msgstr "ذخیره شد."
 
+msgid "Data"
+msgstr "داده‌ها"
+
+msgid "Delete all data when the plugin is deleted"
+msgstr "حذف همه داده‌ها هنگام حذف افزونه"
+
+msgid "Deleting the plugin from the Plugins screen then removes every booking, customer, payment and setting for good. Off keeps them, so a reinstall finds everything as it was."
+msgstr "با حذف افزونه از صفحه افزونه‌ها، همه نوبت‌ها، مشتریان، پرداخت‌ها و تنظیمات برای همیشه پاک می‌شوند. اگر خاموش باشد می‌مانند و با نصب دوباره همه‌چیز همان‌طور که بود پیدا می‌شود."
+
 msgid "Saved. It applies from the next page load."
 msgstr "ذخیره شد. از بارگذاری بعدی صفحه اعمال می‌شود."
 

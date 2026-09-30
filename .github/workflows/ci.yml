@@ -204,6 +204,34 @@ jobs:
           php tests/Concurrency/race.php http://localhost:8888 "$(seed)" staff
           php tests/Concurrency/race.php http://localhost:8888 "$(seed)" any
 
+  # T6.5: the real uninstall.php on a live site. First without the owner's
+  # opt-in (nothing may go), then with it (everything of ours goes, nothing
+  # else). A script and not a PHPUnit test: dropping the plugin's tables
+  # would break every test after it.
+  uninstall:
+    name: Uninstall (opt-in data removal)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring
+          coverage: none
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: composer install --no-interaction --no-progress --no-dev
+      - run: npx --yes @wordpress/env@11 start
+      - name: Keep the data without the opt-in, delete it with
+        run: |
+          for mode in keep delete; do
+            npx --yes @wordpress/env@11 run cli --env-cwd=wp-content/plugins/${{ github.event.repository.name }} \
+              wp eval-file tests/Uninstall/run.php "$mode" > uninstall.log 2>&1 || { cat uninstall.log >&2; exit 1; }
+            grep "^UNINSTALL OK $mode" uninstall.log || { cat uninstall.log >&2; exit 1; }
+          done
+
   # The admin screens against the real REST API, with the build the plugin
   # ships (tests/e2e). The playwright config logs in as the wp-env admin.
   e2e:

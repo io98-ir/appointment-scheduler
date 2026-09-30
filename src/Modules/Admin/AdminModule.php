@@ -17,6 +17,7 @@ use Vaqtyar\Modules\Admin\Application\StatusService;
 use Vaqtyar\Modules\Admin\Application\StatusSource;
 use Vaqtyar\Modules\Admin\Application\ModuleSwitches;
 use Vaqtyar\Modules\Admin\Domain\HealthEvaluator;
+use Vaqtyar\Modules\Admin\Infrastructure\SettingsDataPolicy;
 use Vaqtyar\Modules\Admin\Infrastructure\SettingsModuleSwitches;
 use Vaqtyar\Modules\Admin\Infrastructure\WpStatusSource;
 use Vaqtyar\Modules\Admin\Presentation\Rest\StatusRoutes;
@@ -62,7 +63,8 @@ final class AdminModule implements Module
             static fn (Container $c) => new StatusService(
                 new WpAuthorizer(),
                 $c->get(StatusSource::class),
-                $c->get(ModuleSwitches::class)
+                $c->get(ModuleSwitches::class),
+                new SettingsDataPolicy($c->get(Settings::class))
             )
         );
     }
