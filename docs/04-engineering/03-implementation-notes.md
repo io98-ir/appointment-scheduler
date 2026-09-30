@@ -379,6 +379,12 @@
 - **رابط:** صفحه `#/status` («System status») با سلامت، صف، toggle ماژول‌ها، آخرین خطاهای لاگ (UTC) و نسخه‌ها و وضعیت schema. رنگ وضعیت‌ها با کلیدواژه‌های رنگ سیستم است، چون Stylelint هر رنگ literal را رد می‌کند.
 - **باقیمانده:** خطای درگاه و پیامک از بقیه جدا نشده‌اند (همه خطاهای لاگ با کانال نشان داده می‌شوند)؛ تست Integration (`StatusRestTest`) فقط در CI اجرا می‌شود.
 
+## 4.23 درس‌های بازبینی امنیتی (T6.4)
+- **شمارنده‌ای که حد را اجرا می‌کند باید با نوشتن تصمیم بگیرد، نه با خواندن.** `OtpStore::recordAttempt(id, max)` یک `UPDATE … WHERE attempts < max` است و `false` یعنی حد پر شده. خواندن `attempts` و بعد افزایش، برای درخواست‌های موازی حد را دور می‌زند. همین الگو برای هر حد شمارشی تازه (کد تأیید، تلاش ورود، سقف کوپن) لازم است.
+- **ایمیل همیشه `text/plain`:** `EmailChannel` فیلتر `wp_mail_content_type` را فقط برای همان ارسال با `PHP_INT_MAX` به `text/plain` برمی‌گرداند. قالب‌ها markup ندارند و مقدار placeholder (نام مشتری) escape نمی‌شود؛ بدون این، افزونه «ایمیل HTML» سایت آن را به لینک تبدیل می‌کند.
+- **ریسک‌های پذیرفته‌شده** (captcha ساده، SMS pumping، پر کردن ساعت‌ها با Hold، nonce مهمان): [07-security-review.md §3](../05-delivery/07-security-review.md). هر تغییر در rate limit عمومی باید آن فهرست را به‌روز کند.
+- **Plugin Check** فقط در CI اجرا می‌شود (job `plugin-check`)؛ `ExceptionNotEscaped` به‌عمد ignore شده (§6 همین سند، سیاست Exception).
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

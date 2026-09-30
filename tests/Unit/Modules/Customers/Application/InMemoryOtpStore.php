@@ -63,9 +63,14 @@ final class InMemoryOtpStore implements OtpStore
         return null;
     }
 
-    public function recordAttempt(int $id): void
+    public function recordAttempt(int $id, int $max): bool
     {
+        if ($this->rows[$id - 1]['attempts'] >= $max) {
+            return false;
+        }
         ++$this->rows[$id - 1]['attempts'];
+
+        return true;
     }
 
     public function consume(int $id, int $now): bool

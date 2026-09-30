@@ -233,3 +233,60 @@ jobs:
           name: e2e-artifacts
           path: artifacts/
           retention-days: 7
+
+  # WordPress.org's Plugin Check (T6.4) on the plugin as installed, with the
+  # production build and without dev dependencies. Errors fail the job;
+  # warnings are printed first, for a human to read. Excluded: what a release
+  # zip does not contain, and WordPress.Security.EscapeOutput.ExceptionNotEscaped
+  # (a deliberate policy, implementation-notes §6: exception messages are plain
+  # text and every place that shows one escapes it).
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    env:
+      PLUGIN_DIR: wp-content/plugins/${{ github.event.repository.name }}
+      # Not in a release zip (T6.6 keeps this list in step with the build).
+      EXCLUDED_DIRS: node_modules,tests,tools,docs,packages,artifacts,.github,.claude,.git
+      # no_plugin_readme: readme.txt is written in T6.6; remove it from this list then.
+      IGNORED_CODES: WordPress.Security.EscapeOutput.ExceptionNotEscaped,no_plugin_readme
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring
+          coverage: none
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: composer install --no-interaction --no-progress --no-dev --optimize-autoloader
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: npx --yes @wordpress/env@11 start
+      - name: Install Plugin Check
+        run: npx --yes @wordpress/env@11 run cli wp plugin install plugin-check --activate
+      - name: Warnings (for reading)
+        run: >-
+          npx --yes @wordpress/env@11 run cli --env-cwd=${{ env.PLUGIN_DIR }}
+          wp plugin check ${{ github.event.repository.name }}
+          --exclude-directories=${{ env.EXCLUDED_DIRS }}
+          --ignore-codes=${{ env.IGNORED_CODES }}
+          --format=table
+        continue-on-error: true
+      # The command reports findings but may still exit 0, so a "FILE:" line
+      # (it prints one per file with a finding) is what fails the build.
+      - name: Errors (fail the build)
+        run: |
+          set -o pipefail
+          npx --yes @wordpress/env@11 run cli --env-cwd=${{ env.PLUGIN_DIR }} \
+            wp plugin check ${{ github.event.repository.name }} \
+            --exclude-directories=${{ env.EXCLUDED_DIRS }} \
+            --ignore-codes=${{ env.IGNORED_CODES }} \
+            --ignore-warnings \
+            --format=table | tee plugin-check.log
+          if grep -q '^FILE:' plugin-check.log; then
+            echo '::error::Plugin Check found errors.'
+            exit 1
+          fi

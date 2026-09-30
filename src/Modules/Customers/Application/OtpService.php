@@ -70,8 +70,11 @@ final class OtpService
         if (null === $stored || $stored->attempts >= self::MAX_ATTEMPTS) {
             return null;
         }
-        // Counted before the comparison, so parallel guesses cannot beat the limit.
-        $this->store->recordAttempt($stored->id);
+        // Taken before the comparison, by the write itself: parallel guesses all read the
+        // same count above, so only the UPDATE can keep them within the limit.
+        if (!$this->store->recordAttempt($stored->id, self::MAX_ATTEMPTS)) {
+            return null;
+        }
         $shaped = 1 === \preg_match('/^\d{' . self::CODE_LENGTH . '}$/D', $code);
         if (!$shaped || !\hash_equals($stored->hash, $this->hash($phone->e164, $code))) {
             return null;

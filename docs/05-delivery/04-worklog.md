@@ -16,6 +16,17 @@
 
 ---
 
+## 2026-09-30 — سشن 31 — T6.4: بازبینی امنیتی (Plugin Check باز است)
+**Taskها:** T6.4 (🟨: بخش امنیت انجام شد، Plugin Check اجرا نشده)
+**انجام شد:** چک‌لیست principles §7 روی کل کد با اسکریپت‌های شمارش (78 route با permission، 98 فایل Application برای authorization)، جستجوی الگوهای خطرناک (SQL الحاقی، `eval`/`unserialize`/`extract`، superglobal، sinkهای XSS)، خواندن OTP، callback درگاه، SecretStore، ClientIp، Brand، CSV، ایمیل، و `composer audit` و `pnpm audit`. گزارش کامل: `docs/05-delivery/07-security-review.md`. دو یافته رفع شد: **F1** شمارش تلاش OTP که با خواندن قدیمی دور زده می‌شد (`OtpStore::recordAttempt(id, max): bool` با UPDATE شرطی) و **F2** ایمیل که با فیلتر سراسری HTML به markup تبدیل می‌شد (`text/plain` اجباری برای همان یک ارسال). job `plugin-check` به CI اضافه شد.
+**تصمیم‌ها و فرض‌ها:** (۱) `/security-review` داخلی فقط diff را می‌بیند؛ به‌جایش کل کد را مستقیم خواندم. (۲) پنج ریسک پذیرفته شد و با دلیل ثبت شد: captcha ساده، SMS pumping، پر کردن ساعت‌ها با Hold، nonce مهمان که مرز امنیتی نیست، و هشدارهای dev-only در `pnpm audit` (`pnpm audit --prod` صفر است). سقف سراسری OTP را نساختم چون برای سایت پرترافیک قفل قانونی می‌سازد؛ تصمیم محصول است. (۳) در job Plugin Check کد `ExceptionNotEscaped` (سیاست ثبت‌شده) و `no_plugin_readme` (تا T6.6) ignore شد. (۴) T6.4 را ✅ نکردم چون Plugin Check هیچ‌بار اجرا نشده و معیار «بدون یافته باز» را نمی‌شود ادعا کرد.
+**تأیید:** `composer check` سبز (lint، PHPStan، Deptrac 0 violation، unit 1010 تست)؛ `OtpServiceTest` با تست تازه 9 تست سبز. `EmailChannelTest` (Integration) و job `plugin-check` اجرا نشدند: CI هنوز به‌خاطر billing گیتهاب در چند ثانیه شکست می‌خورد (آخرین run 36635140913، «recent account payments have failed»). گزینه‌های `wp plugin check` (`--ignore-codes`، `--exclude-directories`) از حافظه نوشته شد و با اولین اجرای واقعی باید تأیید شود.
+**مشکلات و باقیمانده:** CI برای T5.3 تا T6.4 و خواندن خروجی Plugin Check؛ سه commit محلی هنوز push نشده‌اند (`git status`: ahead 3، قبل از این کار). درس ابزار: sniff `PrefixAllGlobals` حتی برای `apply_filters` هوک هسته در تست هم خطا می‌دهد.
+**قدم بعدی:** رفع billing و اجرای CI؛ بعد بستن T6.4 و T6.5.
+**Commitها:** T6.4 در commit بعدی.
+
+---
+
 ## 2026-09-30 — سشن 30 — T6.3: ترجمه، دسترس‌پذیری، کارایی
 **Taskها:** T6.3 (منتظر CI)
 **انجام شد:** خط لوله ترجمه بدون WP-CLI: `tools/i18n/extract.php` (PHP با php-parser) و `tools/i18n/build.mjs` (JS با Babel؛ ساخت pot، mo، و JED به‌ازای handle). ترجمه دستی `languages/vaqtyar-fa_IR.po` برای هر 527 رشته. `pnpm i18n` و `pnpm i18n:check` (رشته بدون ترجمه یا placeholder ناجور ← خطا) و job `i18n` در CI که `git diff --exit-code languages` هم دارد. ممیزی axe: `a11y.test.tsx` برای 15 مسیر Admin و یک تست سه‌حالته برای ویجت. گزارش در `docs/05-delivery/06-i18n-a11y-perf-report.md`. devDependencyهای تازه: `@babel/parser`، `gettext-parser`، `axe-core`.

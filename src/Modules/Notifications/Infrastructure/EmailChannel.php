@@ -32,7 +32,16 @@ final class EmailChannel implements NotificationChannel
         if (!\is_email($message->recipient)) {
             throw new DeliveryFailed('The recipient is not an email address.');
         }
-        if (!\wp_mail($message->recipient, $message->subject, $message->body)) {
+        // A site plugin that makes all mail HTML would otherwise render a customer's
+        // name as markup, so the content type is ours for this one message.
+        $plain = static fn (): string => 'text/plain';
+        \add_filter('wp_mail_content_type', $plain, \PHP_INT_MAX);
+        try {
+            $sent = \wp_mail($message->recipient, $message->subject, $message->body);
+        } finally {
+            \remove_filter('wp_mail_content_type', $plain, \PHP_INT_MAX);
+        }
+        if (!$sent) {
             throw new DeliveryFailed('wp_mail() could not send the message.');
         }
 

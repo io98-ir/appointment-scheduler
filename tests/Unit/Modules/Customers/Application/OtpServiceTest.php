@@ -8,7 +8,9 @@ use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Customers\Application\Captcha;
 use Vaqtyar\Modules\Customers\Application\OtpSender;
 use Vaqtyar\Modules\Customers\Application\OtpService;
+use Vaqtyar\Modules\Customers\Application\OtpStore;
 use Vaqtyar\Modules\Customers\Application\PhoneSessions;
+use Vaqtyar\Modules\Customers\Application\StoredOtp;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Shared\Domain\PhoneNumber;
 
@@ -87,6 +89,81 @@ final class OtpServiceTest extends TestCase
         }
 
         self::assertNull($this->service->verify($phone, $this->sent[0]));
+    }
+
+    public function testGuessesThatReadTheAttemptCountBeforeAnotherWroteItStillRunOutOfAttempts(): void
+    {
+        $store = new InMemoryOtpStore();
+        // What parallel requests see: every read happens before the others' increments.
+        $stale = new class ($store) implements OtpStore {
+            public function __construct(private readonly InMemoryOtpStore $inner)
+            {
+            }
+
+            public function countSince(string $phone, int $since): int
+            {
+                return $this->inner->countSince($phone, $since);
+            }
+
+            public function lastCreatedAt(string $phone): ?int
+            {
+                return $this->inner->lastCreatedAt($phone);
+            }
+
+            public function add(string $phone, string $hash, int $expiresAt, int $now): void
+            {
+                $this->inner->add($phone, $hash, $expiresAt, $now);
+            }
+
+            public function latest(string $phone, int $now): ?StoredOtp
+            {
+                $stored = $this->inner->latest($phone, $now);
+
+                return null === $stored ? null : new StoredOtp($stored->id, $stored->hash, 0);
+            }
+
+            public function recordAttempt(int $id, int $max): bool
+            {
+                return $this->inner->recordAttempt($id, $max);
+            }
+
+            public function consume(int $id, int $now): bool
+            {
+                return $this->inner->consume($id, $now);
+            }
+
+            public function purgeBefore(int $before): void
+            {
+                $this->inner->purgeBefore($before);
+            }
+        };
+        $service = new OtpService(
+            $stale,
+            new class (function (string $code): void {
+                $this->sent[] = $code;
+            }) implements OtpSender {
+                public function __construct(private readonly \Closure $onSend)
+                {
+                }
+
+                public function send(string $phone, string $code): void
+                {
+                    ($this->onSend)($code);
+                }
+            },
+            new PhoneSessions(self::KEY),
+            $this->clock(),
+            self::KEY
+        );
+        $phone = PhoneNumber::fromInput('09121234567');
+        $service->request($phone);
+        $wrong = $this->sent[0] === '000000' ? '111111' : '000000';
+
+        for ($i = 0; $i < OtpService::MAX_ATTEMPTS; ++$i) {
+            self::assertNull($service->verify($phone, $wrong));
+        }
+
+        self::assertNull($service->verify($phone, $this->sent[0]), 'the count is taken by the write, not by the read');
     }
 
     public function testACodeExpiresAfterFiveMinutes(): void

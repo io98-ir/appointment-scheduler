@@ -76,9 +76,14 @@ final class WpdbOtpStore implements OtpStore
         return new StoredOtp($row->int('id'), $row->string('code_hash'), $row->int('attempts'));
     }
 
-    public function recordAttempt(int $id): void
+    public function recordAttempt(int $id, int $max): bool
     {
-        $this->db->execute('UPDATE %i SET attempts = attempts + 1 WHERE id = %d', Tables::name('otp_codes'), $id);
+        return 1 === $this->db->execute(
+            'UPDATE %i SET attempts = attempts + 1 WHERE id = %d AND attempts < %d',
+            Tables::name('otp_codes'),
+            $id,
+            $max
+        );
     }
 
     public function consume(int $id, int $now): bool

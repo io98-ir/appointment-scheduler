@@ -27,7 +27,12 @@ interface OtpStore
      */
     public function latest(string $phone, int $now): ?StoredOtp;
 
-    public function recordAttempt(int $id): void;
+    /**
+     * Takes one guess of the code, in one statement: false when it has had $max
+     * already. The count is decided by the write, since a read before it
+     * would let parallel guesses all see room.
+     */
+    public function recordAttempt(int $id, int $max): bool;
 
     /**
      * Uses the code up, once: false when another request already did.
