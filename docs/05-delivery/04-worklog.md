@@ -24,6 +24,7 @@
 **تأیید:** `composer check` سبز (unit 1024 تست)؛ `pnpm lint` (با typecheck)؛ `pnpm vitest run` ← 174 تست؛ `pnpm build`؛ `pnpm size` (ویجت 15.48KB، admin 39.67KB gz)؛ `pnpm i18n:check` ← 0 رشته بدون ترجمه؛ `composer build:zip` ← `dist/vaqtyar-1.0.0.zip` (0.7MB). **تأیید نشده:** هر چه در «Task بعدی» progress آمده (Integration، E2E، uninstall، plugin-check، نصب روی وردپرس واقعی).
 **مشکلات و باقیمانده:** فقط همان فهرست تأییدنشده‌ها و بک‌لاگ. هشدار `exhaustive-deps` قدیمی `Panel.tsx` هنوز هست.
 **قدم بعدی:** پیش از فروش، یک نصب دستی از zip روی وردپرس واقعی (فعال‌سازی، ویزارد، یک رزرو، لغو، حذف با و بدون گزینه حذف داده).
+**سبک‌سازی zip (درخواست بعدی مالک، push هم انجام شد):** zip از 760KB به 726KB رسید (541 فایل): بدون `.po/.pot`، بدون readme/changelog/`*.md` و `installed.*` وابستگی‌ها، `--classmap-authoritative`، deflate سطح 9؛ `PackagerTest` (1026 تست) و smoke روی پوشه‌ی مرحله‌ای (autoload، کلاس‌های افزونه، Action Scheduler، `php -l`) سبز. جزئیات و آنچه عمداً حذف نشد: implementation-notes §4.25.
 **Commitها:** در commit بعدی.
 
 ---

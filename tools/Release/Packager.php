@@ -23,7 +23,7 @@ final class Packager
         'src' => ['php'],
         'build' => ['js', 'css', 'php'],
         'assets' => ['js', 'json', 'css'],
-        'languages' => ['mo', 'po', 'pot', 'json'],
+        'languages' => ['mo', 'json'],
     ];
 
     /** Files beside the main one that ship. */
@@ -31,6 +31,12 @@ final class Packager
 
     /** Folders of a dependency that only its own developers need. */
     private const VENDOR_JUNK = ['tests', 'test', 'docs', '.github', '.git'];
+
+    /**
+     * Files of a dependency nobody reads at run time: its readme and change
+     * list, and Composer's record of what is installed. Licenses stay.
+     */
+    private const VENDOR_JUNK_FILE = '/^(readme(\.\w+)?|changelog(\.\w+)?|installed\.(json|php))$|\.md$/i';
 
     /** Packages that are dev-only here; one of them in the zip means --no-dev was skipped. */
     private const DEV_PACKAGES = ['phpunit', 'squizlabs', 'phpstan', 'mockery', 'brain', 'deptrac', 'slevomat'];
@@ -71,13 +77,14 @@ final class Packager
      */
     public static function keepInVendor(string $path): bool
     {
-        foreach (\explode('/', $path) as $segment) {
+        $segments = \explode('/', $path);
+        foreach ($segments as $segment) {
             if (\in_array(\strtolower($segment), self::VENDOR_JUNK, true)) {
                 return false;
             }
         }
 
-        return true;
+        return 1 !== \preg_match(self::VENDOR_JUNK_FILE, \end($segments));
     }
 
     /**
@@ -192,7 +199,7 @@ final class Packager
         $this->copy("{$this->root}/composer.json", "$stage/composer.json");
         $this->copy("{$this->root}/composer.lock", "$stage/composer.lock");
         $code = (new Shell($stage))->composer(
-            ['install', '--no-dev', '--no-interaction', '--no-progress', '--optimize-autoloader', '--quiet']
+            ['install', '--no-dev', '--no-interaction', '--no-progress', '--classmap-authoritative', '--quiet']
         );
         if (0 !== $code) {
             throw new ReleaseException('composer install --no-dev failed.');
@@ -329,7 +336,10 @@ final class Packager
             throw new ReleaseException("Cannot create $zipPath.");
         }
         foreach ($entries as $entry) {
-            $zip->addFile("$stage/$entry", "{$this->slug}/$entry");
+            $name = "{$this->slug}/$entry";
+            $zip->addFile("$stage/$entry", $name);
+            // Smallest, not fastest: built once, downloaded many times.
+            $zip->setCompressionName($name, \ZipArchive::CM_DEFLATE, 9);
         }
         if (!$zip->close()) {
             throw new ReleaseException("Cannot write $zipPath.");

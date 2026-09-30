@@ -43,6 +43,14 @@ final class PackagerTest extends TestCase
             'packages/admin/src/App.tsx is not part of a release.',
         ];
         yield 'a git folder' => ['.git/HEAD', '.git/HEAD is not part of a release.'];
+        yield 'the translation sources' => [
+            'languages/zetatool-fa_IR.po',
+            'languages/zetatool-fa_IR.po is not a file languages/ ships.',
+        ];
+        yield 'a dependency readme' => [
+            'vendor/acme/lib/README.md',
+            "vendor/acme/lib/README.md is a dependency's own tests or docs.",
+        ];
         yield 'a stray file at the top' => ['notes.txt', 'notes.txt is not part of a release.'];
         yield 'a markdown file among the sources' => [
             'src/Kernel/README.md',
@@ -86,6 +94,12 @@ final class PackagerTest extends TestCase
         self::assertFalse(Packager::keepInVendor('acme/lib/Tests/A.php'));
         self::assertFalse(Packager::keepInVendor('acme/lib/docs/guide.md'));
         self::assertFalse(Packager::keepInVendor('acme/lib/.github/workflows/ci.yml'));
+        self::assertFalse(Packager::keepInVendor('acme/lib/README.md'));
+        self::assertFalse(Packager::keepInVendor('acme/lib/readme.txt'));
+        self::assertFalse(Packager::keepInVendor('acme/lib/changelog.txt'));
+        self::assertFalse(Packager::keepInVendor('composer/installed.json'));
+        self::assertTrue(Packager::keepInVendor('acme/lib/license.txt'));
+        self::assertTrue(Packager::keepInVendor('acme/lib/src/ReadmeParser.php'));
     }
 
     public function testTheVersionMustBeTheSameEverywhere(): void
