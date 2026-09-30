@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { ApiClient } from '@vaqtyar/shared';
+import axe from 'axe-core';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -607,6 +608,47 @@ describe( 'the booking widget', () => {
 			server.posts.find( ( post ) => post.path === '/book' )?.body
 		).toMatchObject( { session_token: 'SESSION', phone: '09351112233' } );
 		expect( text() ).toContain( 'Your appointment is booked.' );
+	} );
+
+	it( 'has no axe violations on the calendar, the slots and the details step (T6.3)', async () => {
+		const violations = async () =>
+			(
+				await axe.run( container, {
+					// jsdom has no layout: contrast is left to the manual audit.
+					rules: { 'color-contrast': { enabled: false } },
+				} )
+			).violations.map(
+				( violation ) =>
+					`${ violation.id }: ${ violation.nodes
+						.map( ( node ) => node.target.join( ' ' ) )
+						.join( ' | ' ) }`
+			);
+
+		await open();
+		expect( await violations() ).toEqual( [] );
+
+		await act( () =>
+			days()
+				.find( ( day ) => ! day.disabled )
+				?.click()
+		);
+		await settle();
+		expect( await violations() ).toEqual( [] );
+
+		await act( () =>
+			container
+				.querySelector< HTMLButtonElement >(
+					'.vqy-widget__slot-list button'
+				)
+				?.click()
+		);
+		const next = [ ...container.querySelectorAll( 'button' ) ].find(
+			( element ) => element.textContent === 'Continue'
+		);
+		await act( () => next?.click() );
+		await settle();
+		expect( text() ).toContain( 'We are holding this time for you' );
+		expect( await violations() ).toEqual( [] );
 	} );
 
 	it( 'says so when it is not configured', async () => {

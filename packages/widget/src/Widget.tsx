@@ -192,6 +192,10 @@ export function Widget( {
 	const ready = service && variant && location;
 	const shown = cursor ?? cursorOf( calendar, todayOf() );
 	const grid = monthGrid( calendar, shown );
+	const monthTitle = `${ monthName( calendar, shown.month ) } ${ formatDigits(
+		String( shown.year ),
+		digits
+	) }`;
 	const base = ready
 		? `variant=${ variant.id }&location=${ location.id }&staff=${ staffPick ?? '' }`
 		: null;
@@ -470,12 +474,7 @@ export function Widget( {
 						>
 							‹
 						</button>
-						<strong aria-live="polite">
-							{ `${ monthName( calendar, shown.month ) } ${ formatDigits(
-								String( shown.year ),
-								digits
-							) }` }
-						</strong>
+						<strong aria-live="polite">{ monthTitle }</strong>
 						<button
 							type="button"
 							onClick={ () =>
@@ -502,7 +501,11 @@ export function Widget( {
 							{ findError }
 						</p>
 					) }
-					<div className="vqy-widget__grid" role="grid">
+					<div
+						className="vqy-widget__grid"
+						role="group"
+						aria-label={ monthTitle }
+					>
 						{ weekdayNames().map( ( name ) => (
 							<span key={ name } className="vqy-widget__weekday">
 								{ name }

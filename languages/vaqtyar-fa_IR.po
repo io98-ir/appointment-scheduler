@@ -1,0 +1,1603 @@
+# Persian (Iran) translation of Vaqtyar.
+msgid ""
+msgstr ""
+"Project-Id-Version: Vaqtyar\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Domain: vaqtyar\n"
+
+msgid "…equals"
+msgstr "…برابر با"
+
+msgid "%1$d booked appointments, %2$s."
+msgstr "%1$d نوبت رزروشده، %2$s."
+
+msgid "%1$d cancelled, %2$d no-shows, cancellation rate %3$s%%."
+msgstr "%1$d لغو، %2$d عدم حضور، نرخ لغو %3$s%%."
+
+msgid "%1$s — %2$d min — %3$s IRR"
+msgstr "%1$s — %2$d دقیقه — %3$s ریال"
+
+msgid "%1$s at %2$s"
+msgstr "%1$s ساعت %2$s"
+
+msgid "%1$s is missing its bundled libraries (vendor directory). Reinstall it from the release package, or run composer install."
+msgstr "کتابخانه‌های همراه %1$s (پوشه vendor) وجود ندارند. افزونه را از بستهٔ انتشار دوباره نصب کنید یا composer install را اجرا کنید."
+
+msgid "%1$s requires MariaDB %2$s or newer. This site runs MariaDB %3$s."
+msgstr "%1$s به MariaDB نسخهٔ %2$s یا جدیدتر نیاز دارد. این سایت MariaDB %3$s دارد."
+
+msgid "%1$s requires MySQL %2$s or newer. This site runs MySQL %3$s."
+msgstr "%1$s به MySQL نسخهٔ %2$s یا جدیدتر نیاز دارد. این سایت MySQL %3$s دارد."
+
+msgid "%1$s requires PHP %2$s or newer. This site runs PHP %3$s."
+msgstr "%1$s به PHP نسخهٔ %2$s یا جدیدتر نیاز دارد. این سایت PHP %3$s دارد."
+
+msgid "%1$s requires the PHP extension %2$s."
+msgstr "%1$s به افزونهٔ PHP با نام %2$s نیاز دارد."
+
+msgid "%1$s requires WordPress %2$s or newer. This site runs WordPress %3$s."
+msgstr "%1$s به وردپرس نسخهٔ %2$s یا جدیدتر نیاز دارد. این سایت وردپرس %3$s دارد."
+
+msgid "%1$s: %2$d"
+msgstr "%1$s: %2$d"
+
+msgid "%d appointments"
+msgstr "%d نوبت"
+
+msgid "%d cancelled"
+msgstr "%d لغو"
+
+msgid "%s could not update its database tables and is paused. The PHP error log has the details."
+msgstr "%s نتوانست جدول‌های پایگاه دادهٔ خود را به‌روز کند و متوقف شده است. جزئیات در گزارش خطای PHP است."
+
+msgid "%s IRR"
+msgstr "%s ریال"
+
+msgid "%s sends reminders and releases unpaid reservations from the job queue. On a quiet site page visits are too rare to run it on time: define DISABLE_WP_CRON and call wp-cron.php every minute from the system cron."
+msgstr "%s یادآوری‌ها را می‌فرستد و رزروهای پرداخت‌نشده را از صف کارها آزاد می‌کند. در سایتی کم‌بازدید، بازدید صفحه برای اجرای به‌موقع آن کافی نیست: DISABLE_WP_CRON را تعریف کنید و wp-cron.php را هر دقیقه از کرون سیستم صدا بزنید."
+
+msgid "%s will not run until this is fixed."
+msgstr "تا این مشکل رفع نشود %s اجرا نمی‌شود."
+
+msgid "← All appointments"
+msgstr "← همهٔ نوبت‌ها"
+
+msgid "← Back to the list"
+msgstr "← بازگشت به فهرست"
+
+msgid "0 lets the customer choose."
+msgstr "۰ یعنی مشتری انتخاب کند."
+
+msgid "A code was sent recently. Please wait a moment before asking for another."
+msgstr "کدی به‌تازگی ارسال شده است. لطفاً پیش از درخواست کد جدید کمی صبر کنید."
+
+msgid "A merchant id is stored. Type a new one to replace it."
+msgstr "یک شناسهٔ پذیرنده ذخیره شده است. برای جایگزینی، شناسهٔ جدید را وارد کنید."
+
+msgid "A service asks for one resource of a group, e.g. \"room\"."
+msgstr "خدمت یک منبع از یک گروه می‌خواهد، مثلاً «اتاق»."
+
+msgid "A value in the request is not valid."
+msgstr "یکی از مقدارهای درخواست معتبر نیست."
+
+msgid "Aban"
+msgstr "آبان"
+
+msgid "Accent colour"
+msgstr "رنگ تأکید"
+
+msgid "Actions"
+msgstr "عملیات"
+
+msgid "active"
+msgstr "فعال"
+
+msgid "Active"
+msgstr "فعال"
+
+msgid "Active: customers can book it"
+msgstr "فعال: مشتریان می‌توانند آن را رزرو کنند"
+
+msgid "Add"
+msgstr "افزودن"
+
+msgid "Add a location with staff to see its calendar."
+msgstr "برای دیدن تقویم، شعبه‌ای همراه با پرسنل اضافه کنید."
+
+msgid "Add a staff member first."
+msgstr "ابتدا یک عضو پرسنل اضافه کنید."
+
+msgid "Add a tier"
+msgstr "افزودن یک پله"
+
+msgid "Add category"
+msgstr "افزودن دسته"
+
+msgid "Add coupon"
+msgstr "افزودن کوپن"
+
+msgid "Add customer"
+msgstr "افزودن مشتری"
+
+msgid "Add field"
+msgstr "افزودن فیلد"
+
+msgid "Add hours"
+msgstr "افزودن ساعت"
+
+msgid "Add location"
+msgstr "افزودن شعبه"
+
+msgid "Add option"
+msgstr "افزودن گزینه"
+
+msgid "Add resource"
+msgstr "افزودن منبع"
+
+msgid "Add service"
+msgstr "افزودن خدمت"
+
+msgid "Add staff member"
+msgstr "افزودن عضو پرسنل"
+
+msgid "Add time-based price"
+msgstr "افزودن قیمت زمانی"
+
+msgid "Add-on"
+msgstr "افزودنی"
+
+msgid "Add-ons"
+msgstr "افزودنی‌ها"
+
+msgid "Added."
+msgstr "اضافه شد."
+
+msgid "Address"
+msgstr "نشانی"
+
+msgid "All"
+msgstr "همه"
+
+msgid "all day"
+msgstr "تمام روز"
+
+msgid "All day"
+msgstr "تمام روز"
+
+msgid "Answers"
+msgstr "پاسخ‌ها"
+
+msgid "Any available"
+msgstr "هر کسی که آزاد است"
+
+msgid "Any time before the start"
+msgstr "هر زمان پیش از شروع"
+
+msgid "API key"
+msgstr "کلید API"
+
+msgid "Applies from date"
+msgstr "اعمال از تاریخ"
+
+msgid "Applies until date"
+msgstr "اعمال تا تاریخ"
+
+msgid "Appointment %d"
+msgstr "نوبت %d"
+
+msgid "Appointment booked."
+msgstr "نوبت رزرو شد."
+
+msgid "Appointment booking for WordPress."
+msgstr "رزرو نوبت برای وردپرس."
+
+msgid "Appointment moved."
+msgstr "نوبت جابه‌جا شد."
+
+msgid "Appointment updated."
+msgstr "نوبت به‌روز شد."
+
+msgid "Appointments"
+msgstr "نوبت‌ها"
+
+msgid "Approve"
+msgstr "تأیید"
+
+msgid "Approved"
+msgstr "تأییدشده"
+
+msgid "April"
+msgstr "آوریل"
+
+msgid "Area"
+msgstr "بخش"
+
+msgid "August"
+msgstr "اوت"
+
+msgid "Awaiting approval"
+msgstr "در انتظار تأیید"
+
+msgid "Awaiting payment"
+msgstr "در انتظار پرداخت"
+
+msgid "Azar"
+msgstr "آذر"
+
+msgid "Back"
+msgstr "بازگشت"
+
+msgid "Back to the dashboard"
+msgstr "بازگشت به داشبورد"
+
+msgid "Bahman"
+msgstr "بهمن"
+
+msgid "Bio"
+msgstr "معرفی"
+
+msgid "Birth date"
+msgstr "تاریخ تولد"
+
+msgid "Blocked"
+msgstr "مسدود"
+
+msgid "Book"
+msgstr "رزرو"
+
+msgid "Book an appointment"
+msgstr "رزرو نوبت"
+
+msgid "Book and pay at the place"
+msgstr "رزرو و پرداخت در محل"
+
+msgid "Booked"
+msgstr "رزروشده"
+
+msgid "Booking form"
+msgstr "فرم رزرو"
+
+msgid "Booking widget, shortcode and block"
+msgstr "ویجت رزرو، شورت‌کد و بلوک"
+
+msgid "Bookings are written in transactions with row locks, which InnoDB provides."
+msgstr "رزروها در تراکنش و با قفل ردیف نوشته می‌شوند که InnoDB آن را فراهم می‌کند."
+
+msgid "Bookings it holds at the same time."
+msgstr "تعداد رزرو هم‌زمانی که می‌پذیرد."
+
+msgid "Brand"
+msgstr "برند"
+
+msgid "Brand name"
+msgstr "نام برند"
+
+msgid "Break"
+msgstr "استراحت"
+
+msgid "Buffer after"
+msgstr "فاصله پس از نوبت"
+
+msgid "Buffer before"
+msgstr "فاصله پیش از نوبت"
+
+msgid "By day"
+msgstr "بر اساس روز"
+
+msgid "By service"
+msgstr "بر اساس خدمت"
+
+msgid "By staff"
+msgstr "بر اساس پرسنل"
+
+msgid "by the customer"
+msgstr "توسط مشتری"
+
+msgid "Calendar"
+msgstr "تقویم"
+
+msgid "Calendar color"
+msgstr "رنگ تقویم"
+
+msgid "Cancel"
+msgstr "لغو"
+
+msgid "Cancel anyway"
+msgstr "با این حال لغو شود"
+
+msgid "Cancel appointment"
+msgstr "لغو نوبت"
+
+msgid "Cancel reason"
+msgstr "دلیل لغو"
+
+msgid "Cancel this appointment?"
+msgstr "این نوبت لغو شود؟"
+
+msgid "Cancel this appointment? %d%% of what you paid is refunded."
+msgstr "این نوبت لغو شود؟ %d%% از مبلغ پرداختی شما بازگردانده می‌شود."
+
+msgid "Cancellation"
+msgstr "لغو"
+
+msgid "Cancellation and rescheduling"
+msgstr "لغو و جابه‌جایی"
+
+msgid "Cancellation deadline (hours before the start)"
+msgstr "مهلت لغو (ساعت پیش از شروع)"
+
+msgid "Cancellation rate (30 days)"
+msgstr "نرخ لغو (۳۰ روز)"
+
+msgid "Cancelled"
+msgstr "لغوشده"
+
+msgid "Capacity"
+msgstr "ظرفیت"
+
+msgid "Categories"
+msgstr "دسته‌ها"
+
+msgid "Category"
+msgstr "دسته"
+
+msgid "Checkbox"
+msgstr "چک‌باکس"
+
+msgid "Choice"
+msgstr "انتخابی"
+
+msgid "Choose a group"
+msgstr "یک گروه انتخاب کنید"
+
+msgid "Choose a location"
+msgstr "یک شعبه انتخاب کنید"
+
+msgid "Choose a service"
+msgstr "یک خدمت انتخاب کنید"
+
+msgid "Choose another time"
+msgstr "زمان دیگری انتخاب کنید"
+
+msgid "Choose logo"
+msgstr "انتخاب لوگو"
+
+msgid "Clear"
+msgstr "پاک کردن"
+
+msgid "Cleared."
+msgstr "پاک شد."
+
+msgid "Close"
+msgstr "بستن"
+
+msgid "Closed"
+msgstr "تعطیل"
+
+msgid "Closes at"
+msgstr "پایان کار"
+
+msgid "Code"
+msgstr "کد"
+
+msgid "Code we sent you"
+msgstr "کدی که برایتان فرستادیم"
+
+msgid "Color"
+msgstr "رنگ"
+
+msgid "Comma-separated."
+msgstr "با ویرگول جدا کنید."
+
+msgid "Completed"
+msgstr "انجام‌شده"
+
+msgid "Confirm booking"
+msgstr "تأیید رزرو"
+
+msgid "Confirmed"
+msgstr "تأییدشده"
+
+msgid "Continue"
+msgstr "ادامه"
+
+msgid "Copy to every day"
+msgstr "کپی برای همهٔ روزها"
+
+msgid "Coupon"
+msgstr "کوپن"
+
+msgid "Coupon code"
+msgstr "کد کوپن"
+
+msgid "Coupon code (optional)"
+msgstr "کد کوپن (اختیاری)"
+
+msgid "Coupons"
+msgstr "کوپن‌ها"
+
+msgid "Create location"
+msgstr "ساخت شعبه"
+
+msgid "Create service"
+msgstr "ساخت خدمت"
+
+msgid "Custom fields"
+msgstr "فیلدهای سفارشی"
+
+msgid "Customer"
+msgstr "مشتری"
+
+msgid "Customer name"
+msgstr "نام مشتری"
+
+msgid "Customer note"
+msgstr "یادداشت مشتری"
+
+msgid "Customers"
+msgstr "مشتریان"
+
+msgid "Customers at the same time"
+msgstr "مشتریان هم‌زمان"
+
+msgid "Dark"
+msgstr "تیره"
+
+msgid "Dashboard"
+msgstr "داشبورد"
+
+msgid "Database"
+msgstr "پایگاه داده"
+
+msgid "Date"
+msgstr "تاریخ"
+
+msgid "Day"
+msgstr "روز"
+
+msgid "December"
+msgstr "دسامبر"
+
+msgid "Default option"
+msgstr "گزینهٔ پیش‌فرض"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "Delete this item?"
+msgstr "این مورد حذف شود؟"
+
+msgid "Deleted."
+msgstr "حذف شد."
+
+msgid "Deposit paid"
+msgstr "بیعانه پرداخت شد"
+
+msgid "Description"
+msgstr "توضیحات"
+
+msgid "Details"
+msgstr "جزئیات"
+
+msgid "Dey"
+msgstr "دی"
+
+msgid "Digits"
+msgstr "ارقام"
+
+msgid "Discount type"
+msgstr "نوع تخفیف"
+
+msgid "Discount value"
+msgstr "مقدار تخفیف"
+
+msgid "Duration"
+msgstr "مدت"
+
+msgid "Duration (minutes)"
+msgstr "مدت (دقیقه)"
+
+msgid "Duration ID"
+msgstr "شناسهٔ مدت"
+
+msgid "E.164, e.g. +989121234567."
+msgstr "قالب E.164، مثلاً ‎+989121234567."
+
+msgid "e.g. Dentist"
+msgstr "مثلاً دندانپزشک"
+
+msgid "Email"
+msgstr "ایمیل"
+
+msgid "Email (optional)"
+msgstr "ایمیل (اختیاری)"
+
+msgid "Esfand"
+msgstr "اسفند"
+
+msgid "every day"
+msgstr "هر روز"
+
+msgid "Every location"
+msgstr "همهٔ شعبه‌ها"
+
+msgid "Expired"
+msgstr "منقضی‌شده"
+
+msgid "Export appointments (CSV)"
+msgstr "خروجی نوبت‌ها (CSV)"
+
+msgid "Extra hours"
+msgstr "ساعت اضافه"
+
+msgid "Extra minutes"
+msgstr "دقیقهٔ اضافه"
+
+msgid "Failed this week"
+msgstr "ناموفق این هفته"
+
+msgid "Farvardin"
+msgstr "فروردین"
+
+msgid "February"
+msgstr "فوریه"
+
+msgid "Find customer"
+msgstr "یافتن مشتری"
+
+msgid "Finish"
+msgstr "پایان"
+
+msgid "First available"
+msgstr "اولین زمان آزاد"
+
+msgid "First name"
+msgstr "نام"
+
+msgid "First service"
+msgstr "اولین خدمت"
+
+msgid "Fixed amount (IRR)"
+msgstr "مبلغ ثابت (ریال)"
+
+msgid "Fri"
+msgstr "جمعه"
+
+msgid "Friday"
+msgstr "جمعه"
+
+msgid "From"
+msgstr "از"
+
+msgid "From date"
+msgstr "از تاریخ"
+
+msgid "from the shipped calendar"
+msgstr "از تقویم همراه افزونه"
+
+msgid "Gateway and SMS keys are stored encrypted."
+msgstr "کلیدهای درگاه و پیامک رمزنگاری‌شده ذخیره می‌شوند."
+
+msgid "Gateway and SMS keys cannot be stored safely. Ask your host to enable PHP sodium."
+msgstr "کلیدهای درگاه و پیامک را نمی‌توان به‌صورت امن ذخیره کرد. از میزبان بخواهید sodium در PHP را فعال کند."
+
+msgid "Go to the dashboard"
+msgstr "رفتن به داشبورد"
+
+msgid "Good"
+msgstr "خوب"
+
+msgid "Gregorian"
+msgstr "میلادی"
+
+msgid "Group"
+msgstr "گروه"
+
+msgid "Guests"
+msgstr "مهمان‌ها"
+
+msgid "Has terms per option."
+msgstr "برای هر گزینه شرایط جدا دارد."
+
+msgid "Health"
+msgstr "سلامت"
+
+msgid "History"
+msgstr "تاریخچه"
+
+msgid "Holiday calendar"
+msgstr "تقویم تعطیلات"
+
+msgid "Holidays"
+msgstr "تعطیلات"
+
+msgid "Hours before the start"
+msgstr "ساعت پیش از شروع"
+
+msgid "Hours saved."
+msgstr "ساعت‌ها ذخیره شد."
+
+msgid "inactive"
+msgstr "غیرفعال"
+
+msgid "Inactive"
+msgstr "غیرفعال"
+
+msgid "Internal note"
+msgstr "یادداشت داخلی"
+
+msgid "Internal note changed"
+msgstr "یادداشت داخلی تغییر کرد"
+
+msgid "IPPanel"
+msgstr "آی‌پی‌پنل"
+
+msgid "Iran"
+msgstr "ایران"
+
+msgid "Iran has had no daylight saving time since 2023, and this server agrees."
+msgstr "ایران از سال ۲۰۲۳ ساعت تابستانی ندارد و این سرور هم همین را می‌داند."
+
+msgid "It is too late to cancel this appointment online."
+msgstr "دیگر نمی‌توان این نوبت را به‌صورت آنلاین لغو کرد."
+
+msgid "It is too late to move this appointment online."
+msgstr "دیگر نمی‌توان این نوبت را به‌صورت آنلاین جابه‌جا کرد."
+
+msgid "Jalali"
+msgstr "شمسی"
+
+msgid "January"
+msgstr "ژانویه"
+
+msgid "Job queue"
+msgstr "صف کارها"
+
+msgid "Jobs are waiting far past their time, so reminders and notifications are late. Check that WordPress cron runs."
+msgstr "کارها بسیار دیرتر از زمانشان منتظر مانده‌اند و یادآوری‌ها و اعلان‌ها با تأخیر می‌روند. بررسی کنید که کرون وردپرس اجرا می‌شود."
+
+msgid "July"
+msgstr "ژوئیه"
+
+msgid "June"
+msgstr "ژوئن"
+
+msgid "Kavenegar"
+msgstr "کاوه‌نگار"
+
+msgid "Keep it"
+msgstr "نگه‌داشتن"
+
+msgid "Key"
+msgstr "کلید"
+
+msgid "Khordad"
+msgstr "خرداد"
+
+msgid "Kind"
+msgstr "نوع"
+
+msgid "Label"
+msgstr "برچسب"
+
+msgid "Last 30 days"
+msgstr "۳۰ روز گذشته"
+
+msgid "Last 7 days"
+msgstr "۷ روز گذشته"
+
+msgid "Last name"
+msgstr "نام خانوادگی"
+
+msgid "Lets a customer see, cancel and move their appointments."
+msgstr "به مشتری امکان می‌دهد نوبت‌هایش را ببیند، لغو کند و جابه‌جا کند."
+
+msgid "Lets customers book an appointment."
+msgstr "به مشتریان امکان می‌دهد نوبت رزرو کنند."
+
+msgid "Light"
+msgstr "روشن"
+
+msgid "Like #3858e9; empty keeps the default."
+msgstr "مانند ‎#3858e9؛ خالی یعنی پیش‌فرض."
+
+msgid "Loading…"
+msgstr "در حال بارگذاری…"
+
+msgid "Location"
+msgstr "شعبه"
+
+msgid "Location and hours"
+msgstr "شعبه و ساعت کاری"
+
+msgid "Location ID"
+msgstr "شناسهٔ شعبه"
+
+msgid "Location name"
+msgstr "نام شعبه"
+
+msgid "Locations"
+msgstr "شعبه‌ها"
+
+msgid "Logo address"
+msgstr "نشانی لوگو"
+
+msgid "Look at the recent errors on the status screen, and at Tools, Scheduled Actions, Failed."
+msgstr "خطاهای اخیر را در صفحهٔ وضعیت و در ابزارها ← Scheduled Actions ← Failed ببینید."
+
+msgid "March"
+msgstr "مارس"
+
+msgid "Mark completed"
+msgstr "علامت‌گذاری به‌عنوان انجام‌شده"
+
+msgid "Mark no-show"
+msgstr "علامت‌گذاری به‌عنوان عدم حضور"
+
+msgid "Maximum uses (empty for unlimited)"
+msgstr "حداکثر دفعات استفاده (خالی یعنی نامحدود)"
+
+msgid "May"
+msgstr "مه"
+
+msgid "Mehr"
+msgstr "مهر"
+
+msgid "Melipayamak"
+msgstr "ملی‌پیامک"
+
+msgid "Merchant id"
+msgstr "شناسهٔ پذیرنده"
+
+msgid "Message"
+msgstr "پیام"
+
+msgid "Minutes"
+msgstr "دقیقه"
+
+msgid "Missed"
+msgstr "از دست رفته"
+
+msgid "Mobile number"
+msgstr "شمارهٔ موبایل"
+
+msgid "Mon"
+msgstr "دوشنبه"
+
+msgid "Monday"
+msgstr "دوشنبه"
+
+msgid "Mordad"
+msgstr "مرداد"
+
+msgid "More than 1 for a class or group session."
+msgstr "برای کلاس یا جلسهٔ گروهی بیشتر از ۱."
+
+msgid "Most per booking"
+msgstr "بیشترین تعداد در هر رزرو"
+
+msgid "Most times"
+msgstr "بیشترین دفعات"
+
+msgid "Move"
+msgstr "جابه‌جایی"
+
+msgid "Move anyway"
+msgstr "با این حال جابه‌جا شود"
+
+msgid "Move in calendar"
+msgstr "جابه‌جایی در تقویم"
+
+msgid "Moved"
+msgstr "جابه‌جاشده"
+
+msgid "Multi-line text"
+msgstr "متن چندخطی"
+
+msgid "My appointments"
+msgstr "نوبت‌های من"
+
+msgid "Name"
+msgstr "نام"
+
+msgid "Name, phone or email."
+msgstr "نام، تلفن یا ایمیل."
+
+msgid "Names and numbers can be formatted for every locale."
+msgstr "نام‌ها و عددها را می‌توان برای هر زبانی قالب‌بندی کرد."
+
+msgid "Needs a resource of"
+msgstr "به منبعی از این گروه نیاز دارد"
+
+msgid "Needs attention"
+msgstr "نیاز به توجه دارد"
+
+msgid "New appointment"
+msgstr "نوبت جدید"
+
+msgid "New customer"
+msgstr "مشتری جدید"
+
+msgid "New date"
+msgstr "تاریخ جدید"
+
+msgid "Next"
+msgstr "بعدی"
+
+msgid "Next month"
+msgstr "ماه بعد"
+
+msgid "No appointments yet."
+msgstr "هنوز نوبتی نیست."
+
+msgid "No appointments."
+msgstr "نوبتی نیست."
+
+msgid "No confirmed appointments today."
+msgstr "امروز نوبت تأییدشده‌ای نیست."
+
+msgid "No coupons yet."
+msgstr "هنوز کوپنی نیست."
+
+msgid "No custom fields yet."
+msgstr "هنوز فیلد سفارشی‌ای نیست."
+
+msgid "No customer found."
+msgstr "مشتری‌ای پیدا نشد."
+
+msgid "No customers."
+msgstr "مشتری‌ای نیست."
+
+msgid "No errors were logged."
+msgstr "خطایی ثبت نشده است."
+
+msgid "No free start on this day."
+msgstr "در این روز زمان شروع آزادی نیست."
+
+msgid "No free time in the next two months."
+msgstr "در دو ماه آینده زمان آزادی نیست."
+
+msgid "No free time on this day."
+msgstr "در این روز زمان آزادی نیست."
+
+msgid "No holidays in this calendar yet."
+msgstr "هنوز تعطیلی‌ای در این تقویم نیست."
+
+msgid "No job is overdue and none failed in the last week."
+msgstr "هیچ کاری دیرکرد ندارد و در هفتهٔ گذشته هیچ کاری ناموفق نبوده است."
+
+msgid "No limit"
+msgstr "بدون محدودیت"
+
+msgid "No location was created here, so the staff member serves every location."
+msgstr "در اینجا شعبه‌ای ساخته نشده است، پس عضو پرسنل به همهٔ شعبه‌ها خدمت می‌دهد."
+
+msgid "No match."
+msgstr "موردی پیدا نشد."
+
+msgid "No time-based prices yet."
+msgstr "هنوز قیمت زمانی‌ای نیست."
+
+msgid "No-show"
+msgstr "عدم حضور"
+
+msgid "None"
+msgstr "هیچ‌کدام"
+
+msgid "Not set up yet."
+msgstr "هنوز راه‌اندازی نشده است."
+
+msgid "Not set: cancelling and rescheduling are free until the start, fully refunded."
+msgstr "تنظیم نشده: لغو و جابه‌جایی تا لحظهٔ شروع رایگان است و مبلغ کامل بازگردانده می‌شود."
+
+msgid "Not set: the global policy applies."
+msgstr "تنظیم نشده: سیاست کلی اعمال می‌شود."
+
+msgid "Note"
+msgstr "یادداشت"
+
+msgid "Note (optional)"
+msgstr "یادداشت (اختیاری)"
+
+msgid "Note saved."
+msgstr "یادداشت ذخیره شد."
+
+msgid "Nothing booked in this range."
+msgstr "در این بازه چیزی رزرو نشده است."
+
+msgid "Nothing can be booked right now."
+msgstr "در حال حاضر چیزی برای رزرو نیست."
+
+msgid "Nothing here yet."
+msgstr "هنوز چیزی اینجا نیست."
+
+msgid "Nothing is refunded."
+msgstr "مبلغی بازگردانده نمی‌شود."
+
+msgid "Nothing planned."
+msgstr "برنامه‌ای نیست."
+
+msgid "Notifications (email and SMS)"
+msgstr "اعلان‌ها (ایمیل و پیامک)"
+
+msgid "November"
+msgstr "نوامبر"
+
+msgid "Number"
+msgstr "عدد"
+
+msgid "October"
+msgstr "اکتبر"
+
+msgid "Online payment"
+msgstr "پرداخت آنلاین"
+
+msgid "Only staff see this."
+msgstr "فقط پرسنل این را می‌بینند."
+
+msgid "Open Saturday to Thursday; change the days later under Locations."
+msgstr "شنبه تا پنجشنبه باز است؛ روزها را بعداً در بخش شعبه‌ها تغییر دهید."
+
+msgid "Open the setup wizard"
+msgstr "باز کردن ویزارد راه‌اندازی"
+
+msgid "Opens at"
+msgstr "شروع کار"
+
+msgid "Option"
+msgstr "گزینه"
+
+msgid "Option %d"
+msgstr "گزینهٔ %d"
+
+msgid "Optional modules"
+msgstr "ماژول‌های اختیاری"
+
+msgid "Options"
+msgstr "گزینه‌ها"
+
+msgid "Options (comma separated)"
+msgstr "گزینه‌ها (با ویرگول جدا کنید)"
+
+msgid "Options and prices"
+msgstr "گزینه‌ها و قیمت‌ها"
+
+msgid "Order"
+msgstr "ترتیب"
+
+msgid "Ordibehesht"
+msgstr "اردیبهشت"
+
+msgid "Overdue"
+msgstr "دیرکرد"
+
+msgid "Own minutes"
+msgstr "دقیقهٔ اختصاصی"
+
+msgid "Own price (IRR)"
+msgstr "قیمت اختصاصی (ریال)"
+
+msgid "Page %1$d of %2$d (%3$d)"
+msgstr "صفحهٔ %1$d از %2$d (%3$d)"
+
+msgid "Page not found"
+msgstr "صفحه پیدا نشد"
+
+msgid "Paid"
+msgstr "پرداخت‌شده"
+
+msgid "Partly refunded"
+msgstr "بخشی بازگردانده شد"
+
+msgid "Party"
+msgstr "تعداد نفرات"
+
+msgid "Password"
+msgstr "گذرواژه"
+
+msgid "Pay online and book"
+msgstr "پرداخت آنلاین و رزرو"
+
+msgid "Pay through WooCommerce"
+msgstr "پرداخت از طریق ووکامرس"
+
+msgid "Payment"
+msgstr "پرداخت"
+
+msgid "People"
+msgstr "افراد"
+
+msgid "Percent"
+msgstr "درصد"
+
+msgid "Phone"
+msgstr "تلفن"
+
+msgid "Pick a colour"
+msgstr "یک رنگ انتخاب کنید"
+
+msgid "Plugin"
+msgstr "افزونه"
+
+msgid "Previous"
+msgstr "قبلی"
+
+msgid "Previous month"
+msgstr "ماه قبل"
+
+msgid "Price"
+msgstr "قیمت"
+
+msgid "Price (IRR)"
+msgstr "قیمت (ریال)"
+
+msgid "Price (rials)"
+msgstr "قیمت (ریال)"
+
+msgid "Price change (%, negative for a discount)"
+msgstr "تغییر قیمت (درصد؛ منفی یعنی تخفیف)"
+
+msgid "Priority"
+msgstr "اولویت"
+
+msgid "Put this shortcode on a page to show the booking form:"
+msgstr "برای نمایش فرم رزرو، این شورت‌کد را در یک برگه بگذارید:"
+
+msgid "Quantity"
+msgstr "تعداد"
+
+msgid "Reason"
+msgstr "دلیل"
+
+msgid "Recent errors"
+msgstr "خطاهای اخیر"
+
+msgid "Refund"
+msgstr "بازگشت وجه"
+
+msgid "Refund percent"
+msgstr "درصد بازگشت وجه"
+
+msgid "Refunded"
+msgstr "بازگردانده‌شده"
+
+msgid "Reminders and reservation expiry run on time."
+msgstr "یادآوری‌ها و انقضای رزروها به‌موقع اجرا می‌شوند."
+
+msgid "Remove"
+msgstr "برداشتن"
+
+msgid "Reports"
+msgstr "گزارش‌ها"
+
+msgid "required"
+msgstr "الزامی"
+
+msgid "Required"
+msgstr "الزامی"
+
+msgid "Reschedule deadline (hours before the start)"
+msgstr "مهلت جابه‌جایی (ساعت پیش از شروع)"
+
+msgid "Rescheduling"
+msgstr "جابه‌جایی"
+
+msgid "Reserving your time…"
+msgstr "در حال رزرو زمان شما…"
+
+msgid "Resources"
+msgstr "منابع"
+
+msgid "Revenue"
+msgstr "درآمد"
+
+msgid "Rounding"
+msgstr "گرد کردن"
+
+msgid "Rule active"
+msgstr "قانون فعال است"
+
+msgid "Sat"
+msgstr "شنبه"
+
+msgid "Saturday"
+msgstr "شنبه"
+
+msgid "Save"
+msgstr "ذخیره"
+
+msgid "Save hours"
+msgstr "ذخیرهٔ ساعت‌ها"
+
+msgid "Save look"
+msgstr "ذخیرهٔ ظاهر"
+
+msgid "Save note"
+msgstr "ذخیرهٔ یادداشت"
+
+msgid "Save payment settings"
+msgstr "ذخیرهٔ تنظیمات پرداخت"
+
+msgid "Save SMS settings"
+msgstr "ذخیرهٔ تنظیمات پیامک"
+
+msgid "Saved."
+msgstr "ذخیره شد."
+
+msgid "Saved. It applies from the next page load."
+msgstr "ذخیره شد. از بارگذاری بعدی صفحه اعمال می‌شود."
+
+msgid "Schema"
+msgstr "ساختار پایگاه داده"
+
+msgid "Search by code, name or phone"
+msgstr "جستجو با کد، نام یا تلفن"
+
+msgid "Search by name"
+msgstr "جستجو با نام"
+
+msgid "Search by name, phone or email"
+msgstr "جستجو با نام، تلفن یا ایمیل"
+
+msgid "Sections"
+msgstr "بخش‌ها"
+
+msgid "Selected: %1$s at %2$s"
+msgstr "انتخاب‌شده: %1$s ساعت %2$s"
+
+msgid "Send a test message to"
+msgstr "ارسال پیام آزمایشی به"
+
+msgid "Send a verification code"
+msgstr "ارسال کد تأیید"
+
+msgid "Send another code"
+msgstr "ارسال کد دیگر"
+
+msgid "Send code"
+msgstr "ارسال کد"
+
+msgid "Send test"
+msgstr "ارسال آزمایشی"
+
+msgid "Sender line"
+msgstr "خط ارسال‌کننده"
+
+msgid "September"
+msgstr "سپتامبر"
+
+msgid "Service"
+msgstr "خدمت"
+
+msgid "Service categories"
+msgstr "دسته‌های خدمت"
+
+msgid "Service ID"
+msgstr "شناسهٔ خدمت"
+
+msgid "Service name"
+msgstr "نام خدمت"
+
+msgid "Services"
+msgstr "خدمات"
+
+msgid "Set in wp-config.php."
+msgstr "در wp-config.php تعریف شده است."
+
+msgid "Settings"
+msgstr "تنظیمات"
+
+msgid "Setup"
+msgstr "راه‌اندازی"
+
+msgid "Setup is done."
+msgstr "راه‌اندازی انجام شد."
+
+msgid "Setup is done. The service can be booked now."
+msgstr "راه‌اندازی انجام شد. حالا می‌توان خدمت را رزرو کرد."
+
+msgid "Shahrivar"
+msgstr "شهریور"
+
+msgid "Should be improved"
+msgstr "بهتر است بهبود یابد"
+
+msgid "Show only when field…"
+msgstr "فقط وقتی نشان داده شود که فیلد…"
+
+msgid "Shown in the admin menu and header. Empty keeps the product name."
+msgstr "در منوی مدیریت و هدر نمایش داده می‌شود. خالی یعنی نام محصول."
+
+msgid "shown when"
+msgstr "نمایش وقتی که"
+
+msgid "Sign out"
+msgstr "خروج"
+
+msgid "Skip this step"
+msgstr "رد کردن این مرحله"
+
+msgid "SMS"
+msgstr "پیامک"
+
+msgid "SMS provider"
+msgstr "سرویس‌دهندهٔ پیامک"
+
+msgid "SMS.ir"
+msgstr "SMS.ir"
+
+msgid "Some jobs failed recently"
+msgstr "چند کار به‌تازگی ناموفق بوده‌اند"
+
+msgid "Something went wrong on the server."
+msgstr "مشکلی در سرور پیش آمد."
+
+msgid "Something went wrong. Please try again."
+msgstr "مشکلی پیش آمد. لطفاً دوباره تلاش کنید."
+
+msgid "Sorry, you are not allowed to do that."
+msgstr "متأسفیم، اجازهٔ انجام این کار را ندارید."
+
+msgid "Sort"
+msgstr "مرتب‌سازی"
+
+msgid "Staff"
+msgstr "پرسنل"
+
+msgid "Staff ID"
+msgstr "شناسهٔ پرسنل"
+
+msgid "Staff member name"
+msgstr "نام عضو پرسنل"
+
+msgid "Start"
+msgstr "شروع"
+
+msgid "Starts before"
+msgstr "شروع پیش از"
+
+msgid "Starts from"
+msgstr "شروع از"
+
+msgid "Status"
+msgstr "وضعیت"
+
+msgid "Still to come today"
+msgstr "امروز هنوز مانده"
+
+msgid "Stored. Type a new value to replace it."
+msgstr "ذخیره شده است. برای جایگزینی، مقدار جدید را وارد کنید."
+
+msgid "Summary"
+msgstr "خلاصه"
+
+msgid "Sun"
+msgstr "یکشنبه"
+
+msgid "Sunday"
+msgstr "یکشنبه"
+
+msgid "System"
+msgstr "سیستم"
+
+msgid "System status"
+msgstr "وضعیت سیستم"
+
+msgid "Tags"
+msgstr "برچسب‌ها"
+
+msgid "Taking you to the payment page…"
+msgstr "در حال انتقال شما به صفحهٔ پرداخت…"
+
+msgid "Test message sent."
+msgstr "پیام آزمایشی ارسال شد."
+
+msgid "Text"
+msgstr "متن"
+
+msgid "The admin app is not built. Run \"pnpm install\" and \"pnpm build\" in the plugin folder."
+msgstr "برنامهٔ مدیریت ساخته نشده است. در پوشهٔ افزونه «pnpm install» و «pnpm build» را اجرا کنید."
+
+msgid "The booking form is not configured."
+msgstr "فرم رزرو تنظیم نشده است."
+
+msgid "The booking widget is not built. Run \"pnpm build\"."
+msgstr "ویجت رزرو ساخته نشده است. «pnpm build» را اجرا کنید."
+
+msgid "The database does not use InnoDB"
+msgstr "پایگاه داده از InnoDB استفاده نمی‌کند"
+
+msgid "The database uses InnoDB"
+msgstr "پایگاه داده از InnoDB استفاده می‌کند"
+
+msgid "The intl extension is available"
+msgstr "افزونهٔ intl موجود است"
+
+msgid "The intl extension is missing"
+msgstr "افزونهٔ intl موجود نیست"
+
+msgid "The job queue is healthy"
+msgstr "صف کارها سالم است"
+
+msgid "The job queue is stalled"
+msgstr "صف کارها متوقف شده است"
+
+msgid "The key a location’s holiday calendar setting uses, e.g. \"ir\"."
+msgstr "کلیدی که تنظیم تقویم تعطیلات شعبه استفاده می‌کند، مثلاً «ir»."
+
+msgid "The location is created."
+msgstr "شعبه ساخته شد."
+
+msgid "The payment was not completed, so the appointment was not booked. You can try again."
+msgstr "پرداخت کامل نشد و نوبت رزرو نشد. می‌توانید دوباره تلاش کنید."
+
+msgid "The plugin works without it, but enabling PHP intl gives better formatting of names and numbers."
+msgstr "افزونه بدون آن هم کار می‌کند، اما فعال‌کردن intl در PHP قالب‌بندی بهتری برای نام‌ها و عددها می‌دهد."
+
+msgid "The policy does not allow this move"
+msgstr "سیاست اجازهٔ این جابه‌جایی را نمی‌دهد"
+
+msgid "The request conflicts with the current state. Please try again."
+msgstr "درخواست با وضعیت فعلی در تعارض است. لطفاً دوباره تلاش کنید."
+
+msgid "The requested item does not exist."
+msgstr "مورد درخواستی وجود ندارد."
+
+msgid "The server could not be reached. Check the connection and try again."
+msgstr "دسترسی به سرور ممکن نشد. اتصال را بررسی کنید و دوباره تلاش کنید."
+
+msgid "The server is busy. Please try again in a moment."
+msgstr "سرور مشغول است. لطفاً کمی بعد دوباره تلاش کنید."
+
+msgid "The service is created."
+msgstr "خدمت ساخته شد."
+
+msgid "The sodium extension is available"
+msgstr "افزونهٔ sodium موجود است"
+
+msgid "The sodium extension is missing"
+msgstr "افزونهٔ sodium موجود نیست"
+
+msgid "The staff member works 09:00 to 17:00, Saturday to Thursday."
+msgstr "عضو پرسنل شنبه تا پنجشنبه از ۰۹:۰۰ تا ۱۷:۰۰ کار می‌کند."
+
+msgid "The time zone data is current for Iran"
+msgstr "داده‌های منطقهٔ زمانی برای ایران به‌روز است"
+
+msgid "The time zone data is out of date for Iran"
+msgstr "داده‌های منطقهٔ زمانی برای ایران قدیمی است"
+
+msgid "Theme"
+msgstr "پوسته"
+
+msgid "This appointment has already been moved as many times as allowed."
+msgstr "این نوبت پیش‌تر به تعداد مجاز جابه‌جا شده است."
+
+msgid "This appointment has started."
+msgstr "این نوبت شروع شده است."
+
+msgid "This change is not allowed now."
+msgstr "این تغییر اکنون مجاز نیست."
+
+msgid "This location has no active staff."
+msgstr "این شعبه پرسنل فعال ندارد."
+
+msgid "This provider is ready."
+msgstr "این سرویس‌دهنده آماده است."
+
+msgid "This server still applies daylight saving time to Iran, or does not know the zone. Local times would shift by an hour. Ask your host to update the tzdata package or PHP."
+msgstr "این سرور هنوز برای ایران ساعت تابستانی اعمال می‌کند یا این منطقه را نمی‌شناسد. ساعت‌های محلی یک ساعت جابه‌جا می‌شوند. از میزبان بخواهید بستهٔ tzdata یا PHP را به‌روز کند."
+
+msgid "This staff member serves no active service."
+msgstr "این عضو پرسنل هیچ خدمت فعالی ارائه نمی‌دهد."
+
+msgid "Thu"
+msgstr "پنجشنبه"
+
+msgid "Thursday"
+msgstr "پنجشنبه"
+
+msgid "Time"
+msgstr "زمان"
+
+msgid "Time (UTC)"
+msgstr "زمان (UTC)"
+
+msgid "Time off"
+msgstr "مرخصی"
+
+msgid "Time off and extra hours"
+msgstr "مرخصی و ساعت اضافه"
+
+msgid "Time pricing"
+msgstr "قیمت‌گذاری زمانی"
+
+msgid "Time zone"
+msgstr "منطقهٔ زمانی"
+
+msgid "Time-based price"
+msgstr "قیمت زمانی"
+
+msgid "Time-based prices"
+msgstr "قیمت‌های زمانی"
+
+msgid "Tir"
+msgstr "تیر"
+
+msgid "Title"
+msgstr "عنوان"
+
+msgid "To"
+msgstr "تا"
+
+msgid "To date"
+msgstr "تا تاریخ"
+
+msgid "Today"
+msgstr "امروز"
+
+msgid "Too many requests. Please wait a moment and try again."
+msgstr "درخواست‌ها بیش از حد است. لطفاً کمی صبر کنید و دوباره تلاش کنید."
+
+msgid "Total"
+msgstr "جمع"
+
+msgid "Total: %s IRR"
+msgstr "جمع: %s ریال"
+
+msgid "Tracking code: %s"
+msgstr "کد پیگیری: %s"
+
+msgid "Tue"
+msgstr "سه‌شنبه"
+
+msgid "Tuesday"
+msgstr "سه‌شنبه"
+
+msgid "Type"
+msgstr "نوع"
+
+msgid "Unpaid"
+msgstr "پرداخت‌نشده"
+
+msgid "used"
+msgstr "استفاده‌شده"
+
+msgid "Username"
+msgstr "نام کاربری"
+
+msgid "Valid from"
+msgstr "معتبر از"
+
+msgid "Valid until"
+msgstr "معتبر تا"
+
+msgid "Verify"
+msgstr "تأیید"
+
+msgid "Versions"
+msgstr "نسخه‌ها"
+
+msgid "Waiting"
+msgstr "در انتظار"
+
+msgid "We are holding this time for you: %s"
+msgstr "این زمان را برای شما نگه داشته‌ایم: %s"
+
+msgid "We are still confirming your payment. Your appointment will be booked as soon as it arrives."
+msgstr "هنوز در حال تأیید پرداخت شما هستیم. نوبت شما به‌محض رسیدن پرداخت رزرو می‌شود."
+
+msgid "Wed"
+msgstr "چهارشنبه"
+
+msgid "Wednesday"
+msgstr "چهارشنبه"
+
+msgid "Week"
+msgstr "هفته"
+
+msgid "Weekdays (none means every day)"
+msgstr "روزهای هفته (هیچ‌کدام یعنی هر روز)"
+
+msgid "Weekly hours"
+msgstr "ساعت‌های هفتگی"
+
+msgid "What is %1$s + %2$s?"
+msgstr "%1$s + %2$s چند می‌شود؟"
+
+msgid "With"
+msgstr "با"
+
+msgid "Without InnoDB two customers could book the same time. Ask your host to convert the plugin tables to InnoDB."
+msgstr "بدون InnoDB ممکن است دو مشتری یک زمان را رزرو کنند. از میزبان بخواهید جدول‌های افزونه را به InnoDB تبدیل کند."
+
+msgid "WordPress cron runs from the system"
+msgstr "کرون وردپرس از سیستم اجرا می‌شود"
+
+msgid "WordPress cron runs on page visits"
+msgstr "کرون وردپرس با بازدید صفحه اجرا می‌شود"
+
+msgid "Work"
+msgstr "کار"
+
+msgid "Yes, cancel it"
+msgstr "بله، لغو شود"
+
+msgid "You have no appointments yet."
+msgstr "هنوز نوبتی ندارید."
+
+msgid "Your appointment is booked."
+msgstr "نوبت شما رزرو شد."
+
+msgid "Your booking site is not set up yet."
+msgstr "سایت رزرو شما هنوز راه‌اندازی نشده است."
+
+msgid "Your brand"
+msgstr "برند شما"
+
+msgid "Your payment was received and your appointment is booked."
+msgstr "پرداخت شما دریافت شد و نوبتتان رزرو شد."
+
+msgid "Your phone number is verified."
+msgstr "شمارهٔ تلفن شما تأیید شد."
+
+msgid "Your reserved time has expired."
+msgstr "زمان رزروشدهٔ شما منقضی شد."
+
+msgid "Zarinpal"
+msgstr "زرین‌پال"
+
+msgid "Zibal"
+msgstr "زیبال"
+
+msgctxt "Jalali month"
+msgid "Aban"
+msgstr "آبان"
+
+msgctxt "Jalali month"
+msgid "Azar"
+msgstr "آذر"
+
+msgctxt "Jalali month"
+msgid "Bahman"
+msgstr "بهمن"
+
+msgctxt "Jalali month"
+msgid "Dey"
+msgstr "دی"
+
+msgctxt "Jalali month"
+msgid "Esfand"
+msgstr "اسفند"
+
+msgctxt "Jalali month"
+msgid "Farvardin"
+msgstr "فروردین"
+
+msgctxt "Jalali month"
+msgid "Khordad"
+msgstr "خرداد"
+
+msgctxt "Jalali month"
+msgid "Mehr"
+msgstr "مهر"
+
+msgctxt "Jalali month"
+msgid "Mordad"
+msgstr "مرداد"
+
+msgctxt "Jalali month"
+msgid "Ordibehesht"
+msgstr "اردیبهشت"
+
+msgctxt "Jalali month"
+msgid "Shahrivar"
+msgstr "شهریور"
+
+msgctxt "Jalali month"
+msgid "Tir"
+msgstr "تیر"

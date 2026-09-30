@@ -101,6 +101,26 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
 
+  i18n:
+    name: Translations are complete
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Every string has a fa_IR translation, and the committed files are current.
+      - run: pnpm i18n:check
+      - run: git diff --exit-code languages
+
   build:
     name: Build and size budget
     runs-on: ubuntu-latest

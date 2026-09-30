@@ -6,10 +6,10 @@
 ## ▶️ از اینجا ادامه بده (Resume Here)
 | | |
 |---|---|
-| **فاز فعلی** | **M6** انتشار در جریان است (T6.1 و T6.2 نوشته شدند) |
-| **Task در حال انجام** | — (T5.3 تا T6.2 نوشته و محلی بررسی شدند، منتظر CI؛ Integration تازه T6.2: `StatusRestTest`؛ اگر سرخ بود اول همان را رفع کن با `gh run list`. Integration تازه: ووکامرس/HPOS، `NotificationStoreTest` (شامل قالب‌های پیامکی و `sms_patterns`)). باقی‌مانده‌های T5.5: صفحه Admin تنظیم پیامک و ویرایش پترن‌ها با T6.1؛ تست زنده هر چهار سرویس‌دهنده با کلید واقعی پیش از انتشار (IPPanel روی API قدیمی است). باقی‌مانده‌های T5.4: صفحه Admin قالب‌ها؛ اعلان رویداد confirmed. باقی‌مانده‌های T5.2: `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `booking/needs_attention`؛ صفحه تنظیم merchant (با T6.1)؛ تست زنده با کلید واقعی |
-| **Task بعدی** | **T6.3** — ترجمه کامل fa_IR، بررسی en، ممیزی a11y (axe) و بودجه کارایی. پیش از آن CI مربوط به T5.3 تا T6.2 را بررسی کن (billing گیتهاب)؛ اگر سرخ بود اول رفع کن، به‌ویژه Integration ووکامرس، `SetupRestTest`، `StatusRestTest` و E2E `setup.spec.ts` که هیچ‌کدام هنوز اجرا نشده‌اند. باقی‌مانده‌های T6.1: صفحه ویرایش قالب‌های اعلان و پترن‌های پیامک در UI؛ رنگ هدر Admin بعد از ذخیره با reload اعمال می‌شود. باقی‌مانده‌های T6.2: با خاموش‌بودن `notifications` بخش پیامک Settings خطا می‌دهد (UI پنهانش نمی‌کند) |
-| **آخرین کار انجام‌شده** | **T6.2** (Site Health، صفحه System Status و خاموش‌کردن `notifications` و `widget`؛ منتظر CI) و پیش‌تر **T6.1** (برند، ویزارد نصب و تنظیم پیامک/درگاه در UI؛ منتظر CI) و پیش‌تر **T5.5** (پیامک: چهار سرویس‌دهنده، Failover، پترن، OTP؛ منتظر CI) و پیش‌تر **T5.3** (ووکامرس) و **T5.4** (اعلان‌ها). قبل از آن با CI سبز: **T4.2 تا T4.5** (Hold تا تأیید، OTP، پنل مشتری، shortcode و بلوک)، **T5.1** (هسته پرداخت) و **T5.2** (Zarinpal، Zibal، تطبیق، استرداد دستی، اتصال Booking و ویجت به پرداخت آنلاین). **CI سبز روی main: run 36552515145** (هر 13 job، 2026-09-29). ویجت 15.5KB gz |
+| **فاز فعلی** | **M6** انتشار در جریان است (T6.1 تا T6.3 نوشته شدند) |
+| **Task در حال انجام** | — (T5.3 تا T6.3 نوشته و محلی بررسی شدند، منتظر CI (job تازه `i18n` هم)؛ Integration تازه T6.2: `StatusRestTest`؛ اگر سرخ بود اول همان را رفع کن با `gh run list`. Integration تازه: ووکامرس/HPOS، `NotificationStoreTest` (شامل قالب‌های پیامکی و `sms_patterns`)). باقی‌مانده‌های T5.5: صفحه Admin تنظیم پیامک و ویرایش پترن‌ها با T6.1؛ تست زنده هر چهار سرویس‌دهنده با کلید واقعی پیش از انتشار (IPPanel روی API قدیمی است). باقی‌مانده‌های T5.4: صفحه Admin قالب‌ها؛ اعلان رویداد confirmed. باقی‌مانده‌های T5.2: `payment_status` نوبت با استرداد عوض نمی‌شود؛ مبلغ استرداد در لغو صفر است؛ UI هشدار `booking/needs_attention`؛ صفحه تنظیم merchant (با T6.1)؛ تست زنده با کلید واقعی |
+| **Task بعدی** | **T6.4** — بازبینی امنیتی کامل (چک‌لیست + `/security-review`) و Plugin Check. پیش از آن CI مربوط به T5.3 تا T6.3 را بررسی کن (billing گیتهاب)؛ اگر سرخ بود اول رفع کن، به‌ویژه Integration ووکامرس، `SetupRestTest`، `StatusRestTest`، E2E `setup.spec.ts` و job `i18n` که هیچ‌کدام هنوز اجرا نشده‌اند. باقی‌مانده‌های T6.3: ویراستار فارسی ترجمه را بخواند؛ کنتراست رنگ و پیمایش کیبورد و screen reader دستی است (docs/05-delivery/06-i18n-a11y-perf-report.md)
+| **آخرین کار انجام‌شده** | **T6.3** (ترجمه کامل fa_IR با 527 رشته، ممیزی axe و رفع `role=grid` تقویم ویجت؛ منتظر CI) و پیش‌تر **T6.2** (Site Health، صفحه System Status و خاموش‌کردن `notifications` و `widget`؛ منتظر CI) و پیش‌تر **T6.1** (برند، ویزارد نصب و تنظیم پیامک/درگاه در UI؛ منتظر CI) و پیش‌تر **T5.5** (پیامک: چهار سرویس‌دهنده، Failover، پترن، OTP؛ منتظر CI) و پیش‌تر **T5.3** (ووکامرس) و **T5.4** (اعلان‌ها). قبل از آن با CI سبز: **T4.2 تا T4.5** (Hold تا تأیید، OTP، پنل مشتری، shortcode و بلوک)، **T5.1** (هسته پرداخت) و **T5.2** (Zarinpal، Zibal، تطبیق، استرداد دستی، اتصال Booking و ویجت به پرداخت آنلاین). **CI سبز روی main: run 36552515145** (هر 13 job، 2026-09-29). ویجت 15.5KB gz |
 | **Blockerها** | CI اجرا نمی‌شود: GitHub می‌گوید پرداخت حساب ناموفق است یا سقف هزینه پر شده (run 36555809046، 2026-09-29، Billing & plans). تا رفع آن T5.3 فقط محلی تأیید شده (Integration ووکامرس هنوز اجرا نشده) |
 | **قانون کار (از کاربر، 2026-09-29)** | **سریع پیش برو:** کد را دسته‌ای بنویس و پشت سر هم تست نگیر؛ `composer check`/`pnpm test`/`build`/`test:rename` را فقط آخر یک دسته یا با CI اجرا کن. reviewer را اجرا نکن. بعد از هر بخش `02-progress.md` را به‌روز کن |
 | **تله‌های فعلی** | (۱) `Db::getResults()` فقط SQL literal می‌گیرد؛ SQL را داخل هر متد Repository بنویس، نه در متد کمکی. (۲) فایل‌های repo را با Edit ویرایش کن؛ اسکریپت Python روی ویندوز CRLF می‌نویسد و `\a` را BEL می‌کند (phpcs می‌گیرد). داخل heredoc ابزار Bash هم دو backslash پشت سر هم یکی می‌شود و در Python به بایت BEL تبدیل می‌شود (در سشن 24 باعث fatal در همه jobهای Integration شد). کد PHP را فقط با Write/Edit بنویس و بعد از هر اسکریپت، فایل‌های تغییرکرده را برای بایت کنترلی اسکن کن. (۳) `X-WP-Nonce` کهنه هر درخواست مهمان را 403 می‌کند: ویجت قبل از POST nonce تازه می‌گیرد. (۴) دکمه‌های فرم را نام یکتا بده (مثل «Add field»)، وگرنه لوکیتورهای E2E می‌شکنند. (۵) تا پایان اسفند 1405 باید `1406.json` و `ImportHolidays(1406)` اضافه شود. جزئیات بیشتر: `docs/04-engineering/03-implementation-notes.md` |
@@ -25,7 +25,7 @@
 | M3 Admin | ✅ | 6/6 |
 | M4 سمت مشتری | ✅ | 5/5 |
 | M5 پرداخت و اعلان | ✅ | 5/5 (T5.3 تا T5.5 منتظر CI) |
-| M6 انتشار 1.0 | 🟨 | 2/6 (T6.1 و T6.2 منتظر CI) |
+| M6 انتشار 1.0 | 🟨 | 3/6 (T6.1 تا T6.3 منتظر CI) |
 
 ## جزئیات Taskها
 | ID | عنوان | وضعیت | Commit / یادداشت |
@@ -78,7 +78,7 @@
 | T5.5 | SMS Providers | ✅ | `SmsProvider` با چهار Adapter (کاونگار، IPPanel، SMS.ir، ملی‌پیامک)، Failover، پترن هر قالب، OTP، `GET/PUT /sms` و `POST /sms/test`. **منتظر CI** (implementation-notes §4.20) |
 | T6.1 | White-label + Onboarding | ✅ | `Brand`، `BrandSettings`، `SetupService`، `PaymentSettingsService`، ویزارد `#/setup` و فرم‌های Settings. **منتظر CI و E2E** (implementation-notes §4.21) |
 | T6.2 | Site Health + Status | ✅ | `Switchable` و `ModuleCatalog` در Kernel، `HealthEvaluator`، `StatusService`، `GET /status`، `PUT /modules/{id}`، تست‌های Site Health و صفحه `#/status`. **منتظر CI** (implementation-notes §4.22) |
-| T6.3 | ترجمه، a11y، کارایی | ⬜ | |
+| T6.3 | ترجمه، a11y، کارایی | ✅ | `languages/` (pot، po، mo، JED)، `tools/i18n`، `pnpm i18n:check` و job `i18n` در CI، تست‌های axe برای Admin و ویجت. گزارش: `06-i18n-a11y-perf-report.md`. **منتظر CI** |
 | T6.4 | امنیت + Plugin Check | ⬜ | |
 | T6.5 | E2E کامل + تست ارتقا | ⬜ | |
 | T6.6 | Build و مستندات انتشار | ⬜ | |

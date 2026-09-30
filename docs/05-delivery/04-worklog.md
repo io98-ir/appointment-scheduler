@@ -16,6 +16,16 @@
 
 ---
 
+## 2026-09-30 — سشن 30 — T6.3: ترجمه، دسترس‌پذیری، کارایی
+**Taskها:** T6.3 (منتظر CI)
+**انجام شد:** خط لوله ترجمه بدون WP-CLI: `tools/i18n/extract.php` (PHP با php-parser) و `tools/i18n/build.mjs` (JS با Babel؛ ساخت pot، mo، و JED به‌ازای handle). ترجمه دستی `languages/vaqtyar-fa_IR.po` برای هر 527 رشته. `pnpm i18n` و `pnpm i18n:check` (رشته بدون ترجمه یا placeholder ناجور ← خطا) و job `i18n` در CI که `git diff --exit-code languages` هم دارد. ممیزی axe: `a11y.test.tsx` برای 15 مسیر Admin و یک تست سه‌حالته برای ویجت. گزارش در `docs/05-delivery/06-i18n-a11y-perf-report.md`. devDependencyهای تازه: `@babel/parser`، `gettext-parser`، `axe-core`.
+**تصمیم‌ها و فرض‌ها:** (۱) اصطلاح‌ها: نوبت، پرسنل، شعبه، خدمت. (۲) نام فایل JED از handle است (`vaqtyar-fa_IR-vaqtyar-admin.json`)، نه hash مسیر. (۳) `role="grid"` تقویم ویجت به `group` با `aria-label` ماه عوض شد، چون شبکه فقط دکمه است (axe: `aria-required-children`). (۴) رشته‌های غیرliteral و قالب‌های اعلان کاشته‌شده در migration در pot نیستند. (۵) کنتراست رنگ در jsdom سنجیده نمی‌شود و دستی است.
+**تأیید:** `composer check` سبز (1009 تست unit)؛ `pnpm lint`؛ `pnpm vitest run` ← 169 تست؛ `pnpm build` و `pnpm size` (ویجت 15.48KB، admin 37.68KB gz)؛ `pnpm i18n:check` ← 0 رشته بدون ترجمه. CI هنوز به‌خاطر billing اجرا نمی‌شود.
+**مشکلات و باقیمانده:** ویراستار فارسی؛ ممیزی دستی کنتراست، کیبورد و screen reader؛ LCP و INP با Lighthouse.
+**قدم بعدی:** T6.4 (امنیت و Plugin Check).
+**Commitها:** T6.3 در commit بعدی.
+
+---
 ## 2026-09-30 — سشن 29 — T6.2: Site Health و System Status
 **Taskها:** T6.2 (منتظر CI)
 **انجام شد:** Kernel: interface `Switchable`، `ModuleCatalog` (همه ماژول‌ها و فهرست خاموش‌ها؛ `Plugin::boot/activate` فقط فعال‌ها را ثبت می‌کند) و گروه `ModuleSettings`. `NotificationsModule` و `WidgetModule` خاموش‌شدنی شدند. ماژول Admin: Domain (`HealthEvaluator`، `HealthFacts`، `HealthCheck`، `HealthStatus`)، Application (`StatusService`، Portهای `StatusSource` و `ModuleSwitches`)، Infrastructure (`WpStatusSource`، `SettingsModuleSwitches`)، Presentation (`HealthText`، `SiteHealthTests`، `StatusRoutes`)، capability `manage_system`. رابط: صفحه `#/status` با سلامت، صف، toggle ماژول‌ها، خطاهای اخیر و نسخه‌ها. جزئیات در implementation-notes §4.22 و `api.md`.
