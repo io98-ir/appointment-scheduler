@@ -18,7 +18,7 @@ use Vaqtyar\Kernel\Tables;
  */
 final class Migrator
 {
-    private const OPTION = 'db_versions';
+    public const OPTION = 'db_versions';
 
     public function __construct(private readonly Db $db)
     {

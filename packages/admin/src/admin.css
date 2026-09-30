@@ -383,3 +383,41 @@
 	border-block-end: 2px solid var(--vqy-accent);
 	font-weight: 600;
 }
+
+.vqy-admin__checks {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-inline-size: 720px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.vqy-admin__check {
+	margin: 0;
+	padding-block: 8px;
+	padding-inline: 16px;
+	border-inline-start: 4px solid GrayText;
+}
+
+.vqy-admin__check p {
+	margin-block: 4px 0;
+}
+
+.vqy-admin__check--good {
+	border-inline-start-color: var(--vqy-accent);
+}
+
+.vqy-admin__check--recommended {
+	border-inline-start-color: Mark;
+}
+
+.vqy-admin__check--critical {
+	border-inline-start-color: ActiveText;
+}
+
+.vqy-admin__badge {
+	font-size: 0.85em;
+	color: GrayText;
+}

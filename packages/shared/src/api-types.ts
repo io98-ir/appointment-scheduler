@@ -536,3 +536,31 @@ export interface SmsOverview {
 		secrets: Array< { name: string; set: boolean; fixed: boolean } >;
 	} >;
 }
+
+/** GET /status: the server, the plugin's own state and its recent trouble (T6.2). */
+export interface SystemStatus {
+	versions: {
+		plugin: string;
+		wordpress: string;
+		php: string;
+		database: string;
+	};
+	checks: Array< {
+		id: string;
+		status: 'good' | 'recommended' | 'critical';
+		label: string;
+		description: string;
+	} >;
+	queue: { pending: number; late: number; failed: number };
+	/** Migrations run per owner (a module id, or "kernel"). */
+	schema: Record< string, number >;
+	modules: ModuleSwitch[];
+	/** Newest first; `at` is UTC, "Y-m-d H:i:s". */
+	errors: Array< { at: string; channel: string; message: string } >;
+}
+
+export interface ModuleSwitch {
+	id: string;
+	switchable: boolean;
+	enabled: boolean;
+}

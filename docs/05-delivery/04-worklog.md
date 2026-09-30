@@ -16,6 +16,16 @@
 
 ---
 
+## 2026-09-30 — سشن 29 — T6.2: Site Health و System Status
+**Taskها:** T6.2 (منتظر CI)
+**انجام شد:** Kernel: interface `Switchable`، `ModuleCatalog` (همه ماژول‌ها و فهرست خاموش‌ها؛ `Plugin::boot/activate` فقط فعال‌ها را ثبت می‌کند) و گروه `ModuleSettings`. `NotificationsModule` و `WidgetModule` خاموش‌شدنی شدند. ماژول Admin: Domain (`HealthEvaluator`، `HealthFacts`، `HealthCheck`، `HealthStatus`)، Application (`StatusService`، Portهای `StatusSource` و `ModuleSwitches`)، Infrastructure (`WpStatusSource`، `SettingsModuleSwitches`)، Presentation (`HealthText`، `SiteHealthTests`، `StatusRoutes`)، capability `manage_system`. رابط: صفحه `#/status` با سلامت، صف، toggle ماژول‌ها، خطاهای اخیر و نسخه‌ها. جزئیات در implementation-notes §4.22 و `api.md`.
+**تصمیم‌ها و فرض‌ها:** (۱) فقط `notifications` و `widget` خاموش‌شدنی‌اند، چون هیچ ماژول دیگری به آن‌ها وابسته نیست؛ ماژول‌های هسته نه. (۲) خاموش‌کردن از درخواست بعد اعمال می‌شود و Migrationهای ماژول خاموش اجرا نمی‌شوند. (۳) صف Action Scheduler فقط actionهای خودمان را می‌شمارد (پیشوند hook). (۴) رنگ وضعیت‌ها با کلیدواژه رنگ سیستم است چون Stylelint هر رنگ literal را رد می‌کند. (۵) `Migrator::OPTION` public شد تا وضعیت schema را بخوانیم.
+**تأیید:** محلی: `composer check` سبز (lint، PHPStan، Deptrac، unit 1009 تست)، `pnpm lint`، `pnpm vitest run` ← 153 تست، `pnpm build`، `pnpm size` (ویجت 15.47KB، admin 37.68KB gz). `StatusRestTest` (Integration) فقط در CI؛ CI هنوز به‌خاطر billing گیتهاب در 5 ثانیه شکست می‌خورد (run 36635140913).
+**مشکلات و باقیمانده:** CI برای T5.3 تا T6.2؛ با خاموش‌بودن `notifications` بخش پیامک Settings خطا می‌گیرد. درس ابزار: Python داخل heredoc ابزار Bash هنوز `\a` را BEL می‌کند (سه بار در این سشن، در `Plugin.php`، `ModuleCatalog.php`، `AdminModule.php`)؛ کد PHP را فقط با Edit/Write بنویس و بعد از هر اسکریپت بایت `0x07` را بگرد.
+**قدم بعدی:** T6.3 (ترجمه، a11y، کارایی).
+**Commitها:** T6.2 در commit بعدی.
+
+---
 ## 2026-09-30 — سشن 28 — T6.1: White-label و Onboarding
 **Taskها:** T6.1 (منتظر CI و E2E)
 **انجام شد:** `Shared\Domain\Brand` و `Kernel\Settings\BrandSettings`؛ ماژول Admin: `SetupService`، `SetupStore`، `OnboardingSettings`، `GET/PUT /brand` و `GET/PUT /onboarding`؛ ماژول Payments: `PaymentSettingsService`، `PaymentSettingsStore`، capability `manage_payments`، `GET/PUT /payments/settings`. منوی wp-admin نام برند را می‌گیرد، `AdminPage` برند و نام محصول را به برنامه می‌دهد و رسانه وردپرس را برای انتخاب لوگو بارگذاری می‌کند؛ ویجت رنگ برند را با `--vqy-accent` روی عنصر embed می‌گیرد. رابط: `BrandForm`، `SmsSettingsForm`، `PaymentSettingsForm` در صفحه Settings، `SetupWizard` در `#/setup` (برند، شعبه و ساعت، اولین خدمت با یک پرسنل، پیامک، پرداخت، پایان)، `SetupPrompt` روی داشبورد و نام و لوگوی برند در هدر. جزئیات در implementation-notes §4.21 و `api.md`.

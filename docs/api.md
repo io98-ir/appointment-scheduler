@@ -184,6 +184,14 @@
 
 `/brand` و `/onboarding` capability `access_admin` و `/payments/settings` capability `manage_payments` لازم دارند (پیش‌فرض: administrator)؛ سرویس Application هر دو را دوباره بررسی می‌کند. نام و رنگ برند در منوی wp-admin، هدر برنامه Admin و ویجت (متغیر CSS `--vqy-accent` روی عنصر embed) اعمال می‌شود.
 
+## System Status و ماژول‌ها (Admin، T6.2)
+| Route | توضیح |
+|---|---|
+| `GET /status` | `{versions: {plugin, wordpress, php, database}, checks: [{id, status, label, description}], queue: {pending, late, failed}, schema: {owner: count}, modules: [{id, switchable, enabled}], errors: [{at, channel, message}]}`. `status` یکی از `good`، `recommended`، `critical`؛ `at` به UTC؛ `errors` ده خطای آخر لاگ، جدیدترین اول |
+| `PUT /modules/{id}` | `enabled` (بولی، الزامی). پاسخ `{modules}` بعد از تغییر. اثرش از درخواست بعد است. خطا: 422 `module_not_switchable` برای ماژول هسته یا ناشناخته |
+
+هر دو capability `manage_system` می‌خواهند (پیش‌فرض: administrator) و `StatusService` دوباره بررسی می‌کند. ماژول‌های خاموش‌شدنی: `notifications` و `widget`. همین بررسی‌ها زیر Tools ← Site Health هم هستند (تست direct با کلید `{PREFIX}_{id}`).
+
 ## مشتریان (Admin)
 همه routeها capability `manage_customers` لازم دارند (پیش‌فرض: administrator). `CustomerService` آن را دوباره بررسی می‌کند. شکل‌ها همان `Customer` در `api-types.ts` است.
 

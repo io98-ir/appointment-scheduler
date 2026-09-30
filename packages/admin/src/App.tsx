@@ -25,6 +25,7 @@ import { HolidaysPage } from './holidays/HolidaysPage';
 import { NotFound } from './NotFound';
 import { SetupWizard } from './setup/SetupWizard';
 import { SettingsPage } from './policies/SettingsPage';
+import { StatusPage } from './status/StatusPage';
 import { DashboardPage } from './reports/DashboardPage';
 import { ReportsPage } from './reports/ReportsPage';
 import { errorMessage } from './query';
@@ -111,6 +112,11 @@ const SECTIONS: Section[] = [
 		path: '/settings',
 		title: () => __( 'Settings', 'vaqtyar' ),
 		Page: SettingsPage,
+	},
+	{
+		path: '/status',
+		title: () => __( 'System status', 'vaqtyar' ),
+		Page: StatusPage,
 	},
 ];
 

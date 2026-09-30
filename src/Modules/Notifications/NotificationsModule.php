@@ -9,10 +9,10 @@ use Vaqtyar\Kernel\Context;
 use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Hooks;
 use Vaqtyar\Kernel\Log\Logger;
-use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\SecretStore;
 use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Kernel\Switchable;
 use Vaqtyar\Modules\Booking\Contracts\AppointmentFactsReader;
 use Vaqtyar\Modules\Notifications\Application\DeliveryFailed;
 use Vaqtyar\Modules\Notifications\Application\NotificationAdminService;
@@ -61,7 +61,7 @@ use Vaqtyar\Shared\WpAuthorizer;
  * login code (`{prefix}/customers/otp`) the same way. More channels are
  * added on the `{prefix}/notifications/channels` filter.
  */
-final class NotificationsModule implements Module
+final class NotificationsModule implements Switchable
 {
     public function id(): string
     {

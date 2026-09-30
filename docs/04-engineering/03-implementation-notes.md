@@ -370,6 +370,15 @@
 - **ساعت کاری ویزارد:** یک بازه ثابت شنبه تا پنجشنبه برای شعبه و پرسنل (جمعه تعطیل)؛ برنامه دقیق‌تر با صفحه Locations و Staff.
 - **باقیمانده:** پیام «ماژول‌های قابل خاموش‌کردن» با T6.2؛ رنگ هدر Admin بعد از ذخیره تا reload عوض نمی‌شود (نام و لوگو فوری‌اند)؛ ویرایش پترن‌های پیامکی هر قالب و ترتیب چند سرویس‌دهنده در UI نیست، فقط انتخاب یک سرویس‌دهنده به‌عنوان اول ترتیب (API کامل است).
 
+## 4.22 Site Health، System Status و ماژول‌های قابل خاموش‌کردن (T6.2)
+- **ماژول خاموش‌شدنی:** interface نشانه `Kernel\Switchable` (extends `Module`). فقط `notifications` و `widget` هستند؛ هیچ ماژول دیگری به سرویس آن‌ها وابسته نیست (با grep بررسی شد) و ماژول‌های هسته (catalog، scheduling، customers، booking، payments، admin) خاموش نمی‌شوند. `Kernel\ModuleCatalog` همه ماژول‌ها و فهرست خاموش‌ها را نگه می‌دارد؛ `Plugin::boot()` و `activate()` فقط `active()` را در `ModuleRegistry` می‌گذارند و خود کاتالوگ در Container هست (برای صفحه وضعیت). فهرست خاموش‌ها گروه `ModuleSettings` (autoload) است و id ناشناخته یا id ماژول هسته را نادیده می‌گیرد.
+- **اثر خاموش‌کردن:** از درخواست بعد اعمال می‌شود (ماژول‌ها پیش از هر چیز انتخاب می‌شوند). Migration ماژول خاموش اجرا نمی‌شود و جدول‌هایش می‌مانند؛ با روشن‌شدن دوباره، اولین درخواست migration عقب‌مانده را می‌زند. با خاموش‌بودن `notifications`، بخش قالب‌ها و پیامک در Settings خطای 404 می‌گیرد (UI هنوز آن را پنهان نمی‌کند).
+- **بررسی‌ها:** `Admin\Domain\HealthEvaluator` (خالص) روی `HealthFacts` حکم می‌دهد: `database_engine` و `sodium` (Critical)، `intl` و `cron` (Recommended)، `timezone_data` (Critical، وقتی offset تهران در دی یا تیر از 12600 ثانیه جدا باشد یا زون ناشناخته باشد) و `queue` (Critical برای کار دیرکرده بیش از 15 دقیقه، Recommended برای شکست در 7 روز اخیر). صف فقط actionهای خودمان را می‌شمارد (`hook LIKE 'vaqtyar/%'`، با `Identity::HOOK_PREFIX`). InnoDB روی جدول `logs` بررسی می‌شود.
+- **متن:** Domain فقط id و وضعیت برمی‌گرداند؛ `Presentation\HealthText` آن را ترجمه می‌کند و هم REST و هم Site Health از آن می‌خوانند. Site Health یک تست direct برای هر بررسی دارد (`{PREFIX}_{id}` روی فیلتر `site_status_tests`).
+- **REST:** `GET /status` و `PUT /modules/{id}` با capability تازه `manage_system` (پیش‌فرض administrator). `StatusSource` و `ModuleSwitches` دو Port ماژول Admin‌اند (Application به Kernel وابسته نیست). state ماژول‌ها بعد از PUT از Settings خوانده می‌شود، نه از کاتالوگ همین درخواست.
+- **رابط:** صفحه `#/status` («System status») با سلامت، صف، toggle ماژول‌ها، آخرین خطاهای لاگ (UTC) و نسخه‌ها و وضعیت schema. رنگ وضعیت‌ها با کلیدواژه‌های رنگ سیستم است، چون Stylelint هر رنگ literal را رد می‌کند.
+- **باقیمانده:** خطای درگاه و پیامک از بقیه جدا نشده‌اند (همه خطاهای لاگ با کانال نشان داده می‌شوند)؛ تست Integration (`StatusRestTest`) فقط در CI اجرا می‌شود.
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

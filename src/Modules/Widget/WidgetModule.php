@@ -6,8 +6,8 @@ namespace Vaqtyar\Modules\Widget;
 
 use Vaqtyar\Kernel\Container;
 use Vaqtyar\Kernel\Context;
-use Vaqtyar\Kernel\Module;
 use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Kernel\Switchable;
 use Vaqtyar\Modules\Widget\Presentation\Embeds;
 
 /**
@@ -16,7 +16,7 @@ use Vaqtyar\Modules\Widget\Presentation\Embeds;
  * widget itself is packages/widget; its data comes from the REST API of the
  * other modules, so this module holds no data.
  */
-final class WidgetModule implements Module
+final class WidgetModule implements Switchable
 {
     public function id(): string
     {

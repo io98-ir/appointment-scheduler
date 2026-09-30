@@ -14,6 +14,7 @@ use Vaqtyar\Kernel\Rest\CreateRateLimitsTable;
 use Vaqtyar\Kernel\Rest\RateLimiter;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\GeneralSettings;
+use Vaqtyar\Kernel\Settings\ModuleSettings;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Shared\DateFormatter;
 use Vaqtyar\Shared\Domain\Clock;
@@ -43,8 +44,10 @@ final class Plugin
      */
     public function boot(Module ...$modules): void
     {
-        $registry = new ModuleRegistry(...$modules);
+        $catalog = self::catalog($modules);
+        $registry = new ModuleRegistry(...$catalog->active());
         $container = new Container();
+        $container->singleton(ModuleCatalog::class, static fn (): ModuleCatalog => $catalog);
         $container->singleton(Db::class, static fn (): Db => Db::fromGlobals());
         $container->singleton(
             Transaction::class,
@@ -126,9 +129,17 @@ final class Plugin
      */
     public function activate(Module ...$modules): void
     {
-        $registry = new ModuleRegistry(...$modules);
+        $registry = new ModuleRegistry(...self::catalog($modules)->active());
         (new Migrator(Db::fromGlobals()))->migrate($this->migrations($registry));
         (new Capabilities())->grant($this->capabilities($registry));
+    }
+
+    /**
+     * @param array<int|string, Module> $modules
+     */
+    private static function catalog(array $modules): ModuleCatalog
+    {
+        return new ModuleCatalog($modules, (new Settings())->get(ModuleSettings::class)->disabled);
     }
 
     private function reportFailedMigration(\Throwable $e): void
