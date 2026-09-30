@@ -19,7 +19,9 @@
 		"test:e2e": "wp-scripts test-playwright --config tests/e2e/playwright.config.cjs",
 		"size": "size-limit",
 		"i18n": "node tools/i18n/build.mjs --build",
-		"i18n:check": "node tools/i18n/build.mjs --build --check"
+		"i18n:check": "node tools/i18n/build.mjs --build --check",
+		"guide:build": "wp-scripts build --config tools/guide/webpack.config.cjs",
+		"guide:shoot": "node tools/guide/shoot.mjs"
 	},
 	"devDependencies": {
 		"@babel/parser": "7",

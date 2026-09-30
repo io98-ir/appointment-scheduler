@@ -6,14 +6,20 @@ namespace Vaqtyar\Modules\Admin\Presentation\Rest;
 
 use Vaqtyar\Kernel\Caps;
 use Vaqtyar\Kernel\Rest\Router;
+use Vaqtyar\Modules\Admin\Application\Display;
 use Vaqtyar\Modules\Admin\Application\SetupService;
+use Vaqtyar\Shared\Domain\Calendar;
+use Vaqtyar\Shared\Domain\Digits;
 use Vaqtyar\Shared\Domain\Brand;
+use Vaqtyar\Shared\Domain\Language;
 
 /**
- * The white-label and onboarding API (docs/api.md):
+ * The white-label, display and onboarding API (docs/api.md):
  *
  *     GET /brand         the owner's name, logo and colour ("" means the default)
  *     PUT /brand         replace them
+ *     GET /general       {calendar, digits, language}: how dates, numbers and screens are shown
+ *     PUT /general       replace them
  *     GET /onboarding    {done}
  *     PUT /onboarding    {done}: finish or skip the wizard (false shows it again)
  *
@@ -49,6 +55,27 @@ final class SetupRoutes
                 'color' => ['type' => 'string', 'default' => ''],
             ]
         );
+        $this->router->add('/general', 'GET', fn (): array => self::display($this->service->display()), $allowed);
+        $this->router->add(
+            '/general',
+            'PUT',
+            function (\WP_REST_Request $request): array {
+                // The schema below has already limited each to its enum.
+                $p = $request->get_params();
+
+                return self::display($this->service->saveDisplay(new Display(
+                    Calendar::tryFrom(self::text($p['calendar'] ?? null)) ?? Calendar::Jalali,
+                    Digits::tryFrom(self::text($p['digits'] ?? null)) ?? Digits::Persian,
+                    Language::tryFrom(self::text($p['language'] ?? null)) ?? Language::Auto
+                )));
+            },
+            $allowed,
+            [
+                'calendar' => ['type' => 'string', 'enum' => ['jalali', 'gregorian'], 'default' => 'jalali'],
+                'digits' => ['type' => 'string', 'enum' => ['persian', 'latin'], 'default' => 'persian'],
+                'language' => ['type' => 'string', 'enum' => ['auto', 'fa', 'en'], 'default' => 'auto'],
+            ]
+        );
         $this->router->add(
             '/onboarding',
             'GET',
@@ -75,6 +102,18 @@ final class SetupRoutes
     private static function brand(Brand $brand): array
     {
         return ['name' => $brand->name, 'logo_url' => $brand->logoUrl, 'color' => $brand->color];
+    }
+
+    /**
+     * @return array{calendar: string, digits: string, language: string}
+     */
+    private static function display(Display $display): array
+    {
+        return [
+            'calendar' => $display->calendar->value,
+            'digits' => $display->digits->value,
+            'language' => $display->language->value,
+        ];
     }
 
     private static function text(mixed $value): string

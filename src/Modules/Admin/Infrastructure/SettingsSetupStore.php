@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Admin\Infrastructure;
 
 use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\GeneralSettings;
 use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Modules\Admin\Application\Display;
 use Vaqtyar\Modules\Admin\Application\SetupStore;
 use Vaqtyar\Shared\Domain\Brand;
 
@@ -36,5 +38,17 @@ final class SettingsSetupStore implements SetupStore
     public function setOnboarded(bool $done): void
     {
         $this->settings->save(new OnboardingSettings($done));
+    }
+
+    public function display(): Display
+    {
+        $general = $this->settings->get(GeneralSettings::class);
+
+        return new Display($general->calendar, $general->digits, $general->language);
+    }
+
+    public function saveDisplay(Display $display): void
+    {
+        $this->settings->save(new GeneralSettings($display->calendar, $display->digits, $display->language));
     }
 }

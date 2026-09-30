@@ -23,7 +23,8 @@ import { useApi } from '../api';
 import { useAll } from '../catalog/crud';
 import { errorMessage } from '../query';
 import { act, actionsFor, type Action } from './actions';
-import { paymentLabel, rial, statusLabel, when } from './AppointmentsPage';
+import { useDigits, useWhen } from '../display';
+import { paymentLabel, statusLabel, useRial } from './AppointmentsPage';
 
 function actionLabel( action: Action ): string {
 	const labels: Record< Action, string > = {
@@ -75,6 +76,9 @@ function historyLabel( action: string ): string {
  */
 export function AppointmentDetailPage( { id }: { id: number } ) {
 	const api = useApi();
+	const when = useWhen();
+	const digits = useDigits();
+	const money = useRial();
 	const client = useQueryClient();
 	const { createSuccessNotice } = useDispatch( noticesStore );
 	const path = `/appointments/${ id }`;
@@ -188,7 +192,7 @@ export function AppointmentDetailPage( { id }: { id: number } ) {
 				<dt>{ __( 'Time', 'vaqtyar' ) }</dt>
 				<dd dir="ltr">
 					{ when( appointment.start ) }–
-					{ appointment.end.slice( 11, 16 ) }
+					{ digits( appointment.end.slice( 11, 16 ) ) }
 				</dd>
 				<dt>{ __( 'Customer', 'vaqtyar' ) }</dt>
 				<dd>
@@ -240,13 +244,15 @@ export function AppointmentDetailPage( { id }: { id: number } ) {
 								{ line.code === 'extra' &&
 									` · ${ extraName( line.ref ) } × ${ line.qty }` }
 							</td>
-							<td>{ rial( line.amount ) }</td>
+							<td>{ money( line.amount ) }</td>
 						</tr>
 					) ) }
 					<tr>
 						<th scope="row">{ __( 'Total', 'vaqtyar' ) }</th>
 						<td>
-							<strong>{ rial( appointment.price.total ) }</strong>
+							<strong>
+								{ money( appointment.price.total ) }
+							</strong>
 						</td>
 					</tr>
 				</tbody>

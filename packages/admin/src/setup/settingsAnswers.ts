@@ -1,6 +1,6 @@
 /**
- * For the tests of the settings screen: what the brand, SMS and payment
- * sections ask for, answered as an untouched site would (T6.1). A test
+ * For the tests of the settings screen: what the brand, booking rules, SMS
+ * and payment sections ask for, answered as an untouched site would (T6.1). A test
  * server calls this first and goes on when it returns null.
  *
  * @param path   The route below the namespace.
@@ -16,6 +16,14 @@ export function settingsAnswer(
 	}
 	if ( path === '/brand' ) {
 		return json( { name: '', logo_url: '', color: '' } );
+	}
+	if ( path === '/booking-rules' ) {
+		return json( {
+			slot_step_min: 30,
+			min_notice_min: 60,
+			max_advance_days: 60,
+			staff_choice: 'least_busy',
+		} );
 	}
 	if ( path === '/onboarding' ) {
 		return json( { done: true } );

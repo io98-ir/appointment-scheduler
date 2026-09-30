@@ -35,6 +35,7 @@ final class SetupRestTest extends TestCase
         }
         $options = [
             'settings_brand',
+            'settings_general',
             'settings_onboarding',
             'settings_woocommerce_gateway',
             'secret_zarinpal_merchant',
@@ -59,6 +60,8 @@ final class SetupRestTest extends TestCase
     {
         yield 'read brand' => ['GET', '/brand'];
         yield 'save brand' => ['PUT', '/brand'];
+        yield 'read display settings' => ['GET', '/general'];
+        yield 'save display settings' => ['PUT', '/general'];
         yield 'read onboarding' => ['GET', '/onboarding'];
         yield 'save onboarding' => ['PUT', '/onboarding'];
         yield 'read payment settings' => ['GET', '/payments/settings'];
@@ -97,6 +100,27 @@ final class SetupRestTest extends TestCase
         $bad = $this->request('PUT', '/brand', ['name' => 'X', 'color' => 'red']);
         self::assertSame([422, 'invalid_brand_color'], [$bad['status'], $bad['body']['code'] ?? null]);
         self::assertSame($expected, $this->request('GET', '/brand')['body'], 'A rejected save changes nothing.');
+    }
+
+    public function testTheDisplaySettingsDefaultToJalaliAndPersianDigitsThenAreKept(): void
+    {
+        $this->logInAs('administrator');
+        $default = ['calendar' => 'jalali', 'digits' => 'persian', 'language' => 'auto'];
+        self::assertSame($default, $this->request('GET', '/general')['body']);
+
+        $saved = $this->request(
+            'PUT',
+            '/general',
+            ['calendar' => 'gregorian', 'digits' => 'latin', 'language' => 'en']
+        );
+
+        $expected = ['calendar' => 'gregorian', 'digits' => 'latin', 'language' => 'en'];
+        self::assertSame([200, $expected], [$saved['status'], $saved['body']]);
+        self::assertSame($expected, $this->request('GET', '/general')['body']);
+
+        $bad = $this->request('PUT', '/general', ['calendar' => 'lunar']);
+        self::assertSame(400, $bad['status'], 'A value outside the enum is refused before it is stored.');
+        self::assertSame($expected, $this->request('GET', '/general')['body']);
     }
 
     public function testTheWizardIsUndoneUntilFinishedAndCanBeReopened(): void

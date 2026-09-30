@@ -7,15 +7,22 @@ import {
 	SelectControl,
 	Spinner,
 } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import { store as noticesStore } from '@wordpress/notices';
 
 import { useApi } from '../api';
 import { SIZE } from '../catalog/fields';
 import { errorMessage } from '../query';
+import { downloadCsv, toCsv } from '../reports/csv';
 
 /** Rows of a page. */
 const PER_PAGE = 20;
+
+/** The export reads the API's largest page at a time and stops here. */
+const EXPORT_PAGE = 100;
+const EXPORT_LIMIT = 10000;
 
 function statusLabel( status: CustomerStatus ): string {
 	return status === 'active'
@@ -48,6 +55,8 @@ export function customerName( customer: {
  */
 export function CustomerList() {
 	const api = useApi();
+	const { createErrorNotice } = useDispatch( noticesStore );
+	const [ exporting, setExporting ] = useState( false );
 	const [ search, setSearch ] = useState( '' );
 	const [ status, setStatus ] = useState< CustomerStatus | '' >( '' );
 	const [ page, setPage ] = useState( 1 );
@@ -77,6 +86,56 @@ export function CustomerList() {
 	} );
 	const items = result.data?.items ?? [];
 	const totalPages = result.data?.totalPages ?? 1;
+	// Every customer the search and status match, not only the page on screen.
+	const exportCsv = async () => {
+		setExporting( true );
+		try {
+			const all: Customer[] = [];
+			for ( let next = 1; all.length < EXPORT_LIMIT; next++ ) {
+				const chunk = await api.list< Customer >( '/customers', {
+					search: search || undefined,
+					status: status || undefined,
+					page: next,
+					per_page: EXPORT_PAGE,
+				} );
+				all.push( ...chunk.items );
+				if ( next >= chunk.totalPages ) {
+					break;
+				}
+			}
+			downloadCsv(
+				'customers.csv',
+				toCsv( [
+					[
+						'first_name',
+						'last_name',
+						'phone',
+						'email',
+						'birth_date',
+						'tags',
+						'status',
+						'note',
+					],
+					...all.map( ( item ) => [
+						item.first_name,
+						item.last_name,
+						item.phone,
+						item.email ?? '',
+						item.birth_date ?? '',
+						item.tags.join( ';' ),
+						item.status,
+						item.note,
+					] ),
+				] )
+			);
+		} catch ( error ) {
+			void createErrorNotice( errorMessage( error ), {
+				type: 'snackbar',
+			} );
+		} finally {
+			setExporting( false );
+		}
+	};
 	const setStatusFilter = ( value: CustomerStatus | '' ) => {
 		setStatus( value );
 		setPage( 1 );
@@ -107,6 +166,14 @@ export function CustomerList() {
 						setStatusFilter( value as CustomerStatus | '' )
 					}
 				/>
+				<Button
+					variant="secondary"
+					isBusy={ exporting }
+					disabled={ exporting }
+					onClick={ () => void exportCsv() }
+				>
+					{ __( 'Export CSV', 'vaqtyar' ) }
+				</Button>
 				{ result.isFetching && <Spinner /> }
 			</div>
 			{ result.isError && (

@@ -21,4 +21,8 @@ interface SetupStore
     public function onboarded(): bool;
 
     public function setOnboarded(bool $done): void;
+
+    public function display(): Display;
+
+    public function saveDisplay(Display $display): void;
 }

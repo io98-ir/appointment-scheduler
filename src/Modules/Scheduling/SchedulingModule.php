@@ -14,6 +14,8 @@ use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Scheduling\Application\AvailabilityService;
+use Vaqtyar\Modules\Scheduling\Application\BookingRulesService;
+use Vaqtyar\Modules\Scheduling\Application\BookingRulesStore;
 use Vaqtyar\Modules\Scheduling\Application\HolidayService;
 use Vaqtyar\Modules\Scheduling\Application\ScheduleService;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
@@ -27,8 +29,10 @@ use Vaqtyar\Modules\Scheduling\Infrastructure\Migrations\ImportHolidays;
 use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbHolidayRepository;
 use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbScheduleExceptionRepository;
 use Vaqtyar\Modules\Scheduling\Infrastructure\Persistence\WpdbScheduleRuleRepository;
+use Vaqtyar\Modules\Scheduling\Infrastructure\SettingsBookingRulesStore;
 use Vaqtyar\Modules\Scheduling\Infrastructure\WpSlotCache;
 use Vaqtyar\Modules\Scheduling\Presentation\Rest\AvailabilityRoutes;
+use Vaqtyar\Modules\Scheduling\Presentation\Rest\BookingRulesRoutes;
 use Vaqtyar\Modules\Scheduling\Presentation\Rest\HolidayRoutes;
 use Vaqtyar\Modules\Scheduling\Presentation\Rest\ScheduleRoutes;
 use Vaqtyar\Shared\WpAuthorizer;
@@ -76,6 +80,14 @@ final class SchedulingModule implements Module
         $container->singleton(
             HolidayService::class,
             static fn (Container $c) => new HolidayService(new WpAuthorizer(), $c->get(HolidayRepository::class))
+        );
+        $container->singleton(
+            BookingRulesStore::class,
+            static fn (Container $c) => new SettingsBookingRulesStore($c->get(Settings::class))
+        );
+        $container->singleton(
+            BookingRulesService::class,
+            static fn (Container $c) => new BookingRulesService(new WpAuthorizer(), $c->get(BookingRulesStore::class))
         );
         $container->singleton(WpSlotCache::class, static fn () => new WpSlotCache());
         $container->singleton(SlotClaims::class, static fn (Container $c) => $c->get(AvailabilityService::class));
@@ -127,6 +139,10 @@ final class SchedulingModule implements Module
             (new ScheduleRoutes(
                 $container->get(Router::class),
                 static fn (): ScheduleService => $container->get(ScheduleService::class)
+            ))->register();
+            (new BookingRulesRoutes(
+                $container->get(Router::class),
+                static fn (): BookingRulesService => $container->get(BookingRulesService::class)
             ))->register();
             (new HolidayRoutes(
                 $container->get(Router::class),

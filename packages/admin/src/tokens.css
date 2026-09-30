@@ -1,0 +1,68 @@
+/*
+ * The admin's design tokens (ADR-020): the only file with literal colours.
+ * It follows the maker's own site, io98.ir: a cool off-white page, white
+ * cards with a hair-line border, generous radii and one accent. The accent
+ * (--vqy-accent, set from the owner's palette by palette.ts) is the only
+ * colour that changes; the hover, the soft fills and the dark-mode lift are
+ * mixed from it, so any palette stays consistent.
+ */
+.vqy-admin {
+	--vqy-accent: #0e7184;
+	--vqy-on-accent: #fff;
+
+	--vqy-bg: #f6fafb;
+	--vqy-surface: #fff;
+	--vqy-surface-2: #f1f7f9;
+	--vqy-text: #0f252d;
+	--vqy-muted: #48616a;
+	--vqy-border: #102c361a;
+	--vqy-border-strong: #102c3638;
+	--vqy-shadow: 0 1px 2px #102c360d, 0 8px 20px -12px #102c3633;
+
+	--vqy-accent-hover: color-mix(in srgb, var(--vqy-accent) 82%, black);
+	--vqy-accent-text: color-mix(in srgb, var(--vqy-accent) 90%, black);
+	--vqy-accent-soft: color-mix(in srgb, var(--vqy-accent) 10%, transparent);
+	--vqy-accent-line: color-mix(in srgb, var(--vqy-accent) 30%, transparent);
+
+	--vqy-radius: 14px;
+	--vqy-radius-sm: 10px;
+	--vqy-radius-pill: 999px;
+	--vqy-font: vazirmatn, vazir, "Segoe UI", tahoma, system-ui, sans-serif;
+
+	color-scheme: light;
+}
+
+/* The owner's dark choice, or the system's when they left it on "System". */
+.vqy-admin[data-theme="dark"] {
+	--vqy-bg: #061319;
+	--vqy-surface: #0b1d25;
+	--vqy-surface-2: #0f252e;
+	--vqy-text: #e8f0f4;
+	--vqy-muted: #a3b7c0;
+	--vqy-border: #e2f0f41c;
+	--vqy-border-strong: #e2f0f440;
+	--vqy-shadow: 0 1px 2px #00000047, 0 10px 24px -14px #0000008c;
+	--vqy-accent-text: color-mix(in srgb, var(--vqy-accent) 55%, white);
+	--vqy-accent-soft: color-mix(in srgb, var(--vqy-accent) 22%, transparent);
+
+	color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.vqy-admin[data-theme="auto"] {
+		--vqy-bg: #061319;
+		--vqy-surface: #0b1d25;
+		--vqy-surface-2: #0f252e;
+		--vqy-text: #e8f0f4;
+		--vqy-muted: #a3b7c0;
+		--vqy-border: #e2f0f41c;
+		--vqy-border-strong: #e2f0f440;
+		--vqy-shadow: 0 1px 2px #00000047, 0 10px 24px -14px #0000008c;
+		--vqy-accent-text: color-mix(in srgb, var(--vqy-accent) 55%, white);
+		--vqy-accent-soft: color-mix(in srgb, var(--vqy-accent) 22%, transparent);
+
+		color-scheme: dark;
+	}
+}
+

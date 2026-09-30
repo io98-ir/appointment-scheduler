@@ -92,3 +92,71 @@ export function formatDate(
 function pad( value: number ): string {
 	return String( value ).padStart( 2, '0' );
 }
+
+const ARABIC_INDIC = '٠١٢٣٤٥٦٧٨٩';
+const EXTENDED_INDIC = '۰۱۲۳۴۵۶۷۸۹';
+
+/**
+ * Turns Persian and Arabic-Indic digits into Latin ones, so a date can be
+ * typed with any keyboard.
+ *
+ * @param text
+ */
+export function latinDigits( text: string ): string {
+	return text.replace( /[٠-٩۰-۹]/g, ( digit ) => {
+		const index = ARABIC_INDIC.indexOf( digit );
+
+		return String( index === -1 ? EXTENDED_INDIC.indexOf( digit ) : index );
+	} );
+}
+
+/**
+ * A date a person typed in the calendar they see ("1405/7/3", "۱۴۰۵-07-03"),
+ * as the Gregorian local date the API takes, or null when it is not a real
+ * date of that calendar.
+ *
+ * @param text
+ * @param calendar
+ */
+export function parseTypedDate(
+	text: string,
+	calendar: Calendar
+): string | null {
+	const match = /^(\d{4})[/.\-](\d{1,2})[/.\-](\d{1,2})$/.exec(
+		latinDigits( text.trim() )
+	);
+	if ( ! match ) {
+		return null;
+	}
+	const typed = {
+		year: Number( match[ 1 ] ),
+		month: Number( match[ 2 ] ),
+		day: Number( match[ 3 ] ),
+	};
+	if ( calendar === 'gregorian' ) {
+		const iso = `${ match[ 1 ] }-${ pad( typed.month ) }-${ pad(
+			typed.day
+		) }`;
+		try {
+			parseLocalDate( iso );
+
+			return iso;
+		} catch {
+			return null;
+		}
+	}
+	// jalaali-js would roll 1405/12/31 over into the next year; a round trip catches it.
+	const gregorian = fromJalali( typed );
+	const back = toJalali( gregorian );
+	if (
+		back.year !== typed.year ||
+		back.month !== typed.month ||
+		back.day !== typed.day
+	) {
+		return null;
+	}
+
+	return `${ gregorian.year }-${ pad( gregorian.month ) }-${ pad(
+		gregorian.day
+	) }`;
+}

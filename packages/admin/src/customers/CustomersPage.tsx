@@ -9,6 +9,7 @@ import type { ReactNode } from 'react';
 
 import { screenOf } from '../catalog/crud';
 import { SIZE } from '../catalog/fields';
+import { DateField } from '../DateField';
 import { ItemEditor } from '../catalog/ItemEditor';
 import { NotFound } from '../NotFound';
 import { useRoute } from '../router';
@@ -97,9 +98,7 @@ export function CustomersPage(): ReactNode {
 						value={ draft.email ?? '' }
 						onChange={ ( email ) => change( { email } ) }
 					/>
-					<TextControl
-						{ ...SIZE }
-						type="date"
+					<DateField
 						label={ __( 'Birth date', 'vaqtyar' ) }
 						value={ draft.birth_date ?? '' }
 						onChange={ ( value ) =>

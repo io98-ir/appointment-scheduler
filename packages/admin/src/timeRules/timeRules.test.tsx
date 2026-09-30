@@ -202,7 +202,8 @@ describe( 'the time-based prices section of the settings screen', () => {
 
 		await type( input( container, 'Starts from' ), '09:00' );
 		await type( input( container, 'Starts before' ), '12:00' );
-		await type( input( container, 'Applies from date' ), '2027-03-20' );
+		// Nowruz 1406 is 2027-03-21.
+		await type( input( container, 'Applies from date' ), '1406/01/01' );
 		await type(
 			input( container, 'Price change (%, negative for a discount)' ),
 			'-10'
@@ -214,7 +215,7 @@ describe( 'the time-based prices section of the settings screen', () => {
 				weekdays: [],
 				from: '09:00',
 				to: '12:00',
-				valid_from: '2027-03-20',
+				valid_from: '2027-03-21',
 				valid_to: null,
 				percent: -10,
 			},

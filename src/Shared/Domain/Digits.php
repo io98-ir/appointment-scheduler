@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vaqtyar\Shared;
+namespace Vaqtyar\Shared\Domain;
 
 /**
  * The digits numbers are shown with.

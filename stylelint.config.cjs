@@ -1,7 +1,8 @@
 /**
  * The WordPress rules, plus principles §5: logical properties only (so RTL
  * needs no separate rules) and no hard-coded colors (colors come from the
- * --vqy-* tokens, which default to the theme's presets).
+ * --vqy-* tokens). The one exception is the admin's tokens file, where the
+ * palette itself is defined (ADR-020).
  */
 module.exports = {
 	extends: [ '@wordpress/stylelint-config' ],
@@ -27,4 +28,10 @@ module.exports = {
 			{ message: 'Use BEM in kebab case: block__element--modifier' },
 		],
 	},
+	overrides: [
+		{
+			files: [ '**/tokens.css' ],
+			rules: { 'color-no-hex': null, 'color-named': null },
+		},
+	],
 };

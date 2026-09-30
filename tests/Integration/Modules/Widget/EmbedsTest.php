@@ -7,8 +7,12 @@ namespace Vaqtyar\Tests\Integration\Modules\Widget;
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\GeneralSettings;
 use Vaqtyar\Kernel\Settings\Settings;
+use Vaqtyar\Shared\Domain\Calendar;
+use Vaqtyar\Shared\Domain\Digits;
 use Vaqtyar\Shared\Domain\Brand;
+use Vaqtyar\Shared\Domain\Language;
 
 /**
  * The shortcodes and blocks that put the widget and the panel on a page
@@ -62,7 +66,8 @@ final class EmbedsTest extends TestCase
         self::assertSame(7, $config['service'] ?? null);
         self::assertArrayNotHasKey('staff', $config);
         self::assertArrayNotHasKey('variant', $config);
-        self::assertSame(['gregorian', 'latin'], [$config['calendar'] ?? null, $config['digits'] ?? null]);
+        // A bad value falls back to the owner's setting for the whole site (Persian digits by default).
+        self::assertSame(['gregorian', 'persian'], [$config['calendar'] ?? null, $config['digits'] ?? null]);
         $restUrl = $config['restUrl'] ?? null;
         self::assertStringContainsString(Identity::REST_NAMESPACE, \is_string($restUrl) ? $restUrl : '');
         self::assertTrue(\wp_script_is($handle, 'enqueued'));
@@ -98,7 +103,41 @@ final class EmbedsTest extends TestCase
             return;
         }
         $config = self::configOf($html, 'panel');
-        self::assertSame(['jalali', 'latin'], [$config['calendar'] ?? null, $config['digits'] ?? null]);
+        self::assertSame(['jalali', 'persian'], [$config['calendar'] ?? null, $config['digits'] ?? null]);
+    }
+
+    public function testWhatTheShortcodeLeavesOutIsTheSiteSetting(): void
+    {
+        if (!$this->built()) {
+            self::markTestSkipped('The widget is not built.');
+        }
+        $settings = new Settings();
+        $settings->save(new GeneralSettings(Calendar::Gregorian, Digits::Latin, Language::English));
+        try {
+            $html = \do_shortcode('[' . Identity::SLUG . '_panel]');
+        } finally {
+            $settings->save(new GeneralSettings());
+        }
+
+        $config = self::configOf($html, 'panel');
+        self::assertSame(['gregorian', 'latin'], [$config['calendar'] ?? null, $config['digits'] ?? null]);
+        self::assertStringContainsString(' dir="ltr"', $html);
+    }
+
+    public function testAThankYouPageOfThisSiteIsPassedOnAndAnotherSitesIsDropped(): void
+    {
+        if (!$this->built()) {
+            self::markTestSkipped('The widget is not built.');
+        }
+
+        $own = self::configOf(\do_shortcode('[' . Identity::SLUG . '_booking thanks="/thank-you/"]'), 'widget');
+        $other = self::configOf(
+            \do_shortcode('[' . Identity::SLUG . '_booking thanks="https://evil.example/x"]'),
+            'widget'
+        );
+
+        self::assertSame('/thank-you/', $own['thanks'] ?? null);
+        self::assertArrayNotHasKey('thanks', $other);
     }
 
     public function testABlockRendersLikeItsShortcode(): void

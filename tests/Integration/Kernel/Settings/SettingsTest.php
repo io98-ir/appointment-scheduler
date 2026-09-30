@@ -8,8 +8,8 @@ use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Options;
 use Vaqtyar\Kernel\Settings\GeneralSettings;
 use Vaqtyar\Kernel\Settings\Settings;
-use Vaqtyar\Shared\Calendar;
-use Vaqtyar\Shared\Digits;
+use Vaqtyar\Shared\Domain\Calendar;
+use Vaqtyar\Shared\Domain\Digits;
 use Vaqtyar\Tests\Unit\Kernel\Fixtures\LargeSettings;
 
 /**

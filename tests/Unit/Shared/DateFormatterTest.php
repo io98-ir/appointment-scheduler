@@ -9,9 +9,9 @@ use Brain\Monkey\Functions;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
-use Vaqtyar\Shared\Calendar;
+use Vaqtyar\Shared\Domain\Calendar;
 use Vaqtyar\Shared\DateFormatter;
-use Vaqtyar\Shared\Digits;
+use Vaqtyar\Shared\Domain\Digits;
 use Vaqtyar\Shared\Domain\Jalali;
 
 final class DateFormatterTest extends TestCase

@@ -2,7 +2,9 @@ import { __ } from '@wordpress/i18n';
 
 import { Coupons } from '../coupons/Coupons';
 import { Fields } from '../fields/Fields';
+import { BookingRulesForm } from '../setup/BookingRulesForm';
 import { BrandForm } from '../setup/BrandForm';
+import { DisplayForm } from '../setup/DisplayForm';
 import { PaymentSettingsForm } from '../setup/PaymentSettingsForm';
 import { SmsSettingsForm } from '../setup/SmsSettingsForm';
 import { TimeRules } from '../timeRules/TimeRules';
@@ -18,6 +20,14 @@ import { Policies } from './Policies';
 export function SettingsPage() {
 	return (
 		<>
+			<section className="vqy-admin__panel">
+				<h2>{ __( 'Language and calendar', 'vaqtyar' ) }</h2>
+				<DisplayForm />
+			</section>
+			<section className="vqy-admin__panel">
+				<h2>{ __( 'Booking rules', 'vaqtyar' ) }</h2>
+				<BookingRulesForm />
+			</section>
 			<section className="vqy-admin__panel">
 				<h2>{ __( 'Brand', 'vaqtyar' ) }</h2>
 				<BrandForm />

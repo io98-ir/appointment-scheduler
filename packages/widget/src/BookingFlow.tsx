@@ -1,5 +1,6 @@
 import {
 	ApiError,
+	downloadIcs,
 	formatAmount,
 	formatDate,
 	formatDigits,
@@ -24,6 +25,19 @@ interface Placed {
 }
 
 type Answers = Record< string, string | boolean >;
+
+/**
+ * The thank-you address with the tracking code added, so that page can show it.
+ *
+ * @param url  An address of this site.
+ * @param code The booking's tracking code.
+ */
+export function withCode( url: string, code: string ): string {
+	const target = new URL( url, window.location.href );
+	target.searchParams.set( 'code', code );
+
+	return target.toString();
+}
 
 function lineLabel( code: PriceLineCode ): string {
 	const labels: Record< PriceLineCode, string > = {
@@ -98,6 +112,8 @@ function secondsLeft( expiresAt: string ): number {
  * @param props.choice    The start the customer picked.
  * @param props.serviceId
  * @param props.coupon    A code to apply when the hold is placed, or "".
+ * @param props.title     What the appointment is called in a calendar file, e.g. the service.
+ * @param props.thanksUrl Where to go after a booking that needs no payment page, or "".
  * @param props.calendar
  * @param props.digits
  * @param props.clientFor A client that sends the given nonce.
@@ -107,6 +123,8 @@ export function BookingFlow( {
 	choice,
 	serviceId,
 	coupon,
+	title,
+	thanksUrl,
 	calendar,
 	digits,
 	clientFor,
@@ -115,6 +133,8 @@ export function BookingFlow( {
 	choice: SlotChoice;
 	serviceId: number;
 	coupon: string;
+	title: string;
+	thanksUrl: string;
 	calendar: Calendar;
 	digits: Digits;
 	clientFor: ( nonce?: string ) => ApiClient;
@@ -168,6 +188,14 @@ export function BookingFlow( {
 	const [ busy, setBusy ] = useState( false );
 	const [ left, setLeft ] = useState( 0 );
 
+	// The thank-you page of the site, when the shortcode names one (a booking that
+	// goes to a payment page has its own way back).
+	useEffect( () => {
+		if ( booking && thanksUrl !== '' ) {
+			window.location.assign( withCode( thanksUrl, booking.code ) );
+		}
+	}, [ booking, thanksUrl ] );
+
 	const expiresAt = placed.data?.hold.expires_at;
 	useEffect( () => {
 		if ( expiresAt === undefined || booking ) {
@@ -217,6 +245,22 @@ export function BookingFlow( {
 						booking.code
 					) }
 				</p>
+				<button
+					type="button"
+					onClick={ () =>
+						downloadIcs(
+							{
+								uid: booking.code,
+								start: booking.start,
+								end: booking.end,
+								summary: title,
+							},
+							booking.code
+						)
+					}
+				>
+					{ __( 'Add to calendar', 'vaqtyar' ) }
+				</button>
 			</div>
 		);
 	}

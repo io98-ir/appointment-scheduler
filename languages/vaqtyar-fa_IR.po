@@ -1691,3 +1691,117 @@ msgstr "شهریور"
 msgctxt "Jalali month"
 msgid "Tir"
 msgstr "تیر"
+
+msgid "%s (time)"
+msgstr "%s (ساعت)"
+
+msgid "Amber"
+msgstr "کهربایی"
+
+msgid "Any colour as #rrggbb; empty keeps the default. The rest of the palette follows it."
+msgstr "هر رنگی به شکل #rrggbb؛ خالی یعنی پیش‌فرض. بقیهٔ پالت خودکار از روی آن ساخته می‌شود."
+
+msgid "Dates are shown and typed in this calendar. Bookings are stored the same either way."
+msgstr "تاریخ‌ها با این تقویم نمایش داده و وارد می‌شوند. ذخیرهٔ نوبت‌ها در هر دو حالت یکسان است."
+
+msgid "Emerald"
+msgstr "زمردی"
+
+msgid "Enter a date like 1405/07/03."
+msgstr "تاریخ را مثل ۱۴۰۵/۰۷/۰۳ وارد کنید."
+
+msgid "Indigo"
+msgstr "نیلی"
+
+msgid "Language"
+msgstr "زبان"
+
+msgid "Language and calendar"
+msgstr "زبان و تقویم"
+
+msgid "Made by %s"
+msgstr "ساخته‌شده توسط %s"
+
+msgid "Palette"
+msgstr "پالت رنگ"
+
+msgid "Reload"
+msgstr "بارگذاری دوباره"
+
+msgid "Reload the page to use the new language."
+msgstr "برای اعمال زبان جدید، صفحه را دوباره بارگذاری کنید."
+
+msgid "Rose"
+msgstr "سرخابی"
+
+msgid "Same as the site"
+msgstr "مانند سایت"
+
+msgid "Save language and calendar"
+msgstr "ذخیره زبان و تقویم"
+
+msgid "Site setting"
+msgstr "تنظیم سایت"
+
+msgid "Slate"
+msgstr "خاکستری تیره"
+
+msgid "Teal"
+msgstr "فیروزه‌ای"
+
+msgid "The language of this plugin’s screens and of the booking form. It does not have to be the language of WordPress."
+msgstr "زبان صفحه‌های این افزونه و فرم رزرو. لازم نیست با زبان وردپرس یکی باشد."
+
+msgid "Vaqtyar"
+msgstr "وقت یار"
+
+msgid "Appointment booking for WordPress."
+msgstr "نوبت‌دهی آنلاین برای وردپرس."
+
+msgid "Add to calendar"
+msgstr "افزودن به تقویم"
+
+msgid "An address on this site to go to after a booking. Empty stays on the page."
+msgstr "آدرسی از همین سایت که بعد از رزرو به آن می‌روند. خالی یعنی در همان صفحه می‌ماند."
+
+msgid "Appointment %s"
+msgstr "نوبت %s"
+
+msgid "Booking closes this long before the start. 0 allows booking right up to the start."
+msgstr "رزرو این‌قدر پیش از شروع بسته می‌شود. صفر یعنی تا لحظهٔ شروع می‌شود رزرو کرد."
+
+msgid "Booking form for this service"
+msgstr "فرم رزرو همین خدمت"
+
+msgid "Booking rules"
+msgstr "قوانین رزرو"
+
+msgid "Export CSV"
+msgstr "خروجی CSV"
+
+msgid "How far apart the start times a customer can pick are."
+msgstr "فاصلهٔ ساعت‌های شروعی که مشتری می‌تواند انتخاب کند."
+
+msgid "In the order of the staff list"
+msgstr "به ترتیب فهرست پرسنل"
+
+msgid "Minimum notice (minutes)"
+msgstr "حداقل فاصله تا رزرو (دقیقه)"
+
+msgid "Open for booking up to (days ahead)"
+msgstr "رزرو باز است تا (روز بعد)"
+
+msgid "Save booking rules"
+msgstr "ذخیره قوانین رزرو"
+
+msgid "Start times every (minutes)"
+msgstr "ساعت شروع هر (دقیقه)"
+
+msgid "Thank-you page"
+msgstr "صفحهٔ تشکر"
+
+msgid "The least busy that day"
+msgstr "کم‌مشغله‌ترین پرسنل آن روز"
+
+msgid "When the customer does not choose staff"
+msgstr "وقتی مشتری پرسنل را انتخاب نکند"

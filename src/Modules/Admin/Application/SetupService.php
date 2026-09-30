@@ -10,7 +10,7 @@ use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\InvalidValue;
 
 /**
- * The owner's look (white-label) and whether the setup wizard is done. Each
+ * The owner's look (white-label), how dates, digits and language are shown, and whether the setup wizard is done. Each
  * call checks the capability again after the REST permission callback
  * (architecture §12).
  */
@@ -40,6 +40,21 @@ final class SetupService
         $this->store->saveBrand($brand);
 
         return $brand;
+    }
+
+    public function display(): Display
+    {
+        $this->authorize();
+
+        return $this->store->display();
+    }
+
+    public function saveDisplay(Display $display): Display
+    {
+        $this->authorize();
+        $this->store->saveDisplay($display);
+
+        return $display;
     }
 
     public function onboarded(): bool

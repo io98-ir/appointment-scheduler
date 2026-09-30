@@ -7,6 +7,7 @@ namespace Vaqtyar\Modules\Admin\Presentation;
 use Vaqtyar\Kernel\Caps;
 use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\GeneralSettings;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Admin\Application\SetupService;
 use Vaqtyar\Shared\Domain\Brand;
@@ -37,16 +38,25 @@ final class AdminPage
      */
     public function register(): void
     {
-        $name = $this->brand()->displayName(Identity::NAME);
+        $name = $this->brand()->displayName($this->productName());
         $this->hookSuffix = \add_menu_page(
             $name,
             $name,
             Caps::name(self::CAPABILITY),
             Identity::SLUG,
             [$this, 'render'],
-            'dashicons-calendar-alt',
+            MenuIcon::dataUri(),
             26
         );
+    }
+
+    /**
+     * The name the product goes by in the language of its screens: Persian
+     * has its own spelling (the translation of this string).
+     */
+    private function productName(): string
+    {
+        return \__('Vaqtyar', 'vaqtyar');
     }
 
     /**
@@ -110,13 +120,34 @@ final class AdminPage
                 'logo_url' => $this->brand()->logoUrl,
                 'color' => $this->brand()->color,
             ],
-            'product_name' => Identity::NAME,
+            'product_name' => $this->productName(),
+            'display' => $this->display(),
+            'author' => ['name' => Identity::AUTHOR, 'url' => Identity::AUTHOR_URL],
         ];
         \printf(
             '<div class="wrap"><div id="%s" data-config="%s"></div></div>',
             \esc_attr(Identity::SLUG . '-admin'),
             \esc_attr((string) \wp_json_encode($config))
         );
+    }
+
+    /**
+     * How the app shows dates, digits and itself; GET /general keeps it current after a save.
+     *
+     * @return array{calendar: string, digits: string, language: string, locale: string, dir: string}
+     */
+    private function display(): array
+    {
+        $general = $this->settings->get(GeneralSettings::class);
+        $site = \determine_locale();
+
+        return [
+            'calendar' => $general->calendar->value,
+            'digits' => $general->digits->value,
+            'language' => $general->language->value,
+            'locale' => $general->language->locale($site),
+            'dir' => $general->language->direction($site),
+        ];
     }
 
     private function brand(): Brand

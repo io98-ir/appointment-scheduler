@@ -14,3 +14,4 @@ Thumbs.db
 /.phpstan.cache/
 /.deptrac.cache
 /artifacts/
+/tools/guide/out/

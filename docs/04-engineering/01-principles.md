@@ -88,7 +88,7 @@
 - کامپوننت‌ها تابعی؛ منطق در Hookهای سفارشی؛ کامپوننت‌های UI خالص و بدون fetch.
 - **Server state فقط با TanStack Query**؛ داده سرور در state محلی کپی نمی‌شود.
 - نوع‌های API در `packages/shared/src/api-types.ts`؛ هر تغییر Schema در PHP همان PR نوع TS را هم به‌روز می‌کند.
-- استایل: **CSS Logical Properties** اجباری (Stylelint rule)؛ متغیرهای طراحی در `--vqy-*`؛ هیچ رنگ hard-code.
+- استایل: **CSS Logical Properties** اجباری (Stylelint rule)؛ متغیرهای طراحی در `--vqy-*`؛ هیچ رنگ hard-code، مگر در `packages/admin/src/tokens.css` که پالت آنجا تعریف می‌شود ([ADR-020](../03-architecture/05-decisions.md)).
 - ویجت: بدون وابستگی به jQuery، بدون global؛ یک `mount(el, config)`؛ چند نمونه در یک صفحه پشتیبانی شود.
 - هر رشته قابل نمایش از `@wordpress/i18n` (`__`)؛ هیچ متن فارسی hard-code در JS.
 - **دسترس‌پذیری:** ناوبری کامل صفحه‌کلید در تقویم و اسلات‌ها، `aria-live` برای تغییر اسلات‌ها، کنتراست AA، focus ring قابل مشاهده، برچسب واقعی برای هر input، پشتیبانی `prefers-reduced-motion`.

@@ -1,6 +1,7 @@
 import {
 	ApiClient,
 	ApiError,
+	downloadIcs,
 	formatAmount,
 	formatDate,
 	formatDigits,
@@ -15,6 +16,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { useEffect, useId, useState } from 'preact/hooks';
 
+import { DateInput } from './DateInput';
 import { PhoneCheck } from './PhoneCheck';
 import type { WidgetConfig } from './Widget';
 import { useFetch } from './useFetch';
@@ -298,6 +300,31 @@ function Appointments( {
 						</span>
 						{ item.cancel && item.reschedule && (
 							<div className="vqy-panel__actions">
+								{ item.status === 'confirmed' && (
+									<button
+										type="button"
+										onClick={ () =>
+											downloadIcs(
+												{
+													uid: item.code,
+													start: item.start,
+													end: item.end,
+													summary: sprintf(
+														/* translators: %s: an 8-character tracking code. */
+														__(
+															'Appointment %s',
+															'vaqtyar'
+														),
+														item.code
+													),
+												},
+												item.code
+											)
+										}
+									>
+										{ __( 'Add to calendar', 'vaqtyar' ) }
+									</button>
+								) }
 								{ item.reschedule.allowed ? (
 									<button
 										type="button"
@@ -379,6 +406,7 @@ function Appointments( {
 							<Mover
 								item={ item }
 								clientFor={ clientFor }
+								calendar={ calendar }
 								digits={ digits }
 								busy={ busy }
 								onPick={ ( slot ) =>
@@ -406,6 +434,7 @@ function Appointments( {
  * @param props
  * @param props.item
  * @param props.clientFor
+ * @param props.calendar
  * @param props.digits
  * @param props.busy
  * @param props.onPick
@@ -414,6 +443,7 @@ function Appointments( {
 function Mover( {
 	item,
 	clientFor,
+	calendar,
 	digits,
 	busy,
 	onPick,
@@ -421,6 +451,7 @@ function Mover( {
 }: {
 	item: PanelAppointment;
 	clientFor: ( nonce?: string, token?: string ) => ApiClient;
+	calendar: Calendar;
 	digits: Digits;
 	busy: boolean;
 	onPick: ( slot: AvailabilitySlot ) => void;
@@ -444,11 +475,12 @@ function Mover( {
 		<div className="vqy-panel__move">
 			<label htmlFor={ `${ uid }-date` }>
 				{ __( 'New date', 'vaqtyar' ) }
-				<input
+				<DateInput
 					id={ `${ uid }-date` }
-					type="date"
 					value={ date }
-					onInput={ ( e ) => setDate( e.currentTarget.value ) }
+					calendar={ calendar }
+					digits={ digits }
+					onChange={ setDate }
 				/>
 			</label>
 			{ day.loading && <p>{ __( 'Loading…', 'vaqtyar' ) }</p> }

@@ -21,4 +21,7 @@ final class Identity
     public const PREFIX = 'vqy';
     public const HOOK_PREFIX = 'vaqtyar';
     public const REST_NAMESPACE = 'vaqtyar/v1';
+    /** The maker, credited in the plugin header, the plugins list and the admin footer. Not renamed. */
+    public const AUTHOR = 'io98';
+    public const AUTHOR_URL = 'https://io98.ir';
 }

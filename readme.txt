@@ -1,8 +1,9 @@
 === Vaqtyar ===
+Contributors: io98
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: booking, appointments, scheduling, jalali, iran
@@ -63,10 +64,16 @@ The plugin trusts only the connecting address. Return the visitor's real address
 
 == Changelog ==
 
+= 1.1.0 =
+* A light, minimal admin look with a palette you can change, Jalali or Gregorian calendar, Persian or English screens, booking rules, add to calendar. See CHANGELOG.md.
+
 = 1.0.0 =
-* First release. See CHANGELOG.md for the full list.
+* First release.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+The plugin's own screens now follow the language and calendar chosen under Settings, Language and calendar (the site's language and the Jalali calendar until you choose). Check it after updating.
 
 = 1.0.0 =
 First release.

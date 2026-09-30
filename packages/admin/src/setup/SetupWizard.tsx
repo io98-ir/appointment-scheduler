@@ -15,6 +15,7 @@ import { useApi } from '../api';
 import { SIZE, toInt } from '../catalog/fields';
 import { newVariant } from '../catalog/service-draft';
 import { BrandForm } from './BrandForm';
+import { DisplayForm } from './DisplayForm';
 import { PaymentSettingsForm } from './PaymentSettingsForm';
 import { SmsSettingsForm } from './SmsSettingsForm';
 
@@ -34,9 +35,14 @@ export function defaultWeek( start: string, end: string ): ScheduleRule[] {
 	} ) );
 }
 
-type StepId = 'brand' | 'place' | 'service' | 'sms' | 'payments' | 'done';
+type StepId =
+	'display' | 'brand' | 'place' | 'service' | 'sms' | 'payments' | 'done';
 
 const STEPS: Array< { id: StepId; title: () => string } > = [
+	{
+		id: 'display',
+		title: () => __( 'Language and calendar', 'vaqtyar' ),
+	},
 	{ id: 'brand', title: () => __( 'Your brand', 'vaqtyar' ) },
 	{ id: 'place', title: () => __( 'Location and hours', 'vaqtyar' ) },
 	{ id: 'service', title: () => __( 'First service', 'vaqtyar' ) },
@@ -74,6 +80,7 @@ export function SetupWizard() {
 			</ol>
 			<section className="vqy-admin__panel">
 				<h2>{ step.title() }</h2>
+				{ step.id === 'display' && <DisplayForm onSaved={ next } /> }
 				{ step.id === 'brand' && <BrandForm onSaved={ next } /> }
 				{ step.id === 'place' && (
 					<PlaceStep

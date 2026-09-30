@@ -511,6 +511,26 @@ export interface Brand {
 	color: string;
 }
 
+/** /booking-rules: what a customer may book, site-wide. */
+export interface BookingRules {
+	/** Minutes between offered start times, 1 to 1440. */
+	slot_step_min: number;
+	/** Minutes before the start that booking closes. */
+	min_notice_min: number;
+	/** Days ahead that booking is open, 1 to 730. */
+	max_advance_days: number;
+	/** Who gets the booking when the customer lets the business choose. */
+	staff_choice: 'least_busy' | 'priority';
+}
+
+/** /general: how dates, numbers and the plugin's own screens are shown. */
+export interface DisplaySettings {
+	calendar: 'jalali' | 'gregorian';
+	digits: 'persian' | 'latin';
+	/** "auto" follows the site's language. */
+	language: 'auto' | 'fa' | 'en';
+}
+
 /** /payments/settings: never a merchant id, only whether it is set. */
 export interface PaymentSettings {
 	gateways: Array< {

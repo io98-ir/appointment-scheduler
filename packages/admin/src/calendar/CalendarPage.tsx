@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-	formatDate,
 	type AppointmentListItem,
 	type Location,
 	type Service,
@@ -23,6 +22,8 @@ import { store as noticesStore } from '@wordpress/notices';
 import type { FormEvent, PointerEvent } from 'react';
 
 import { useApi } from '../api';
+import { DateField } from '../DateField';
+import { useDate, useDigits } from '../display';
 import { useAll } from '../catalog/crud';
 import { SIZE } from '../catalog/fields';
 import { weekdayNames } from '../catalog/WeeklySchedule';
@@ -105,6 +106,7 @@ interface Column {
  */
 export function CalendarPage() {
 	const route = useRoute();
+	const showDate = useDate();
 	const { view, date: routeDate } = viewOf( route );
 	const locations = useAll< Location >( '/locations' );
 	const staff = useAll< Staff >( '/staff' );
@@ -152,11 +154,7 @@ export function CalendarPage() {
 		people.find( ( item ) => item.id === weekStaff ) ?? people[ 0 ];
 	const days = weekdayNames();
 	const dayLabel = ( day: string ) =>
-		`${ days[ weekOf( day ).indexOf( day ) ] } ${ formatDate(
-			day,
-			'jalali',
-			'latin'
-		) }`;
+		`${ days[ weekOf( day ).indexOf( day ) ] } ${ showDate( day ) }`;
 	const week = shown === undefined ? [] : weekOf( date );
 	const columns: Column[] =
 		view === 'day'
@@ -203,14 +201,8 @@ export function CalendarPage() {
 				<strong dir="auto">
 					{ view === 'day'
 						? dayLabel( date )
-						: `${ formatDate(
-								first,
-								'jalali',
-								'latin'
-							) } – ${ formatDate(
-								addDays( first, 6 ),
-								'jalali',
-								'latin'
+						: `${ showDate( first ) } – ${ showDate(
+								addDays( first, 6 )
 							) }` }
 				</strong>
 				<ButtonGroup>
@@ -286,6 +278,7 @@ function Grid( {
 	services: Service[];
 } ) {
 	const api = useApi();
+	const digits = useDigits();
 	const client = useQueryClient();
 	const { createSuccessNotice } = useDispatch( noticesStore );
 	const offset = offsetOf( location.timezone, from );
@@ -424,7 +417,9 @@ function Grid( {
 							dir="ltr"
 							style={ { insetBlockStart: hour - top } }
 						>
-							{ isoAt( from, hour, offset ).slice( 11, 16 ) }
+							{ digits(
+								isoAt( from, hour, offset ).slice( 11, 16 )
+							) }
 						</span>
 					) ) }
 				</div>
@@ -572,8 +567,13 @@ function Grid( {
 										} }
 									>
 										<span dir="ltr">
-											{ item.start.slice( 11, 16 ) }–
-											{ item.end.slice( 11, 16 ) }
+											{ digits(
+												item.start.slice( 11, 16 )
+											) }
+											–
+											{ digits(
+												item.end.slice( 11, 16 )
+											) }
 										</span>{ ' ' }
 										<span dir="auto">
 											{ item.customer?.name ?? '—' }
@@ -675,13 +675,9 @@ function MoveDialog( {
 			onRequestClose={ onClose }
 		>
 			<form className="vqy-admin__form" onSubmit={ submit }>
-				<TextControl
-					{ ...SIZE }
-					type="date"
+				<DateField
 					label={ __( 'Date', 'vaqtyar' ) }
-					help={ formatDate( date, 'jalali', 'latin' ) }
 					value={ date }
-					required
 					onChange={ setDate }
 				/>
 				<TextControl

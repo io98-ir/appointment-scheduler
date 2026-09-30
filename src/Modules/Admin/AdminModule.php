@@ -25,6 +25,7 @@ use Vaqtyar\Modules\Admin\Presentation\SiteHealthTests;
 use Vaqtyar\Shared\Domain\Clock;
 use Vaqtyar\Modules\Admin\Infrastructure\SettingsSetupStore;
 use Vaqtyar\Modules\Admin\Presentation\AdminPage;
+use Vaqtyar\Modules\Admin\Presentation\PluginLinks;
 use Vaqtyar\Modules\Admin\Presentation\Rest\SetupRoutes;
 use Vaqtyar\Shared\WpAuthorizer;
 
@@ -109,6 +110,7 @@ final class AdminModule implements Module
         if (!\is_admin()) {
             return;
         }
+        (new PluginLinks($context->pluginFile))->register();
         $page = new AdminPage($context->pluginFile, $container->get(Settings::class));
         \add_action('admin_menu', [$page, 'register']);
         \add_action('admin_enqueue_scripts', [$page, 'enqueue']);

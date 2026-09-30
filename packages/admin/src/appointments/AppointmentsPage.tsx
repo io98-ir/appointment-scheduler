@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
 	formatAmount,
-	formatDate,
+	type Digits,
 	type AppointmentListItem,
 	type AppointmentStatus,
 	type PaymentStatus,
@@ -14,12 +14,13 @@ import {
 	SearchControl,
 	SelectControl,
 	Spinner,
-	TextControl,
 } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { useApi } from '../api';
+import { DateField } from '../DateField';
+import { useDisplay, useWhen } from '../display';
 import { useAll } from '../catalog/crud';
 import { SIZE } from '../catalog/fields';
 import { errorMessage } from '../query';
@@ -53,24 +54,27 @@ export function paymentLabel( status: PaymentStatus ): string {
 	return labels[ status ];
 }
 
-/**
- * "1405/07/12 10:30", in the location's own time as the API gives it.
- *
- * @param iso ISO 8601 with the location's offset.
- */
-export function when( iso: string ): string {
-	return `${ formatDate( iso.slice( 0, 10 ), 'jalali', 'latin' ) } ${ iso.slice(
-		11,
-		16
-	) }`;
-}
-
-export function rial( amount: { amount: number; currency: 'IRR' } ): string {
+export function rial(
+	amount: { amount: number; currency: 'IRR' },
+	digits: Digits = 'latin'
+): string {
 	return sprintf(
 		/* translators: %s: an amount in Iranian rials. */
 		__( '%s IRR', 'vaqtyar' ),
-		formatAmount( amount, 'latin' )
+		formatAmount( amount, digits )
 	);
+}
+
+/**
+ * An amount in rials, in the digits the owner chose.
+ */
+export function useRial(): ( amount: {
+	amount: number;
+	currency: 'IRR';
+} ) => string {
+	const { digits } = useDisplay();
+
+	return ( amount ) => rial( amount, digits );
 }
 
 /**
@@ -101,6 +105,8 @@ function go( filters: Filters ) {
  */
 function AppointmentList( { filters }: { filters: Filters } ) {
 	const api = useApi();
+	const when = useWhen();
+	const money = useRial();
 	const staff = useAll< Staff >( '/staff' );
 	const services = useAll< Service >( '/services' );
 	const query = queryOf( filters );
@@ -193,25 +199,13 @@ function AppointmentList( { filters }: { filters: Filters } ) {
 						set( { staff: value === '' ? null : Number( value ) } )
 					}
 				/>
-				<TextControl
-					{ ...SIZE }
-					type="date"
+				<DateField
 					label={ __( 'From', 'vaqtyar' ) }
-					help={
-						filters.from &&
-						formatDate( filters.from, 'jalali', 'latin' )
-					}
 					value={ filters.from }
 					onChange={ ( value ) => set( { from: value } ) }
 				/>
-				<TextControl
-					{ ...SIZE }
-					type="date"
+				<DateField
 					label={ __( 'To', 'vaqtyar' ) }
-					help={
-						filters.to &&
-						formatDate( filters.to, 'jalali', 'latin' )
-					}
 					value={ filters.to }
 					onChange={ ( value ) => set( { to: value } ) }
 				/>
@@ -265,7 +259,7 @@ function AppointmentList( { filters }: { filters: Filters } ) {
 										{ statusLabel( item.status ) }
 									</span>
 								</td>
-								<td>{ rial( item.total ) }</td>
+								<td>{ money( item.total ) }</td>
 							</tr>
 						) ) }
 					</tbody>

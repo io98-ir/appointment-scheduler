@@ -80,6 +80,11 @@ final class Plugin
             )
         );
         $container->singleton(Settings::class, static fn (): Settings => new Settings());
+        $pluginFile = $this->pluginFile;
+        $container->singleton(
+            Localization::class,
+            static fn (Container $c): Localization => new Localization($pluginFile, $c->get(Settings::class))
+        );
         $container->singleton(
             SecretStore::class,
             static fn (Container $c): SecretStore => new SecretStore(
@@ -114,6 +119,8 @@ final class Plugin
 
         // Like the migrations: activation does not run after an update.
         (new Capabilities())->grant($this->capabilities($registry));
+
+        $container->get(Localization::class)->register();
 
         $context = new Context($container, $this->pluginFile, $this->version);
         foreach ($registry->all() as $module) {

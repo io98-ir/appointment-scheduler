@@ -200,13 +200,15 @@ describe( 'the coupons section of the settings screen', () => {
 			input( container, 'Maximum uses (empty for unlimited)' ),
 			'5'
 		);
-		await type( input( container, 'Valid from' ), '2027-03-20T08:30' );
+		// Nowruz 1406 is 2027-03-21.
+		await type( input( container, 'Valid from' ), '1406/01/01' );
+		await type( input( container, 'Valid from (time)' ), '08:30' );
 		await click( button( 'Add coupon' ) );
 
 		const [ coupon ] = server.items;
 		expect( coupon?.max_uses ).toBe( 5 );
 		expect( coupon?.valid_from ).toBe(
-			new Date( '2027-03-20T08:30' ).toISOString()
+			new Date( '2027-03-21T08:30' ).toISOString()
 		);
 		expect( coupon?.valid_to ).toBeNull();
 	} );

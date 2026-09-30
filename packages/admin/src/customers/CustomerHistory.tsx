@@ -4,7 +4,8 @@ import { Notice, Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 import { useApi } from '../api';
-import { rial, statusLabel, when } from '../appointments/AppointmentsPage';
+import { statusLabel, useRial } from '../appointments/AppointmentsPage';
+import { useWhen } from '../display';
 import { errorMessage } from '../query';
 
 /** Appointments shown on a customer's profile: the most recent ones. */
@@ -19,6 +20,8 @@ const RECENT = 20;
  */
 export function CustomerHistory( { customerId }: { customerId: number } ) {
 	const api = useApi();
+	const when = useWhen();
+	const money = useRial();
 	const history = useQuery( {
 		queryKey: [ '/appointments', { customer: customerId } ],
 		queryFn: () =>
@@ -66,7 +69,7 @@ export function CustomerHistory( { customerId }: { customerId: number } ) {
 										{ statusLabel( item.status ) }
 									</span>
 								</td>
-								<td>{ rial( item.total ) }</td>
+								<td>{ money( item.total ) }</td>
 							</tr>
 						) ) }
 					</tbody>

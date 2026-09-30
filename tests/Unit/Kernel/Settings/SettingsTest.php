@@ -10,8 +10,8 @@ use PHPUnit\Framework\TestCase;
 use Vaqtyar\Kernel\Options;
 use Vaqtyar\Kernel\Settings\GeneralSettings;
 use Vaqtyar\Kernel\Settings\Settings;
-use Vaqtyar\Shared\Calendar;
-use Vaqtyar\Shared\Digits;
+use Vaqtyar\Shared\Domain\Calendar;
+use Vaqtyar\Shared\Domain\Digits;
 use Vaqtyar\Tests\Unit\Kernel\Fixtures\LargeSettings;
 
 final class SettingsTest extends TestCase
@@ -56,7 +56,7 @@ final class SettingsTest extends TestCase
         $settings->save(new GeneralSettings(Calendar::Gregorian, Digits::Latin));
 
         self::assertSame(
-            [['calendar' => 'gregorian', 'digits' => 'latin'], true],
+            [['calendar' => 'gregorian', 'digits' => 'latin', 'language' => 'auto'], true],
             $this->options[Options::key('settings_general')]
         );
         $general = $settings->get(GeneralSettings::class);

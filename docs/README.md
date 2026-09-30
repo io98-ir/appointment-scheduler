@@ -17,9 +17,11 @@
 | | [05-delivery/07-security-review.md](05-delivery/07-security-review.md) | بازبینی امنیتی، یافته‌ها و ریسک‌های پذیرفته‌شده (T6.4) |
 | **مرجع توسعه‌دهنده** | [api.md](api.md) | REST API |
 | | [hooks.md](hooks.md) | hookها، قراردادهای درگاه و کانال، capabilityها |
-| **راهنمای کاربر** | [../user-guide-fa.md](../user-guide-fa.md) | راهنمای فارسی مدیر کسب‌وکار (داخل zip هم هست) |
+| **راهنمای کاربر** | [guide/README.md](guide/README.md) | **راهنمای مصور و مرحله‌ای** فارسی با عکس همه‌ی صفحه‌ها |
+| | [../user-guide-fa.md](../user-guide-fa.md) | راهنمای متنی فارسی مدیر کسب‌وکار (داخل zip هم هست) |
 | **تحقیق** | [01-research/01-competitors.md](01-research/01-competitors.md) | تحلیل محصولات مرجع و شکایات کاربران |
 | | [01-research/02-gap-analysis.md](01-research/02-gap-analysis.md) | ماتریس مقایسه، دردها، تمایزها |
+| | [01-research/05-parity-audit.md](01-research/05-parity-audit.md) | بازبینی برابری با افزونه‌های مرجع در 1.1: چه داریم، چه اضافه شد، چه نداریم |
 | | [01-research/03-iran-ecosystem.md](01-research/03-iran-ecosystem.md) | تقویم، پول، پیامک، درگاه، تحریم ← پیامد فنی |
 | | [01-research/04-wordpress-platform.md](01-research/04-wordpress-platform.md) | WP 6.9 و 7.0، Action Scheduler، جداول سفارشی |
 | **محصول** | [02-product/01-product-scope.md](02-product/01-product-scope.md) | دامنه 1.0، Backlog، آنچه انجام نمی‌دهیم، NFR |
@@ -27,7 +29,7 @@
 | | [03-architecture/02-architecture.md](03-architecture/02-architecture.md) | لایه‌ها، 7 ماژول، Kernel، تراکنش، API، امنیت |
 | | [03-architecture/03-booking-engine.md](03-architecture/03-booking-engine.md) | Availability، Hold/Lock، وضعیت‌ها، قیمت، Policy، پرداخت، اعلان |
 | | [03-architecture/04-data-model.md](03-architecture/04-data-model.md) | جداول و ایندکس‌ها |
-| | [03-architecture/05-decisions.md](03-architecture/05-decisions.md) | ADRها (000 تا 018) |
+| | [03-architecture/05-decisions.md](03-architecture/05-decisions.md) | ADRها (000 تا 020) |
 | **مهندسی** | [04-engineering/01-principles.md](04-engineering/01-principles.md) | ضد Overengineering، استاندارد کد، تست، امنیت، کارایی، DoD |
 | | [04-engineering/02-dev-environment.md](04-engineering/02-dev-environment.md) | وضعیت ابزارهای سیستم و نصب‌های لازم |
 | | [04-engineering/03-implementation-notes.md](04-engineering/03-implementation-notes.md) | **تله‌های فنی** Bootstrap، Composer، i18n، زمان، DB، REST |

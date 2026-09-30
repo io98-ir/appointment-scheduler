@@ -16,6 +16,7 @@ import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
 import { IntField, SIZE } from '../catalog/fields';
+import { DateField } from '../DateField';
 import { errorMessage } from '../query';
 
 const KEY = [ '/time-rules' ];
@@ -183,16 +184,12 @@ function AddTimeRule( { onAdded }: { onAdded: () => void } ) {
 				required
 				onChange={ setTo }
 			/>
-			<TextControl
-				{ ...SIZE }
-				type="date"
+			<DateField
 				label={ __( 'Applies from date', 'vaqtyar' ) }
 				value={ validFrom }
 				onChange={ setValidFrom }
 			/>
-			<TextControl
-				{ ...SIZE }
-				type="date"
+			<DateField
 				label={ __( 'Applies until date', 'vaqtyar' ) }
 				value={ validTo }
 				onChange={ setValidTo }

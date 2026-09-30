@@ -33,6 +33,24 @@
 		} );
 	}
 
+	function thanksField( props ) {
+		return [
+			el( components.TextControl, {
+				key: 'thanks',
+				type: 'url',
+				label: __( 'Thank-you page', 'vaqtyar' ),
+				help: __(
+					'An address on this site to go to after a booking. Empty stays on the page.',
+					'vaqtyar'
+				),
+				value: props.attributes.thanks || '',
+				onChange: function ( value ) {
+					props.setAttributes( { thanks: value } );
+				},
+			} ),
+		];
+	}
+
 	function lookFields( props ) {
 		return [
 			el( components.SelectControl, {
@@ -40,6 +58,7 @@
 				label: __( 'Calendar', 'vaqtyar' ),
 				value: props.attributes.calendar,
 				options: [
+					{ value: '', label: __( 'Site setting', 'vaqtyar' ) },
 					{ value: 'jalali', label: __( 'Jalali', 'vaqtyar' ) },
 					{ value: 'gregorian', label: __( 'Gregorian', 'vaqtyar' ) },
 				],
@@ -52,6 +71,7 @@
 				label: __( 'Digits', 'vaqtyar' ),
 				value: props.attributes.digits,
 				options: [
+					{ value: '', label: __( 'Site setting', 'vaqtyar' ) },
 					{ value: 'latin', label: '0123456789' },
 					{ value: 'persian', label: '۰۱۲۳۴۵۶۷۸۹' },
 				],
@@ -72,7 +92,9 @@
 							numberField( props, 'variant', __( 'Duration ID', 'vaqtyar' ) ),
 							numberField( props, 'location', __( 'Location ID', 'vaqtyar' ) ),
 							numberField( props, 'staff', __( 'Staff ID', 'vaqtyar' ) ),
-					  ].concat( lookFields( props ) )
+					  ]
+							.concat( lookFields( props ) )
+							.concat( thanksField( props ) )
 					: lookFields( props );
 
 				return el(

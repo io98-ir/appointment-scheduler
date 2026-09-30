@@ -86,10 +86,13 @@ describe( 'the admin shell', () => {
 		const app = () => container.querySelector( '.vqy-admin' );
 		expect( app()?.getAttribute( 'data-theme' ) ).toBe( 'auto' );
 
-		const select = container.querySelector( 'select' )!;
+		const dark = [
+			...container.querySelectorAll< HTMLButtonElement >(
+				'.vqy-admin__theme button'
+			),
+		].find( ( button ) => button.textContent === 'Dark' )!;
 		await act( async () => {
-			select.value = 'dark';
-			select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			dark.click();
 		} );
 
 		expect( app()?.getAttribute( 'data-theme' ) ).toBe( 'dark' );

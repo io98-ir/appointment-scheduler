@@ -16,6 +16,7 @@ import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
 import { IntField, SIZE } from '../catalog/fields';
+import { DateTimeField } from '../DateField';
 import { errorMessage } from '../query';
 
 const KEY = [ '/coupons' ];
@@ -184,16 +185,12 @@ function AddCoupon( { onAdded }: { onAdded: () => void } ) {
 				value={ maxUses }
 				onChange={ setMaxUses }
 			/>
-			<TextControl
-				{ ...SIZE }
-				type="datetime-local"
+			<DateTimeField
 				label={ __( 'Valid from', 'vaqtyar' ) }
 				value={ validFrom }
 				onChange={ setValidFrom }
 			/>
-			<TextControl
-				{ ...SIZE }
-				type="datetime-local"
+			<DateTimeField
 				label={ __( 'Valid until', 'vaqtyar' ) }
 				value={ validTo }
 				onChange={ setValidTo }

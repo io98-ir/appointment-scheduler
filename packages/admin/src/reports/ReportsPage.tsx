@@ -5,16 +5,17 @@ import type {
 	Service,
 	Staff,
 } from '@vaqtyar/shared';
-import { Button, Notice, Spinner, TextControl } from '@wordpress/components';
+import { Button, Notice, Spinner } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
 
 import { useApi } from '../api';
-import { rial, statusLabel, when } from '../appointments/AppointmentsPage';
+import { statusLabel, useRial } from '../appointments/AppointmentsPage';
+import { DateField } from '../DateField';
+import { useDate, useDigits } from '../display';
 import { useAll } from '../catalog/crud';
-import { SIZE } from '../catalog/fields';
 import { errorMessage } from '../query';
 import { downloadCsv, toCsv } from './csv';
 import { daysAgo } from './dates';
@@ -114,16 +115,12 @@ export function ReportsPage() {
 				className="vqy-admin__inline-form"
 				onSubmit={ ( event ) => event.preventDefault() }
 			>
-				<TextControl
-					{ ...SIZE }
-					type="date"
+				<DateField
 					label={ __( 'From date', 'vaqtyar' ) }
 					value={ from }
 					onChange={ setFrom }
 				/>
-				<TextControl
-					{ ...SIZE }
-					type="date"
+				<DateField
 					label={ __( 'To date', 'vaqtyar' ) }
 					value={ to }
 					onChange={ setTo }
@@ -166,29 +163,36 @@ function Report( {
 	staffName: ( id: number ) => string;
 } ) {
 	const { totals } = summary;
+	const showDate = useDate();
+	const digits = useDigits();
+	const money = useRial();
 
 	return (
 		<>
 			<section className="vqy-admin__panel">
 				<h2>{ __( 'Summary', 'vaqtyar' ) }</h2>
 				<p>
-					{ sprintf(
-						/* translators: 1: number of appointments, 2: revenue. */
-						__( '%1$d booked appointments, %2$s.', 'vaqtyar' ),
-						totals.appointments,
-						rial( { amount: totals.revenue, currency: 'IRR' } )
+					{ digits(
+						sprintf(
+							/* translators: 1: number of appointments, 2: revenue. */
+							__( '%1$d booked appointments, %2$s.', 'vaqtyar' ),
+							totals.appointments,
+							money( { amount: totals.revenue, currency: 'IRR' } )
+						)
 					) }
 				</p>
 				<p>
-					{ sprintf(
-						/* translators: 1: cancelled, 2: no-shows, 3: percent. */
-						__(
-							'%1$d cancelled, %2$d no-shows, cancellation rate %3$s%%.',
-							'vaqtyar'
-						),
-						totals.cancelled,
-						totals.no_show,
-						String( totals.cancel_rate )
+					{ digits(
+						sprintf(
+							/* translators: 1: cancelled, 2: no-shows, 3: percent. */
+							__(
+								'%1$d cancelled, %2$d no-shows, cancellation rate %3$s%%.',
+								'vaqtyar'
+							),
+							totals.cancelled,
+							totals.no_show,
+							String( totals.cancel_rate )
+						)
 					) }
 				</p>
 				<ul className="vqy-admin__exceptions">
@@ -220,7 +224,7 @@ function Report( {
 			/>
 			<section className="vqy-admin__panel">
 				<h2>{ __( 'By day', 'vaqtyar' ) }</h2>
-				<table className="widefat striped">
+				<table className="widefat striped vqy-admin__table">
 					<thead>
 						<tr>
 							<th>{ __( 'Date', 'vaqtyar' ) }</th>
@@ -231,15 +235,12 @@ function Report( {
 					<tbody>
 						{ summary.days.map( ( day ) => (
 							<tr key={ day.date }>
+								<td>{ showDate( day.date ) }</td>
 								<td>
-									{ when( day.date + 'T00:00' ).slice(
-										0,
-										10
-									) }
+									{ digits( String( day.appointments ) ) }
 								</td>
-								<td>{ day.appointments }</td>
 								<td>
-									{ rial( {
+									{ money( {
 										amount: day.revenue,
 										currency: 'IRR',
 									} ) }
@@ -264,6 +265,9 @@ function Table( {
 	rows: Ranked;
 	name: ( id: number ) => string;
 } ) {
+	const digits = useDigits();
+	const money = useRial();
+
 	return (
 		<section className="vqy-admin__panel">
 			<h2>{ title }</h2>
@@ -272,7 +276,7 @@ function Table( {
 					{ __( 'Nothing booked in this range.', 'vaqtyar' ) }
 				</p>
 			) : (
-				<table className="widefat striped">
+				<table className="widefat striped vqy-admin__table">
 					<thead>
 						<tr>
 							<th>{ label }</th>
@@ -284,9 +288,11 @@ function Table( {
 						{ rows.map( ( row ) => (
 							<tr key={ row.id }>
 								<td>{ name( row.id ) }</td>
-								<td>{ row.appointments }</td>
 								<td>
-									{ rial( {
+									{ digits( String( row.appointments ) ) }
+								</td>
+								<td>
+									{ money( {
 										amount: row.revenue,
 										currency: 'IRR',
 									} ) }

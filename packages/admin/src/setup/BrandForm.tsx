@@ -9,6 +9,7 @@ import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
 import { SIZE } from '../catalog/fields';
+import { DEFAULT_ACCENT, PRESETS } from '../palette';
 import { errorMessage } from '../query';
 
 interface MediaFrame {
@@ -126,12 +127,37 @@ export function BrandForm( { onSaved }: { onSaved?: () => void } ) {
 					</Button>
 				) }
 			</div>
+			<fieldset className="vqy-palette">
+				<legend className="components-base-control__label">
+					{ __( 'Palette', 'vaqtyar' ) }
+				</legend>
+				{ PRESETS.map( ( preset ) => (
+					<button
+						key={ preset.id }
+						type="button"
+						className="vqy-palette__option"
+						aria-pressed={
+							( draft.color || DEFAULT_ACCENT ).toLowerCase() ===
+							preset.color
+						}
+						onClick={ () =>
+							setDraft( { ...draft, color: preset.color } )
+						}
+					>
+						<span
+							className="vqy-palette__dot"
+							style={ { background: preset.color } }
+						/>
+						{ preset.label() }
+					</button>
+				) ) }
+			</fieldset>
 			<div className="vqy-admin__row">
 				<TextControl
 					{ ...SIZE }
 					label={ __( 'Accent colour', 'vaqtyar' ) }
 					help={ __(
-						'Like #3858e9; empty keeps the default.',
+						'Any colour as #rrggbb; empty keeps the default. The rest of the palette follows it.',
 						'vaqtyar'
 					) }
 					value={ draft.color }
@@ -144,7 +170,7 @@ export function BrandForm( { onSaved }: { onSaved?: () => void } ) {
 					value={
 						/^#[0-9a-f]{6}$/i.test( draft.color )
 							? draft.color
-							: '#3858e9'
+							: DEFAULT_ACCENT
 					}
 					onChange={ ( event ) =>
 						setDraft( { ...draft, color: event.target.value } )

@@ -114,6 +114,10 @@
     <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
         <exclude-pattern>*/tests/Integration/*</exclude-pattern>
     </rule>
+    <!-- PHPCompatibility 9.3 predates enums and reads $this in an enum method as outside an object. -->
+    <rule ref="PHPCompatibility.Variables.ForbiddenThisUseContexts">
+        <exclude-pattern>*/src/Shared/Domain/Language.php$</exclude-pattern>
+    </rule>
     <rule ref="PSR12.Properties.ConstantVisibility">
         <exclude-pattern>*/src/Kernel/Requirements\.php$</exclude-pattern>
     </rule>

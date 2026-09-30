@@ -3,14 +3,17 @@ import {
 	useQuery,
 	type QueryClient,
 } from '@tanstack/react-query';
-import type { ApiClient, Brand } from '@vaqtyar/shared';
-import { SelectControl, SnackbarList } from '@wordpress/components';
+import type { ApiClient, Brand, DisplaySettings } from '@vaqtyar/shared';
+import { SnackbarList } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
-import { Component } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { Component, useEffect } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 import { store as noticesStore } from '@wordpress/notices';
 
 import { ApiContext } from './api';
+import type { Author } from './config';
+import { DEFAULT_DISPLAY, DisplayProvider } from './display';
+import { paletteVars } from './palette';
 import { AppointmentsPage } from './appointments/AppointmentsPage';
 import { CalendarPage } from './calendar/CalendarPage';
 import {
@@ -145,37 +148,86 @@ const NO_BRAND: Brand = { name: '', logo_url: '', color: '' };
 
 /**
  * The owner's name and logo at the start of the header (white-label, T6.1).
- * It follows a save on the settings screen without a reload.
  *
  * @param props
- * @param props.api         The REST client.
- * @param props.initial     The brand the page was rendered with.
+ * @param props.brand       The owner's brand.
  * @param props.productName What an empty brand name means.
  */
 function BrandMark( {
-	api,
-	initial,
+	brand,
 	productName,
 }: {
-	api: ApiClient;
-	initial: Brand;
+	brand: Brand;
 	productName: string;
 } ) {
-	const { data } = useQuery( {
-		queryKey: [ '/brand' ],
-		queryFn: () => api.get< Brand >( '/brand' ),
-		initialData: initial,
-		staleTime: Infinity,
-	} );
-	const name = data.name || productName;
-
 	return (
 		<span className="vqy-admin__brand">
-			{ data.logo_url && (
-				<img className="vqy-admin__logo" src={ data.logo_url } alt="" />
+			{ brand.logo_url && (
+				<img
+					className="vqy-admin__logo"
+					src={ brand.logo_url }
+					alt=""
+				/>
 			) }
-			{ name }
+			{ brand.name || productName }
 		</span>
+	);
+}
+
+/**
+ * The owner's accent on the page's body as well: WordPress's modals and
+ * popovers render outside the app's own element, and read the same colour.
+ *
+ * @param vars From paletteVars().
+ */
+function usePageAccent( vars: Record< string, string > ) {
+	const key = JSON.stringify( vars );
+	useEffect( () => {
+		const names = Object.keys( vars );
+		for ( const name of names ) {
+			document.body.style.setProperty( name, vars[ name ] ?? '' );
+		}
+
+		return () => {
+			for ( const name of names ) {
+				document.body.style.removeProperty( name );
+			}
+		};
+		// The serialised vars stand for the object, which is new on each render.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ key ] );
+}
+
+function ThemeSwitch( {
+	theme,
+	onChange,
+}: {
+	theme: ThemeChoice;
+	onChange: ( choice: ThemeChoice ) => void;
+} ) {
+	const options: Array< [ ThemeChoice, string ] > = [
+		[ 'auto', __( 'System', 'vaqtyar' ) ],
+		[ 'light', __( 'Light', 'vaqtyar' ) ],
+		[ 'dark', __( 'Dark', 'vaqtyar' ) ],
+	];
+
+	return (
+		<div
+			className="vqy-admin__theme"
+			role="group"
+			aria-label={ __( 'Theme', 'vaqtyar' ) }
+		>
+			{ options.map( ( [ value, label ] ) => (
+				<button
+					key={ value }
+					type="button"
+					aria-pressed={ theme === value }
+					onClick={ () => onChange( value ) }
+				>
+					{ label }
+				</button>
+			) ) }
+		</div>
 	);
 }
 
@@ -184,100 +236,135 @@ export function App( {
 	queryClient,
 	brand = NO_BRAND,
 	productName = '',
+	display = DEFAULT_DISPLAY,
+	dir = 'ltr',
+	author = { name: '', url: '' },
 }: {
 	api: ApiClient;
 	queryClient: QueryClient;
 	brand?: Brand;
 	productName?: string;
+	display?: DisplaySettings;
+	dir?: 'rtl' | 'ltr';
+	author?: Author;
+} ) {
+	return (
+		<ApiContext.Provider value={ api }>
+			<QueryClientProvider client={ queryClient }>
+				<DisplayProvider api={ api } initial={ display }>
+					<Shell
+						api={ api }
+						initialBrand={ brand }
+						productName={ productName }
+						dir={ dir }
+						author={ author }
+					/>
+				</DisplayProvider>
+			</QueryClientProvider>
+		</ApiContext.Provider>
+	);
+}
+
+/**
+ * The page: header, the routed screen and the footer. The owner's brand is
+ * read here, so a save on the settings screen recolours it without a reload.
+ *
+ * @param props
+ * @param props.api          The REST client.
+ * @param props.initialBrand The brand the page was rendered with.
+ * @param props.productName  What an empty brand name means.
+ * @param props.dir          The direction of the plugin's language.
+ * @param props.author       The maker, credited in the footer.
+ */
+function Shell( {
+	api,
+	initialBrand,
+	productName,
+	dir,
+	author,
+}: {
+	api: ApiClient;
+	initialBrand: Brand;
+	productName: string;
+	dir: 'rtl' | 'ltr';
+	author: Author;
 } ) {
 	const route = useRoute();
 	const section = sectionOf( route );
 	const [ theme, setTheme ] = useTheme();
+	const { data: brand } = useQuery( {
+		queryKey: [ '/brand' ],
+		queryFn: () => api.get< Brand >( '/brand' ),
+		initialData: initialBrand,
+		staleTime: Infinity,
+	} );
+	const vars = paletteVars( brand.color );
+	usePageAccent( vars );
 
 	return (
-		<ApiContext.Provider value={ api }>
-			<QueryClientProvider client={ queryClient }>
-				<div
-					className="vqy-admin"
-					data-theme={ theme }
-					style={
-						brand.color
-							? ( {
-									'--vqy-accent': brand.color,
-								} as CSSProperties )
-							: undefined
-					}
+		<div
+			className="vqy-admin"
+			dir={ dir }
+			data-theme={ theme }
+			style={ vars as CSSProperties }
+		>
+			<header className="vqy-admin__header">
+				{ productName !== '' && (
+					<BrandMark brand={ brand } productName={ productName } />
+				) }
+				<nav
+					className="vqy-admin__nav"
+					aria-label={ __( 'Sections', 'vaqtyar' ) }
 				>
-					<header className="vqy-admin__header">
-						{ productName !== '' && (
-							<BrandMark
-								api={ api }
-								initial={ brand }
-								productName={ productName }
-							/>
+					{ SECTIONS.filter( ( item ) => item.menu !== false ).map(
+						( item ) => (
+							<a
+								key={ item.path }
+								href={ '#' + item.path }
+								className="vqy-admin__link"
+								aria-current={
+									item === section ? 'page' : undefined
+								}
+							>
+								{ item.title() }
+							</a>
+						)
+					) }
+				</nav>
+				<ThemeSwitch theme={ theme } onChange={ setTheme } />
+			</header>
+			<main className="vqy-admin__main">
+				{ /* A new route clears a crashed screen. */ }
+				<ErrorBoundary key={ route }>
+					{ section ? (
+						<>
+							<h1 className="vqy-admin__title">
+								{ section.title() }
+							</h1>
+							<section.Page />
+						</>
+					) : (
+						<NotFound />
+					) }
+				</ErrorBoundary>
+			</main>
+			<footer className="vqy-admin__footer">
+				{ author.url !== '' && (
+					<a
+						href={ author.url }
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ sprintf(
+							/* translators: %s: the maker's name, io98 */
+							__( 'Made by %s', 'vaqtyar' ),
+							author.name
 						) }
-						<nav
-							className="vqy-admin__nav"
-							aria-label={ __( 'Sections', 'vaqtyar' ) }
-						>
-							{ SECTIONS.filter(
-								( item ) => item.menu !== false
-							).map( ( item ) => (
-								<a
-									key={ item.path }
-									href={ '#' + item.path }
-									className="vqy-admin__link"
-									aria-current={
-										item === section ? 'page' : undefined
-									}
-								>
-									{ item.title() }
-								</a>
-							) ) }
-						</nav>
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={ __( 'Theme', 'vaqtyar' ) }
-							value={ theme }
-							options={ [
-								{
-									value: 'auto',
-									label: __( 'System', 'vaqtyar' ),
-								},
-								{
-									value: 'light',
-									label: __( 'Light', 'vaqtyar' ),
-								},
-								{
-									value: 'dark',
-									label: __( 'Dark', 'vaqtyar' ),
-								},
-							] }
-							onChange={ ( value ) =>
-								setTheme( value as ThemeChoice )
-							}
-						/>
-					</header>
-					<main className="vqy-admin__main">
-						{ /* A new route clears a crashed screen. */ }
-						<ErrorBoundary key={ route }>
-							{ section ? (
-								<>
-									<h1 className="vqy-admin__title">
-										{ section.title() }
-									</h1>
-									<section.Page />
-								</>
-							) : (
-								<NotFound />
-							) }
-						</ErrorBoundary>
-					</main>
-					<Snackbars />
-				</div>
-			</QueryClientProvider>
-		</ApiContext.Provider>
+					</a>
+				) }
+			</footer>
+			<Snackbars />
+		</div>
 	);
 }
 

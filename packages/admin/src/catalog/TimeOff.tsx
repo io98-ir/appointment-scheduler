@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-	formatDate,
-	type ScheduleException,
-	type ScheduleOwnerType,
-} from '@vaqtyar/shared';
+import type { ScheduleException, ScheduleOwnerType } from '@vaqtyar/shared';
 import {
 	Button,
 	Notice,
@@ -19,6 +15,8 @@ import { store as noticesStore } from '@wordpress/notices';
 import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
+import { DateField } from '../DateField';
+import { useDate } from '../display';
 import { errorMessage } from '../query';
 import { SIZE } from './fields';
 
@@ -68,6 +66,7 @@ export function TimeOff( {
 	ownerId: number;
 } ) {
 	const api = useApi();
+	const showDate = useDate();
 	const client = useQueryClient();
 	const { createSuccessNotice } = useDispatch( noticesStore );
 	const range = yearFrom( today() );
@@ -110,11 +109,7 @@ export function TimeOff( {
 					{ list.data.map( ( exception ) => (
 						<li key={ exception.id }>
 							<span dir="ltr">
-								{ formatDate(
-									exception.date,
-									'jalali',
-									'latin'
-								) }
+								{ showDate( exception.date ) }
 							</span>{ ' ' }
 							{ kindLabel( exception.kind ) }{ ' ' }
 							{ exception.start === null
@@ -184,17 +179,9 @@ function AddException( {
 
 	return (
 		<form className="vqy-admin__inline-form" onSubmit={ submit }>
-			<TextControl
-				{ ...SIZE }
-				type="date"
+			<DateField
 				label={ __( 'Date', 'vaqtyar' ) }
-				help={
-					date !== ''
-						? formatDate( date, 'jalali', 'latin' )
-						: undefined
-				}
 				value={ date }
-				required
 				onChange={ setDate }
 			/>
 			<SelectControl

@@ -2,8 +2,11 @@
 
 /**
  * Plugin Name:       Vaqtyar
+ * Plugin URI:        https://io98.ir
  * Description:       Appointment booking for WordPress.
- * Version:           1.0.0
+ * Version:           1.1.0
+ * Author:            io98
+ * Author URI:        https://io98.ir
  * Requires at least: 6.6
  * Requires PHP:      8.1
  * License:           GPL-2.0-or-later
@@ -21,7 +24,7 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
-define('VAQTYAR_VERSION', '1.0.0');
+define('VAQTYAR_VERSION', '1.1.0');
 define('VAQTYAR_FILE', __FILE__);
 
 require_once __DIR__ . '/src/Kernel/Requirements.php';

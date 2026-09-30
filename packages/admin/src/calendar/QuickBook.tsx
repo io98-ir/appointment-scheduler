@@ -23,6 +23,8 @@ import { store as noticesStore } from '@wordpress/notices';
 import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
+import { DateField } from '../DateField';
+import { useDigits } from '../display';
 import { SIZE } from '../catalog/fields';
 import { errorMessage } from '../query';
 import { wallClock } from './time';
@@ -81,6 +83,7 @@ export function QuickBook( {
 	onClose: () => void;
 } ) {
 	const api = useApi();
+	const digits = useDigits();
 	const client = useQueryClient();
 	const { createSuccessNotice } = useDispatch( noticesStore );
 	const [ staffId, setStaffId ] = useState( slot.staffId );
@@ -267,12 +270,9 @@ export function QuickBook( {
 						) }
 					</>
 				) }
-				<TextControl
-					{ ...SIZE }
-					type="date"
+				<DateField
 					label={ __( 'Date', 'vaqtyar' ) }
 					value={ date }
-					required
 					onChange={ setDate }
 				/>
 				{ availability.isError && (
@@ -293,7 +293,7 @@ export function QuickBook( {
 						value={ start }
 						options={ starts.map( ( item ) => ( {
 							value: item,
-							label: item.slice( 11, 16 ),
+							label: digits( item.slice( 11, 16 ) ),
 						} ) ) }
 						onChange={ setStart }
 					/>

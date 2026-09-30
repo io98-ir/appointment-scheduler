@@ -5,14 +5,30 @@ declare(strict_types=1);
 namespace Vaqtyar\Tests\Unit\Modules\Admin;
 
 use PHPUnit\Framework\TestCase;
+use Vaqtyar\Modules\Admin\Application\Display;
 use Vaqtyar\Modules\Admin\Application\SetupService;
 use Vaqtyar\Modules\Admin\Application\SetupStore;
+use Vaqtyar\Shared\Domain\Calendar;
+use Vaqtyar\Shared\Domain\Digits;
 use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Forbidden;
 use Vaqtyar\Shared\Domain\InvalidValue;
+use Vaqtyar\Shared\Domain\Language;
 
 final class SetupServiceTest extends TestCase
 {
+    public function testSavesHowDatesAndLanguageAreShown(): void
+    {
+        $store = new MemorySetupStore();
+        $service = $this->service($store, true);
+
+        self::assertSame(Calendar::Jalali, $service->display()->calendar);
+        $service->saveDisplay(new Display(Calendar::Gregorian, Digits::Latin, Language::English));
+
+        self::assertSame(Calendar::Gregorian, $store->display->calendar);
+        self::assertSame(Language::English, $service->display()->language);
+    }
+
     public function testSavesAValidBrand(): void
     {
         $store = new MemorySetupStore();
@@ -58,6 +74,8 @@ final class SetupServiceTest extends TestCase
             static fn () => $service->saveBrand('X', '', ''),
             static fn () => $service->onboarded(),
             static fn () => $service->setOnboarded(true),
+            static fn () => $service->display(),
+            static fn () => $service->saveDisplay(new Display(Calendar::Gregorian, Digits::Latin, Language::English)),
         ];
         foreach ($calls as $call) {
             try {
@@ -69,6 +87,7 @@ final class SetupServiceTest extends TestCase
         }
         self::assertSame('', $store->brand->name);
         self::assertFalse($store->onboarded);
+        self::assertSame(Calendar::Jalali, $store->display->calendar);
     }
 
     private function service(SetupStore $store, bool $allowed): SetupService

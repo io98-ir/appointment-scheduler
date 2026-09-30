@@ -12,7 +12,7 @@ use Vaqtyar\Kernel\Log\Logger;
 use Vaqtyar\Kernel\Log\LogLevel;
 use Vaqtyar\Kernel\RequestId;
 use Vaqtyar\Kernel\Tables;
-use Vaqtyar\Shared\Calendar;
+use Vaqtyar\Shared\Domain\Calendar;
 use Vaqtyar\Tests\Fixtures\FixedClock;
 use Vaqtyar\Tests\Unit\Kernel\Database\FakesWpdb;
 

@@ -6,6 +6,7 @@ import { store as noticesStore } from '@wordpress/notices';
 import { App } from './App';
 import { readConfig } from './config';
 import { createQueryClient } from './query';
+import './tokens.css';
 import './admin.css';
 
 /**
@@ -13,7 +14,8 @@ import './admin.css';
  */
 const element = document.getElementById( `${ SLUG }-admin` );
 if ( element ) {
-	const { restUrl, nonce, brand, productName } = readConfig( element );
+	const { restUrl, nonce, brand, productName, display, dir, author } =
+		readConfig( element );
 	const queryClient = createQueryClient( ( message ) =>
 		dispatch( noticesStore ).createErrorNotice( message, {
 			type: 'snackbar',
@@ -26,6 +28,9 @@ if ( element ) {
 			queryClient={ queryClient }
 			brand={ brand }
 			productName={ productName }
+			display={ display }
+			dir={ dir }
+			author={ author }
 		/>
 	);
 }

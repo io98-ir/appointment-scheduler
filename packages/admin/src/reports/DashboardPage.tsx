@@ -4,7 +4,8 @@ import { Notice, Spinner } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { useApi } from '../api';
-import { rial, when } from '../appointments/AppointmentsPage';
+import { useRial } from '../appointments/AppointmentsPage';
+import { useDate, useDigits, useWhen } from '../display';
 import { errorMessage } from '../query';
 import { SetupPrompt } from '../setup/SetupPrompt';
 import { daysAgo } from './dates';
@@ -45,6 +46,10 @@ function Stat( {
  */
 export function DashboardPage() {
 	const api = useApi();
+	const when = useWhen();
+	const money = useRial();
+	const showDate = useDate();
+	const digits = useDigits();
 	const from = daysAgo( 29 );
 	const to = daysAgo( 0 );
 	const summary = useQuery( {
@@ -93,35 +98,37 @@ export function DashboardPage() {
 			<div className="vqy-admin__stats">
 				<Stat
 					title={ __( 'Today', 'vaqtyar' ) }
-					value={ count( sum( now ).appointments ) }
-					detail={ rial( {
+					value={ digits( count( sum( now ).appointments ) ) }
+					detail={ money( {
 						amount: sum( now ).revenue,
 						currency: 'IRR',
 					} ) }
 				/>
 				<Stat
 					title={ __( 'Last 7 days', 'vaqtyar' ) }
-					value={ count( sum( week ).appointments ) }
-					detail={ rial( {
+					value={ digits( count( sum( week ).appointments ) ) }
+					detail={ money( {
 						amount: sum( week ).revenue,
 						currency: 'IRR',
 					} ) }
 				/>
 				<Stat
 					title={ __( 'Last 30 days', 'vaqtyar' ) }
-					value={ count( totals.appointments ) }
-					detail={ rial( {
+					value={ digits( count( totals.appointments ) ) }
+					detail={ money( {
 						amount: totals.revenue,
 						currency: 'IRR',
 					} ) }
 				/>
 				<Stat
 					title={ __( 'Cancellation rate (30 days)', 'vaqtyar' ) }
-					value={ `${ totals.cancel_rate }%` }
-					detail={ sprintf(
-						/* translators: %d: a number of cancelled appointments. */
-						__( '%d cancelled', 'vaqtyar' ),
-						totals.cancelled
+					value={ digits( `${ totals.cancel_rate }%` ) }
+					detail={ digits(
+						sprintf(
+							/* translators: %d: a number of cancelled appointments. */
+							__( '%d cancelled', 'vaqtyar' ),
+							totals.cancelled
+						)
 					) }
 				/>
 			</div>
@@ -130,14 +137,16 @@ export function DashboardPage() {
 				<ul className="vqy-admin__bars">
 					{ week.map( ( day ) => (
 						<li key={ day.date }>
-							<span>{ day.date }</span>
+							<span>{ showDate( day.date ) }</span>
 							<span
 								className="vqy-admin__bar"
 								style={ {
 									inlineSize: `${ ( day.appointments / busiest ) * 100 }%`,
 								} }
 							/>
-							<span>{ day.appointments }</span>
+							<span>
+								{ digits( String( day.appointments ) ) }
+							</span>
 						</li>
 					) ) }
 				</ul>

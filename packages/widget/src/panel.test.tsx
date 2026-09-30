@@ -155,6 +155,33 @@ describe( 'the customer panel', () => {
 		).toBe( true );
 	} );
 
+	it( 'hands the customer a calendar file for a confirmed appointment', async () => {
+		window.sessionStorage.setItem(
+			'vqy-panel-session',
+			JSON.stringify( { token: 'TOKEN', expiresAt: Date.now() + 60000 } )
+		);
+		const blobs: Blob[] = [];
+		URL.createObjectURL = ( blob: Blob | MediaSource ) => {
+			blobs.push( blob as Blob );
+
+			return 'blob:x';
+		};
+		URL.revokeObjectURL = () => undefined;
+		const clicked: string[] = [];
+		HTMLAnchorElement.prototype.click = function click() {
+			clicked.push( this.download );
+		};
+		await open();
+
+		await act( () => button( 'Add to calendar' )?.click() );
+
+		expect( clicked ).toEqual( [ 'AB12CD34.ics' ] );
+		const file = await blobs[ 0 ]?.text();
+		expect( file ).toContain( 'BEGIN:VEVENT' );
+		expect( file ).toContain( 'UID:AB12CD34' );
+		expect( file ).toContain( 'DTSTART:20270110T063000Z' );
+	} );
+
 	it( 'signs out and forgets the session', async () => {
 		window.sessionStorage.setItem(
 			'vqy-panel-session',

@@ -6,6 +6,7 @@ namespace Vaqtyar\Modules\Widget\Presentation;
 
 use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\Settings\BrandSettings;
+use Vaqtyar\Kernel\Settings\GeneralSettings;
 use Vaqtyar\Kernel\Settings\Settings;
 
 /**
@@ -43,8 +44,8 @@ final class Embeds
 
         $ids = ['type' => 'integer', 'default' => 0];
         $look = [
-            'calendar' => ['type' => 'string', 'default' => 'jalali'],
-            'digits' => ['type' => 'string', 'default' => 'latin'],
+            'calendar' => ['type' => 'string', 'default' => ''],
+            'digits' => ['type' => 'string', 'default' => ''],
         ];
         \register_block_type(Identity::SLUG . '/' . self::BOOKING, [
             'api_version' => '3',
@@ -57,6 +58,7 @@ final class Embeds
                 'variant' => $ids,
                 'location' => $ids,
                 'staff' => $ids,
+                'thanks' => ['type' => 'string', 'default' => ''],
             ] + $look,
             'render_callback' => [$this, 'renderBookingBlock'],
         ]);
@@ -108,18 +110,20 @@ final class Embeds
                 'variant' => 0,
                 'location' => 0,
                 'staff' => 0,
-                'calendar' => 'jalali',
-                'digits' => 'latin',
+                'calendar' => '',
+                'digits' => '',
+                'thanks' => '',
             ],
             \is_array($atts) ? $atts : []
         );
+        $thanks = self::thanks($values['thanks']);
 
         return $this->mount(self::BOOKING, [
             'service' => self::id($values['service']),
             'variant' => self::id($values['variant']),
             'location' => self::id($values['location']),
             'staff' => self::id($values['staff']),
-        ] + self::look($values));
+        ] + ('' === $thanks ? [] : ['thanks' => $thanks]) + $this->look($values));
     }
 
     /**
@@ -128,11 +132,11 @@ final class Embeds
     public function renderPanel(array|string $atts): string
     {
         $values = \shortcode_atts(
-            ['calendar' => 'jalali', 'digits' => 'latin'],
+            ['calendar' => '', 'digits' => ''],
             \is_array($atts) ? $atts : []
         );
 
-        return $this->mount(self::PANEL, self::look($values));
+        return $this->mount(self::PANEL, $this->look($values));
     }
 
     /**
@@ -155,15 +159,34 @@ final class Embeds
      * @param array<string, mixed> $values
      * @return array{calendar: string, digits: string}
      */
-    private static function look(array $values): array
+    private function look(array $values): array
     {
         $calendar = $values['calendar'] ?? null;
         $digits = $values['digits'] ?? null;
+        // What the shortcode leaves out is what the owner chose for the whole site.
+        $general = $this->settings->get(GeneralSettings::class);
 
         return [
-            'calendar' => \is_string($calendar) && \in_array($calendar, self::CALENDARS, true) ? $calendar : 'jalali',
-            'digits' => \is_string($digits) && \in_array($digits, self::DIGITS, true) ? $digits : 'latin',
+            'calendar' => \is_string($calendar) && \in_array($calendar, self::CALENDARS, true)
+                ? $calendar
+                : $general->calendar->value,
+            'digits' => \is_string($digits) && \in_array($digits, self::DIGITS, true)
+                ? $digits
+                : $general->digits->value,
         ];
+    }
+
+    /**
+     * The thank-you page a booking goes to: an address of this site (a
+     * relative path is fine), never another site's.
+     */
+    private static function thanks(mixed $value): string
+    {
+        if (!\is_string($value) || '' === \trim($value)) {
+            return '';
+        }
+
+        return \wp_validate_redirect(\esc_url_raw(\trim($value)), '');
     }
 
     private static function id(mixed $value): int
@@ -190,12 +213,15 @@ final class Embeds
 
         // The owner's accent colour (T6.1); a value Brand has validated as #rrggbb.
         $color = $this->settings->get(BrandSettings::class)->brand->color;
+        // The widget's language is the plugin's, so its direction follows it, not the theme's.
+        $direction = $this->settings->get(GeneralSettings::class)->language->direction(\determine_locale());
 
         return \sprintf(
-            '<div data-%s-%s="%s"%s></div>',
+            '<div data-%s-%s="%s" dir="%s"%s></div>',
             \esc_attr(Identity::SLUG),
             \esc_attr(self::BOOKING === $kind ? self::ENTRY : $kind),
             \esc_attr((string) \wp_json_encode($config)),
+            \esc_attr($direction),
             '' === $color ? '' : ' style="--' . Identity::PREFIX . '-accent:' . \esc_attr($color) . '"'
         );
     }

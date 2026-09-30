@@ -5,11 +5,11 @@ msgstr "Content-Type: text/plain;\n"
 msgid "…equals"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:177
+#: packages/admin/src/reports/ReportsPage.tsx:178
 msgid "%1$d booked appointments, %2$s."
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:185
+#: packages/admin/src/reports/ReportsPage.tsx:188
 msgid "%1$d cancelled, %2$d no-shows, cancellation rate %3$s%%."
 msgstr ""
 
@@ -17,7 +17,7 @@ msgstr ""
 msgid "%1$s — %2$d min — %3$s IRR"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:204
+#: packages/widget/src/BookingFlow.tsx:232
 msgid "%1$s at %2$s"
 msgstr ""
 
@@ -51,11 +51,11 @@ msgstr ""
 msgid "%1$s: %2$d"
 msgstr ""
 
-#: packages/admin/src/reports/DashboardPage.tsx:85
+#: packages/admin/src/reports/DashboardPage.tsx:90
 msgid "%d appointments"
 msgstr ""
 
-#: packages/admin/src/reports/DashboardPage.tsx:123
+#: packages/admin/src/reports/DashboardPage.tsx:129
 msgid "%d cancelled"
 msgstr ""
 
@@ -71,14 +71,18 @@ msgstr ""
 msgid "%d minutes before"
 msgstr ""
 
-#: src/Kernel/Plugin.php:167
+#: packages/admin/src/DateField.tsx:273
+msgid "%s (time)"
+msgstr ""
+
+#: src/Kernel/Plugin.php:174
 msgid ""
 "%s could not update its database tables and is paused. The PHP error log "
 "has the details."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:71
-#: packages/widget/src/Panel.tsx:288
+#: packages/admin/src/appointments/AppointmentsPage.tsx:63
+#: packages/widget/src/Panel.tsx:290
 msgid "%s IRR"
 msgstr ""
 
@@ -93,7 +97,7 @@ msgstr ""
 msgid "%s will not run until this is fixed."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:328
+#: packages/admin/src/appointments/AppointmentDetail.tsx:334
 msgid "← All appointments"
 msgstr ""
 
@@ -132,11 +136,11 @@ msgstr ""
 msgid "A value in the request is not valid."
 msgstr ""
 
-#: packages/widget/src/month.ts:102
+#: packages/shared/src/month.ts:102
 msgid "Aban"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:132
+#: packages/admin/src/setup/BrandForm.tsx:158
 msgid "Accent colour"
 msgstr ""
 
@@ -145,15 +149,15 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:46
-#: packages/admin/src/timeRules/TimeRules.tsx:50
+#: packages/admin/src/coupons/Coupons.tsx:47
+#: packages/admin/src/timeRules/TimeRules.tsx:51
 msgid "active"
 msgstr ""
 
 #: packages/admin/src/catalog/fields.tsx:150
-#: packages/admin/src/coupons/Coupons.tsx:203
-#: packages/admin/src/customers/CustomerList.tsx:22
-#: packages/admin/src/customers/CustomersPage.tsx:131
+#: packages/admin/src/coupons/Coupons.tsx:200
+#: packages/admin/src/customers/CustomerList.tsx:29
+#: packages/admin/src/customers/CustomersPage.tsx:130
 msgid "Active"
 msgstr ""
 
@@ -161,17 +165,17 @@ msgstr ""
 msgid "Active: customers can book it"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:634
-#: packages/admin/src/catalog/TimeOff.tsx:250
-#: packages/admin/src/holidays/HolidaysPage.tsx:177
+#: packages/admin/src/catalog/ServicesPage.tsx:643
+#: packages/admin/src/catalog/TimeOff.tsx:237
+#: packages/admin/src/holidays/HolidaysPage.tsx:166
 msgid "Add"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:135
+#: packages/admin/src/calendar/CalendarPage.tsx:137
 msgid "Add a location with staff to see its calendar."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:334
+#: packages/admin/src/catalog/ServicesPage.tsx:343
 msgid "Add a staff member first."
 msgstr ""
 
@@ -183,11 +187,11 @@ msgstr ""
 msgid "Add category"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:213
+#: packages/admin/src/coupons/Coupons.tsx:210
 msgid "Add coupon"
 msgstr ""
 
-#: packages/admin/src/customers/CustomerList.tsx:89
+#: packages/admin/src/customers/CustomerList.tsx:148
 msgid "Add customer"
 msgstr ""
 
@@ -199,12 +203,12 @@ msgstr ""
 msgid "Add hours"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:140
+#: packages/admin/src/calendar/CalendarPage.tsx:142
 #: packages/admin/src/catalog/screens.tsx:80
 msgid "Add location"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:304
+#: packages/admin/src/catalog/ServicesPage.tsx:313
 msgid "Add option"
 msgstr ""
 
@@ -212,7 +216,7 @@ msgstr ""
 msgid "Add resource"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:68
+#: packages/admin/src/catalog/ServicesPage.tsx:77
 msgid "Add service"
 msgstr ""
 
@@ -224,53 +228,72 @@ msgstr ""
 msgid "Add template"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:226
+#: packages/admin/src/timeRules/TimeRules.tsx:223
 msgid "Add time-based price"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:43
-#: packages/admin/src/catalog/ServicesPage.tsx:600
-#: packages/widget/src/BookingFlow.tsx:32
+#: packages/widget/src/BookingFlow.tsx:262
+#: packages/widget/src/Panel.tsx:325
+msgid "Add to calendar"
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentDetail.tsx:44
+#: packages/admin/src/catalog/ServicesPage.tsx:609
+#: packages/widget/src/BookingFlow.tsx:46
 msgid "Add-on"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:542
+#: packages/admin/src/catalog/ServicesPage.tsx:551
 msgid "Add-ons"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:556
-#: packages/admin/src/catalog/TimeOff.tsx:140
-#: packages/admin/src/coupons/Coupons.tsx:114
+#: packages/admin/src/catalog/ServicesPage.tsx:565
+#: packages/admin/src/catalog/TimeOff.tsx:135
+#: packages/admin/src/coupons/Coupons.tsx:115
 #: packages/admin/src/fields/Fields.tsx:119
-#: packages/admin/src/timeRules/TimeRules.tsx:108
+#: packages/admin/src/timeRules/TimeRules.tsx:109
 msgid "Added."
 msgstr ""
 
 #: packages/admin/src/catalog/screens.tsx:124
-#: packages/admin/src/setup/SetupWizard.tsx:218
+#: packages/admin/src/setup/SetupWizard.tsx:225
 msgid "Address"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:171
-#: packages/admin/src/appointments/AppointmentsPage.tsx:186
-#: packages/admin/src/customers/CustomerList.tsx:102
+#: packages/admin/src/appointments/AppointmentsPage.tsx:177
+#: packages/admin/src/appointments/AppointmentsPage.tsx:192
+#: packages/admin/src/customers/CustomerList.tsx:161
 msgid "All"
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:121
+#: packages/admin/src/catalog/TimeOff.tsx:116
 msgid "all day"
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:215
+#: packages/admin/src/catalog/TimeOff.tsx:202
 msgid "All day"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:257
+#: packages/admin/src/palette.ts:33
+msgid "Amber"
+msgstr ""
+
+#: assets/blocks.js:42
+msgid "An address on this site to go to after a booking. Empty stays on the page."
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentDetail.tsx:263
 msgid "Answers"
 msgstr ""
 
 #: packages/widget/src/Widget.tsx:429
 msgid "Any available"
+msgstr ""
+
+#: packages/admin/src/setup/BrandForm.tsx:159
+msgid ""
+"Any colour as #rrggbb; empty keeps the default. The rest of the palette "
+"follows it."
 msgstr ""
 
 #: packages/admin/src/policies/Policies.tsx:144
@@ -282,11 +305,11 @@ msgstr ""
 msgid "API key"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:189
+#: packages/admin/src/timeRules/TimeRules.tsx:188
 msgid "Applies from date"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:196
+#: packages/admin/src/timeRules/TimeRules.tsx:193
 msgid "Applies until date"
 msgstr ""
 
@@ -294,11 +317,15 @@ msgstr ""
 msgid "Appointment %d"
 msgstr ""
 
+#: packages/widget/src/Panel.tsx:314
+msgid "Appointment %s"
+msgstr ""
+
 #: packages/admin/src/notifications/NotificationsPage.tsx:53
 msgid "Appointment booked"
 msgstr ""
 
-#: packages/admin/src/calendar/QuickBook.tsx:199
+#: packages/admin/src/calendar/QuickBook.tsx:202
 msgid "Appointment booked."
 msgstr ""
 
@@ -310,7 +337,7 @@ msgstr ""
 msgid "Appointment cancelled"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:330
+#: packages/admin/src/calendar/CalendarPage.tsx:323
 msgid "Appointment moved."
 msgstr ""
 
@@ -318,26 +345,26 @@ msgstr ""
 msgid "Appointment rescheduled"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:113
+#: packages/admin/src/appointments/AppointmentDetail.tsx:117
 msgid "Appointment updated."
 msgstr ""
 
-#: packages/admin/src/App.tsx:62
-#: packages/admin/src/customers/CustomerHistory.tsx:33
-#: packages/admin/src/reports/ReportsPage.tsx:227
-#: packages/admin/src/reports/ReportsPage.tsx:279
+#: packages/admin/src/App.tsx:65
+#: packages/admin/src/customers/CustomerHistory.tsx:36
+#: packages/admin/src/reports/ReportsPage.tsx:231
+#: packages/admin/src/reports/ReportsPage.tsx:283
 msgid "Appointments"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:30
+#: packages/admin/src/appointments/AppointmentDetail.tsx:31
 msgid "Approve"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:55
+#: packages/admin/src/appointments/AppointmentDetail.tsx:56
 msgid "Approved"
 msgstr ""
 
-#: packages/widget/src/month.ts:112
+#: packages/shared/src/month.ts:112
 msgid "April"
 msgstr ""
 
@@ -345,26 +372,26 @@ msgstr ""
 msgid "Area"
 msgstr ""
 
-#: packages/widget/src/month.ts:116
+#: packages/shared/src/month.ts:116
 msgid "August"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:32
-#: packages/widget/src/Panel.tsx:65
+#: packages/admin/src/appointments/AppointmentsPage.tsx:33
+#: packages/widget/src/Panel.tsx:67
 msgid "Awaiting approval"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:33
-#: packages/widget/src/Panel.tsx:66
+#: packages/admin/src/appointments/AppointmentsPage.tsx:34
+#: packages/widget/src/Panel.tsx:68
 msgid "Awaiting payment"
 msgstr ""
 
-#: packages/widget/src/month.ts:103
+#: packages/shared/src/month.ts:103
 msgid "Azar"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:105
-#: packages/widget/src/BookingFlow.tsx:418
+#: packages/admin/src/setup/SetupWizard.tsx:112
+#: packages/widget/src/BookingFlow.tsx:462
 msgid "Back"
 msgstr ""
 
@@ -372,7 +399,7 @@ msgstr ""
 msgid "Back to the dashboard"
 msgstr ""
 
-#: packages/widget/src/month.ts:105
+#: packages/shared/src/month.ts:105
 msgid "Bahman"
 msgstr ""
 
@@ -380,13 +407,13 @@ msgstr ""
 msgid "Bio"
 msgstr ""
 
-#: packages/admin/src/customers/CustomersPage.tsx:103
+#: packages/admin/src/customers/CustomersPage.tsx:102
 msgid "Birth date"
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:52
-#: packages/admin/src/customers/CustomerList.tsx:23
-#: packages/admin/src/customers/CustomersPage.tsx:135
+#: packages/admin/src/catalog/TimeOff.tsx:50
+#: packages/admin/src/customers/CustomerList.tsx:30
+#: packages/admin/src/customers/CustomersPage.tsx:134
 msgid "Blocked"
 msgstr ""
 
@@ -399,17 +426,31 @@ msgstr ""
 msgid "Book an appointment"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:439
+#: packages/widget/src/BookingFlow.tsx:483
 msgid "Book and pay at the place"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:54
-#: packages/admin/src/appointments/AppointmentDetail.tsx:223
+#: packages/admin/src/appointments/AppointmentDetail.tsx:55
+#: packages/admin/src/appointments/AppointmentDetail.tsx:227
 msgid "Booked"
 msgstr ""
 
-#: src/Modules/Widget/Presentation/Embeds.php:51
+#: packages/admin/src/setup/BookingRulesForm.tsx:81
+msgid ""
+"Booking closes this long before the start. 0 allows booking right up to the "
+"start."
+msgstr ""
+
+#: src/Modules/Widget/Presentation/Embeds.php:52
 msgid "Booking form"
+msgstr ""
+
+#: packages/admin/src/catalog/ServicesPage.tsx:58
+msgid "Booking form for this service"
+msgstr ""
+
+#: packages/admin/src/policies/SettingsPage.tsx:28
+msgid "Booking rules"
 msgstr ""
 
 #: packages/admin/src/status/StatusPage.tsx:23
@@ -424,11 +465,11 @@ msgstr ""
 msgid "Bookings it holds at the same time."
 msgstr ""
 
-#: packages/admin/src/policies/SettingsPage.tsx:22
+#: packages/admin/src/policies/SettingsPage.tsx:32
 msgid "Brand"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:104
+#: packages/admin/src/setup/BrandForm.tsx:105
 msgid "Brand name"
 msgstr ""
 
@@ -436,33 +477,35 @@ msgstr ""
 msgid "Break"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:278
+#: packages/admin/src/catalog/ServicesPage.tsx:287
 msgid "Buffer after"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:269
+#: packages/admin/src/catalog/ServicesPage.tsx:278
 msgid "Buffer before"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:222
+#: packages/admin/src/reports/ReportsPage.tsx:226
 msgid "By day"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:210
+#: packages/admin/src/reports/ReportsPage.tsx:214
 msgid "By service"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:216
+#: packages/admin/src/reports/ReportsPage.tsx:220
 msgid "By staff"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:292
+#: packages/admin/src/appointments/AppointmentDetail.tsx:298
 msgid "by the customer"
 msgstr ""
 
-#: assets/blocks.js:40
-#: packages/admin/src/App.tsx:57
-#: packages/admin/src/holidays/HolidaysPage.tsx:68
+#: assets/blocks.js:58
+#: packages/admin/src/App.tsx:60
+#: packages/admin/src/DateField.tsx:170
+#: packages/admin/src/holidays/HolidaysPage.tsx:71
+#: packages/admin/src/setup/DisplayForm.tsx:77
 msgid "Calendar"
 msgstr ""
 
@@ -470,34 +513,34 @@ msgstr ""
 msgid "Calendar color"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:722
-#: packages/admin/src/calendar/CalendarPage.tsx:782
+#: packages/admin/src/calendar/CalendarPage.tsx:718
+#: packages/admin/src/calendar/CalendarPage.tsx:778
 #: packages/admin/src/calendar/QuickBook.tsx:366
 #: packages/admin/src/catalog/CatalogList.tsx:170
 #: packages/admin/src/notifications/NotificationsPage.tsx:508
 msgid "Cancel"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:441
+#: packages/admin/src/appointments/AppointmentDetail.tsx:447
 msgid "Cancel anyway"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:33
-#: packages/admin/src/appointments/AppointmentDetail.tsx:440
-#: packages/widget/src/Panel.tsx:326
+#: packages/admin/src/appointments/AppointmentDetail.tsx:34
+#: packages/admin/src/appointments/AppointmentDetail.tsx:446
+#: packages/widget/src/Panel.tsx:353
 msgid "Cancel appointment"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:227
+#: packages/admin/src/appointments/AppointmentDetail.tsx:231
 msgid "Cancel reason"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:406
-#: packages/widget/src/Panel.tsx:353
+#: packages/admin/src/appointments/AppointmentDetail.tsx:412
+#: packages/widget/src/Panel.tsx:380
 msgid "Cancel this appointment?"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:347
+#: packages/widget/src/Panel.tsx:374
 msgid "Cancel this appointment? %d%% of what you paid is refunded."
 msgstr ""
 
@@ -513,13 +556,13 @@ msgstr ""
 msgid "Cancellation deadline (hours before the start)"
 msgstr ""
 
-#: packages/admin/src/reports/DashboardPage.tsx:119
+#: packages/admin/src/reports/DashboardPage.tsx:124
 msgid "Cancellation rate (30 days)"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:60
-#: packages/admin/src/appointments/AppointmentsPage.tsx:37
-#: packages/widget/src/Panel.tsx:70
+#: packages/admin/src/appointments/AppointmentDetail.tsx:61
+#: packages/admin/src/appointments/AppointmentsPage.tsx:38
+#: packages/widget/src/Panel.tsx:72
 msgid "Cancelled"
 msgstr ""
 
@@ -528,11 +571,11 @@ msgstr ""
 msgid "Capacity"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:71
+#: packages/admin/src/catalog/ServicesPage.tsx:80
 msgid "Categories"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:182
+#: packages/admin/src/catalog/ServicesPage.tsx:191
 msgid "Category"
 msgstr ""
 
@@ -549,7 +592,7 @@ msgstr ""
 msgid "Choice"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:498
+#: packages/admin/src/catalog/ServicesPage.tsx:507
 msgid "Choose a group"
 msgstr ""
 
@@ -561,11 +604,11 @@ msgstr ""
 msgid "Choose a service"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:230
+#: packages/widget/src/BookingFlow.tsx:274
 msgid "Choose another time"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:125
+#: packages/admin/src/setup/BrandForm.tsx:126
 msgid "Choose logo"
 msgstr ""
 
@@ -578,7 +621,7 @@ msgstr ""
 msgid "Cleared."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:480
+#: packages/widget/src/Panel.tsx:512
 msgid "Close"
 msgstr ""
 
@@ -586,12 +629,12 @@ msgstr ""
 msgid "Closed"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:139
+#: packages/admin/src/setup/SetupWizard.tsx:146
 msgid "Closes at"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:229
-#: packages/admin/src/customers/CustomerHistory.tsx:47
+#: packages/admin/src/appointments/AppointmentsPage.tsx:223
+#: packages/admin/src/customers/CustomerHistory.tsx:50
 msgid "Code"
 msgstr ""
 
@@ -604,26 +647,26 @@ msgstr ""
 msgid "Color"
 msgstr ""
 
-#: packages/admin/src/customers/CustomersPage.tsx:112
+#: packages/admin/src/customers/CustomersPage.tsx:111
 msgid "Comma-separated."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:58
-#: packages/admin/src/appointments/AppointmentsPage.tsx:35
-#: packages/widget/src/Panel.tsx:68
+#: packages/admin/src/appointments/AppointmentDetail.tsx:59
+#: packages/admin/src/appointments/AppointmentsPage.tsx:36
+#: packages/widget/src/Panel.tsx:70
 msgid "Completed"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:440
+#: packages/widget/src/BookingFlow.tsx:484
 msgid "Confirm booking"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:34
-#: packages/widget/src/Panel.tsx:67
+#: packages/admin/src/appointments/AppointmentsPage.tsx:35
+#: packages/widget/src/Panel.tsx:69
 msgid "Confirmed"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:625
+#: packages/widget/src/Widget.tsx:629
 msgid "Continue"
 msgstr ""
 
@@ -631,28 +674,28 @@ msgstr ""
 msgid "Copy to every day"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:45
-#: packages/widget/src/BookingFlow.tsx:34
+#: packages/admin/src/appointments/AppointmentDetail.tsx:46
+#: packages/widget/src/BookingFlow.tsx:48
 msgid "Coupon"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:158
+#: packages/admin/src/coupons/Coupons.tsx:159
 msgid "Coupon code"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:610
+#: packages/widget/src/Widget.tsx:614
 msgid "Coupon code (optional)"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:83
+#: packages/admin/src/coupons/Coupons.tsx:84
 msgid "Coupons"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:240
+#: packages/admin/src/setup/SetupWizard.tsx:247
 msgid "Create location"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:391
+#: packages/admin/src/setup/SetupWizard.tsx:398
 msgid "Create service"
 msgstr ""
 
@@ -660,8 +703,8 @@ msgstr ""
 msgid "Custom fields"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:193
-#: packages/admin/src/appointments/AppointmentsPage.tsx:231
+#: packages/admin/src/appointments/AppointmentDetail.tsx:197
+#: packages/admin/src/appointments/AppointmentsPage.tsx:225
 #: packages/admin/src/calendar/QuickBook.tsx:338
 #: packages/admin/src/notifications/NotificationsPage.tsx:60
 msgid "Customer"
@@ -671,23 +714,23 @@ msgstr ""
 msgid "Customer name"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:273
+#: packages/admin/src/appointments/AppointmentDetail.tsx:279
 msgid "Customer note"
 msgstr ""
 
-#: packages/admin/src/App.tsx:67
+#: packages/admin/src/App.tsx:70
 msgid "Customers"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:126
+#: packages/admin/src/catalog/ServicesPage.tsx:135
 msgid "Customers at the same time"
 msgstr ""
 
-#: packages/admin/src/App.tsx:254
+#: packages/admin/src/App.tsx:211
 msgid "Dark"
 msgstr ""
 
-#: packages/admin/src/App.tsx:52
+#: packages/admin/src/App.tsx:55
 msgid "Dashboard"
 msgstr ""
 
@@ -699,31 +742,37 @@ msgstr ""
 msgid "Database"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:681
-#: packages/admin/src/calendar/QuickBook.tsx:273
-#: packages/admin/src/catalog/TimeOff.tsx:190
-#: packages/admin/src/holidays/HolidaysPage.tsx:154
-#: packages/admin/src/reports/ReportsPage.tsx:226
+#: packages/admin/src/calendar/CalendarPage.tsx:679
+#: packages/admin/src/calendar/QuickBook.tsx:274
+#: packages/admin/src/catalog/TimeOff.tsx:183
+#: packages/admin/src/holidays/HolidaysPage.tsx:149
+#: packages/admin/src/reports/ReportsPage.tsx:230
 msgid "Date"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:222
+#: packages/admin/src/setup/DisplayForm.tsx:78
+msgid ""
+"Dates are shown and typed in this calendar. Bookings are stored the same "
+"either way."
+msgstr ""
+
+#: packages/admin/src/calendar/CalendarPage.tsx:214
 msgid "Day"
 msgstr ""
 
-#: packages/widget/src/month.ts:120
+#: packages/shared/src/month.ts:120
 msgid "December"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:222
+#: packages/admin/src/catalog/ServicesPage.tsx:231
 msgid "Default option"
 msgstr ""
 
 #: packages/admin/src/catalog/CatalogList.tsx:131
 #: packages/admin/src/catalog/CatalogList.tsx:181
-#: packages/admin/src/catalog/ServicesPage.tsx:639
-#: packages/admin/src/catalog/TimeOff.tsx:131
-#: packages/admin/src/coupons/Coupons.tsx:108
+#: packages/admin/src/catalog/ServicesPage.tsx:648
+#: packages/admin/src/catalog/TimeOff.tsx:126
+#: packages/admin/src/coupons/Coupons.tsx:109
 msgid "Delete"
 msgstr ""
 
@@ -735,10 +784,10 @@ msgstr ""
 msgid "Delete this item?"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:537
-#: packages/admin/src/catalog/TimeOff.tsx:91
+#: packages/admin/src/catalog/ServicesPage.tsx:546
+#: packages/admin/src/catalog/TimeOff.tsx:90
 #: packages/admin/src/catalog/crud.ts:108
-#: packages/admin/src/coupons/Coupons.tsx:78
+#: packages/admin/src/coupons/Coupons.tsx:79
 #: packages/admin/src/fields/Fields.tsx:72
 msgid "Deleted."
 msgstr ""
@@ -750,31 +799,32 @@ msgid ""
 "finds everything as it was."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:47
+#: packages/admin/src/appointments/AppointmentsPage.tsx:48
 msgid "Deposit paid"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:119
+#: packages/admin/src/catalog/ServicesPage.tsx:128
 msgid "Description"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:719
+#: packages/admin/src/calendar/CalendarPage.tsx:715
 msgid "Details"
 msgstr ""
 
-#: packages/widget/src/month.ts:104
+#: packages/shared/src/month.ts:104
 msgid "Dey"
 msgstr ""
 
-#: assets/blocks.js:52
+#: assets/blocks.js:71
+#: packages/admin/src/setup/DisplayForm.tsx:99
 msgid "Digits"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:165
+#: packages/admin/src/coupons/Coupons.tsx:166
 msgid "Discount type"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:174
+#: packages/admin/src/coupons/Coupons.tsx:175
 msgid "Discount value"
 msgstr ""
 
@@ -782,15 +832,15 @@ msgstr ""
 msgid "Duration"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:362
+#: packages/admin/src/setup/SetupWizard.tsx:369
 msgid "Duration (minutes)"
 msgstr ""
 
-#: assets/blocks.js:72
+#: assets/blocks.js:92
 msgid "Duration ID"
 msgstr ""
 
-#: packages/admin/src/customers/CustomersPage.tsx:88
+#: packages/admin/src/customers/CustomersPage.tsx:89
 msgid "E.164, e.g. +989121234567."
 msgstr ""
 
@@ -803,21 +853,29 @@ msgid "Edit"
 msgstr ""
 
 #: packages/admin/src/catalog/screens.tsx:261
-#: packages/admin/src/customers/CustomerList.tsx:123
-#: packages/admin/src/customers/CustomersPage.tsx:96
+#: packages/admin/src/customers/CustomerList.tsx:190
+#: packages/admin/src/customers/CustomersPage.tsx:97
 #: packages/admin/src/notifications/NotificationsPage.tsx:67
 msgid "Email"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:380
+#: packages/widget/src/BookingFlow.tsx:424
 msgid "Email (optional)"
 msgstr ""
 
-#: packages/widget/src/month.ts:106
+#: packages/admin/src/palette.ts:29
+msgid "Emerald"
+msgstr ""
+
+#: packages/widget/src/DateInput.tsx:73
+msgid "Enter a date like 1405/07/03."
+msgstr ""
+
+#: packages/shared/src/month.ts:106
 msgid "Esfand"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:40
+#: packages/admin/src/timeRules/TimeRules.tsx:41
 msgid "every day"
 msgstr ""
 
@@ -825,21 +883,25 @@ msgstr ""
 msgid "Every location"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:57
-#: packages/admin/src/appointments/AppointmentsPage.tsx:38
-#: packages/widget/src/Panel.tsx:71
+#: packages/admin/src/appointments/AppointmentDetail.tsx:58
+#: packages/admin/src/appointments/AppointmentsPage.tsx:39
+#: packages/widget/src/Panel.tsx:73
 msgid "Expired"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:137
+#: packages/admin/src/reports/ReportsPage.tsx:134
 msgid "Export appointments (CSV)"
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:51
+#: packages/admin/src/customers/CustomerList.tsx:175
+msgid "Export CSV"
+msgstr ""
+
+#: packages/admin/src/catalog/TimeOff.tsx:49
 msgid "Extra hours"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:613
+#: packages/admin/src/catalog/ServicesPage.tsx:622
 msgid "Extra minutes"
 msgstr ""
 
@@ -847,11 +909,11 @@ msgstr ""
 msgid "Failed this week"
 msgstr ""
 
-#: packages/widget/src/month.ts:95
+#: packages/shared/src/month.ts:95
 msgid "Farvardin"
 msgstr ""
 
-#: packages/widget/src/month.ts:110
+#: packages/shared/src/month.ts:110
 msgid "February"
 msgstr ""
 
@@ -859,47 +921,47 @@ msgstr ""
 msgid "Find customer"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:45
+#: packages/admin/src/setup/SetupWizard.tsx:51
 msgid "Finish"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:491
+#: packages/widget/src/Widget.tsx:495
 msgid "First available"
 msgstr ""
 
-#: packages/admin/src/customers/CustomersPage.tsx:72
-#: packages/widget/src/BookingFlow.tsx:335
+#: packages/admin/src/customers/CustomersPage.tsx:73
+#: packages/widget/src/BookingFlow.tsx:379
 msgid "First name"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:42
+#: packages/admin/src/setup/SetupWizard.tsx:48
 msgid "First service"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:26
+#: packages/admin/src/coupons/Coupons.tsx:27
 msgid "Fixed amount (IRR)"
 msgstr ""
 
-#: packages/widget/src/month.ts:135
+#: packages/shared/src/month.ts:135
 msgid "Fri"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:32
-#: packages/admin/src/timeRules/TimeRules.tsx:32
+#: packages/admin/src/timeRules/TimeRules.tsx:33
 msgid "Friday"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:199
-#: packages/admin/src/catalog/TimeOff.tsx:225
+#: packages/admin/src/appointments/AppointmentsPage.tsx:203
+#: packages/admin/src/catalog/TimeOff.tsx:212
 #: packages/admin/src/catalog/WeeklySchedule.tsx:173
 msgid "From"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:120
+#: packages/admin/src/reports/ReportsPage.tsx:119
 msgid "From date"
 msgstr ""
 
-#: packages/admin/src/holidays/HolidaysPage.tsx:102
+#: packages/admin/src/holidays/HolidaysPage.tsx:99
 msgid "from the shipped calendar"
 msgstr ""
 
@@ -913,7 +975,7 @@ msgid ""
 "sodium."
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:433
+#: packages/admin/src/setup/SetupWizard.tsx:440
 msgid "Go to the dashboard"
 msgstr ""
 
@@ -921,7 +983,8 @@ msgstr ""
 msgid "Good"
 msgstr ""
 
-#: assets/blocks.js:44
+#: assets/blocks.js:63
+#: packages/admin/src/setup/DisplayForm.tsx:87
 msgid "Gregorian"
 msgstr ""
 
@@ -930,11 +993,11 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:33
+#: packages/widget/src/BookingFlow.tsx:47
 msgid "Guests"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:431
+#: packages/admin/src/catalog/ServicesPage.tsx:440
 msgid "Has terms per option."
 msgstr ""
 
@@ -942,7 +1005,7 @@ msgstr ""
 msgid "Health"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:285
+#: packages/admin/src/appointments/AppointmentDetail.tsx:291
 msgid "History"
 msgstr ""
 
@@ -950,7 +1013,7 @@ msgstr ""
 msgid "Holiday calendar"
 msgstr ""
 
-#: packages/admin/src/App.tsx:103
+#: packages/admin/src/App.tsx:106
 msgid "Holidays"
 msgstr ""
 
@@ -962,8 +1025,16 @@ msgstr ""
 msgid "Hours saved."
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:46
-#: packages/admin/src/timeRules/TimeRules.tsx:50
+#: packages/admin/src/setup/BookingRulesForm.tsx:69
+msgid "How far apart the start times a customer can pick are."
+msgstr ""
+
+#: packages/admin/src/setup/BookingRulesForm.tsx:112
+msgid "In the order of the staff list"
+msgstr ""
+
+#: packages/admin/src/coupons/Coupons.tsx:47
+#: packages/admin/src/timeRules/TimeRules.tsx:51
 msgid "inactive"
 msgstr ""
 
@@ -971,11 +1042,15 @@ msgstr ""
 msgid "Inactive"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:361
+#: packages/admin/src/palette.ts:24
+msgid "Indigo"
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentDetail.tsx:367
 msgid "Internal note"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:62
+#: packages/admin/src/appointments/AppointmentDetail.tsx:63
 msgid "Internal note changed"
 msgstr ""
 
@@ -991,19 +1066,20 @@ msgstr ""
 msgid "Iran has had no daylight saving time since 2023, and this server agrees."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:79
+#: packages/widget/src/Panel.tsx:81
 msgid "It is too late to cancel this appointment online."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:83
+#: packages/widget/src/Panel.tsx:85
 msgid "It is too late to move this appointment online."
 msgstr ""
 
-#: assets/blocks.js:43
+#: assets/blocks.js:62
+#: packages/admin/src/setup/DisplayForm.tsx:84
 msgid "Jalali"
 msgstr ""
 
-#: packages/widget/src/month.ts:109
+#: packages/shared/src/month.ts:109
 msgid "January"
 msgstr ""
 
@@ -1017,11 +1093,11 @@ msgid ""
 "late. Check that WordPress cron runs."
 msgstr ""
 
-#: packages/widget/src/month.ts:115
+#: packages/shared/src/month.ts:115
 msgid "July"
 msgstr ""
 
-#: packages/widget/src/month.ts:114
+#: packages/shared/src/month.ts:114
 msgid "June"
 msgstr ""
 
@@ -1029,8 +1105,8 @@ msgstr ""
 msgid "Kavenegar"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:444
-#: packages/widget/src/Panel.tsx:374
+#: packages/admin/src/appointments/AppointmentDetail.tsx:450
+#: packages/widget/src/Panel.tsx:401
 msgid "Keep it"
 msgstr ""
 
@@ -1038,80 +1114,85 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
-#: packages/widget/src/month.ts:97
+#: packages/shared/src/month.ts:97
 msgid "Khordad"
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:202
+#: packages/admin/src/catalog/TimeOff.tsx:189
 #: packages/admin/src/catalog/WeeklySchedule.tsx:142
 msgid "Kind"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:247
+#: packages/admin/src/catalog/ServicesPage.tsx:256
 #: packages/admin/src/fields/Fields.tsx:192
 msgid "Label"
 msgstr ""
 
-#: packages/admin/src/reports/DashboardPage.tsx:111
+#: packages/admin/src/setup/DisplayForm.tsx:54
+msgid "Language"
+msgstr ""
+
+#: packages/admin/src/policies/SettingsPage.tsx:24
+#: packages/admin/src/setup/SetupWizard.tsx:44
+msgid "Language and calendar"
+msgstr ""
+
+#: packages/admin/src/reports/DashboardPage.tsx:116
 msgid "Last 30 days"
 msgstr ""
 
-#: packages/admin/src/reports/DashboardPage.tsx:103
-#: packages/admin/src/reports/DashboardPage.tsx:129
+#: packages/admin/src/reports/DashboardPage.tsx:108
+#: packages/admin/src/reports/DashboardPage.tsx:136
 msgid "Last 7 days"
 msgstr ""
 
-#: packages/admin/src/customers/CustomersPage.tsx:80
-#: packages/widget/src/BookingFlow.tsx:345
+#: packages/admin/src/customers/CustomersPage.tsx:81
+#: packages/widget/src/BookingFlow.tsx:389
 msgid "Last name"
 msgstr ""
 
-#: src/Modules/Widget/Presentation/Embeds.php:66
+#: src/Modules/Widget/Presentation/Embeds.php:68
 msgid "Lets a customer see, cancel and move their appointments."
 msgstr ""
 
-#: src/Modules/Widget/Presentation/Embeds.php:52
+#: src/Modules/Widget/Presentation/Embeds.php:53
 msgid "Lets customers book an appointment."
 msgstr ""
 
-#: packages/admin/src/App.tsx:250
+#: packages/admin/src/App.tsx:210
 msgid "Light"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:133
-msgid "Like #3858e9; empty keeps the default."
-msgstr ""
-
-#: packages/widget/src/Panel.tsx:265
-#: packages/widget/src/Panel.tsx:454
+#: packages/widget/src/Panel.tsx:267
+#: packages/widget/src/Panel.tsx:486
 #: packages/widget/src/Widget.tsx:323
-#: packages/widget/src/Widget.tsx:553
+#: packages/widget/src/Widget.tsx:557
 msgid "Loading…"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:234
+#: packages/admin/src/calendar/CalendarPage.tsx:226
 #: packages/admin/src/catalog/fields.tsx:125
 #: packages/widget/src/Widget.tsx:388
 msgid "Location"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:41
+#: packages/admin/src/setup/SetupWizard.tsx:47
 msgid "Location and hours"
 msgstr ""
 
-#: assets/blocks.js:73
+#: assets/blocks.js:93
 msgid "Location ID"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:211
+#: packages/admin/src/setup/SetupWizard.tsx:218
 msgid "Location name"
 msgstr ""
 
-#: packages/admin/src/App.tsx:93
+#: packages/admin/src/App.tsx:96
 msgid "Locations"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:117
+#: packages/admin/src/setup/BrandForm.tsx:118
 msgid "Logo address"
 msgstr ""
 
@@ -1121,27 +1202,32 @@ msgid ""
 "Actions, Failed."
 msgstr ""
 
-#: packages/widget/src/month.ts:111
+#: src/Modules/Admin/Presentation/PluginLinks.php:53
+#: packages/admin/src/App.tsx:360
+msgid "Made by %s"
+msgstr ""
+
+#: packages/shared/src/month.ts:111
 msgid "March"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:31
+#: packages/admin/src/appointments/AppointmentDetail.tsx:32
 msgid "Mark completed"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:32
+#: packages/admin/src/appointments/AppointmentDetail.tsx:33
 msgid "Mark no-show"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:183
+#: packages/admin/src/coupons/Coupons.tsx:184
 msgid "Maximum uses (empty for unlimited)"
 msgstr ""
 
-#: packages/widget/src/month.ts:113
+#: packages/shared/src/month.ts:113
 msgid "May"
 msgstr ""
 
-#: packages/widget/src/month.ts:101
+#: packages/shared/src/month.ts:101
 msgid "Mehr"
 msgstr ""
 
@@ -1158,8 +1244,12 @@ msgstr ""
 msgid "Message"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:50
-#: packages/admin/src/catalog/ServicesPage.tsx:252
+#: packages/admin/src/setup/BookingRulesForm.tsx:80
+msgid "Minimum notice (minutes)"
+msgstr ""
+
+#: packages/admin/src/catalog/ServicesPage.tsx:51
+#: packages/admin/src/catalog/ServicesPage.tsx:261
 msgid "Minutes"
 msgstr ""
 
@@ -1167,33 +1257,33 @@ msgstr ""
 msgid "Minutes before the start"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:69
+#: packages/widget/src/Panel.tsx:71
 msgid "Missed"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:354
-#: packages/widget/src/Panel.tsx:163
+#: packages/widget/src/BookingFlow.tsx:398
+#: packages/widget/src/Panel.tsx:165
 msgid "Mobile number"
 msgstr ""
 
-#: packages/widget/src/month.ts:131
+#: packages/shared/src/month.ts:131
 msgid "Mon"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:28
-#: packages/admin/src/timeRules/TimeRules.tsx:28
+#: packages/admin/src/timeRules/TimeRules.tsx:29
 msgid "Monday"
 msgstr ""
 
-#: packages/widget/src/month.ts:99
+#: packages/shared/src/month.ts:99
 msgid "Mordad"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:127
+#: packages/admin/src/catalog/ServicesPage.tsx:136
 msgid "More than 1 for a class or group session."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:620
+#: packages/admin/src/catalog/ServicesPage.tsx:629
 msgid "Most per booking"
 msgstr ""
 
@@ -1201,20 +1291,20 @@ msgstr ""
 msgid "Most times"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:713
-#: packages/widget/src/Panel.tsx:310
+#: packages/admin/src/calendar/CalendarPage.tsx:709
+#: packages/widget/src/Panel.tsx:337
 msgid "Move"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:779
+#: packages/admin/src/calendar/CalendarPage.tsx:775
 msgid "Move anyway"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:183
+#: packages/admin/src/appointments/AppointmentDetail.tsx:187
 msgid "Move in calendar"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:61
+#: packages/admin/src/appointments/AppointmentDetail.tsx:62
 msgid "Moved"
 msgstr ""
 
@@ -1222,14 +1312,14 @@ msgstr ""
 msgid "Multi-line text"
 msgstr ""
 
-#: src/Modules/Widget/Presentation/Embeds.php:65
-#: packages/widget/src/Panel.tsx:145
-#: packages/widget/src/Panel.tsx:148
+#: src/Modules/Widget/Presentation/Embeds.php:67
+#: packages/widget/src/Panel.tsx:147
+#: packages/widget/src/Panel.tsx:150
 msgid "My appointments"
 msgstr ""
 
 #: packages/admin/src/catalog/CatalogList.tsx:90
-#: packages/admin/src/catalog/ServicesPage.tsx:106
+#: packages/admin/src/catalog/ServicesPage.tsx:115
 #: packages/admin/src/catalog/screens.tsx:107
 #: packages/admin/src/catalog/screens.tsx:235
 #: packages/admin/src/catalog/screens.tsx:334
@@ -1244,7 +1334,7 @@ msgstr ""
 msgid "Names and numbers can be formatted for every locale."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:495
+#: packages/admin/src/catalog/ServicesPage.tsx:504
 msgid "Needs a resource of"
 msgstr ""
 
@@ -1252,8 +1342,8 @@ msgstr ""
 msgid "Needs attention"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:396
-#: packages/admin/src/calendar/QuickBook.tsx:219
+#: packages/admin/src/calendar/CalendarPage.tsx:389
+#: packages/admin/src/calendar/QuickBook.tsx:222
 msgid "New appointment"
 msgstr ""
 
@@ -1261,35 +1351,36 @@ msgstr ""
 msgid "New customer"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:446
+#: packages/widget/src/Panel.tsx:477
 msgid "New date"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:301
-#: packages/admin/src/calendar/CalendarPage.tsx:200
-#: packages/admin/src/customers/CustomerList.tsx:175
-#: packages/admin/src/setup/SetupWizard.tsx:200
-#: packages/admin/src/setup/SetupWizard.tsx:327
+#: packages/admin/src/appointments/AppointmentsPage.tsx:295
+#: packages/admin/src/calendar/CalendarPage.tsx:198
+#: packages/admin/src/customers/CustomerList.tsx:242
+#: packages/admin/src/setup/SetupWizard.tsx:207
+#: packages/admin/src/setup/SetupWizard.tsx:334
 msgid "Next"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:483
+#: packages/admin/src/DateField.tsx:199
+#: packages/widget/src/Widget.tsx:487
 msgid "Next month"
 msgstr ""
 
-#: packages/admin/src/customers/CustomerHistory.tsx:41
+#: packages/admin/src/customers/CustomerHistory.tsx:44
 msgid "No appointments yet."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:242
+#: packages/admin/src/appointments/AppointmentsPage.tsx:236
 msgid "No appointments."
 msgstr ""
 
-#: packages/admin/src/reports/DashboardPage.tsx:150
+#: packages/admin/src/reports/DashboardPage.tsx:159
 msgid "No confirmed appointments today."
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:92
+#: packages/admin/src/coupons/Coupons.tsx:93
 msgid "No coupons yet."
 msgstr ""
 
@@ -1301,7 +1392,7 @@ msgstr ""
 msgid "No customer found."
 msgstr ""
 
-#: packages/admin/src/customers/CustomerList.tsx:131
+#: packages/admin/src/customers/CustomerList.tsx:198
 msgid "No customers."
 msgstr ""
 
@@ -1317,12 +1408,12 @@ msgstr ""
 msgid "No free time in the next two months."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:461
-#: packages/widget/src/Widget.tsx:562
+#: packages/widget/src/Panel.tsx:493
+#: packages/widget/src/Widget.tsx:566
 msgid "No free time on this day."
 msgstr ""
 
-#: packages/admin/src/holidays/HolidaysPage.tsx:86
+#: packages/admin/src/holidays/HolidaysPage.tsx:89
 msgid "No holidays in this calendar yet."
 msgstr ""
 
@@ -1334,7 +1425,7 @@ msgstr ""
 msgid "No limit"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:338
+#: packages/admin/src/setup/SetupWizard.tsx:345
 msgid "No location was created here, so the staff member serves every location."
 msgstr ""
 
@@ -1342,16 +1433,16 @@ msgstr ""
 msgid "No match."
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:88
+#: packages/admin/src/timeRules/TimeRules.tsx:89
 msgid "No time-based prices yet."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:59
-#: packages/admin/src/appointments/AppointmentsPage.tsx:36
+#: packages/admin/src/appointments/AppointmentDetail.tsx:60
+#: packages/admin/src/appointments/AppointmentsPage.tsx:37
 msgid "No-show"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:185
+#: packages/admin/src/catalog/ServicesPage.tsx:194
 #: packages/admin/src/catalog/screens.tsx:143
 msgid "None"
 msgstr ""
@@ -1370,20 +1461,20 @@ msgstr ""
 msgid "Not set: the global policy applies."
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:240
-#: packages/admin/src/customers/CustomersPage.tsx:120
+#: packages/admin/src/catalog/TimeOff.tsx:227
+#: packages/admin/src/customers/CustomersPage.tsx:119
 msgid "Note"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:403
+#: packages/widget/src/BookingFlow.tsx:447
 msgid "Note (optional)"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:282
+#: packages/admin/src/appointments/AppointmentDetail.tsx:288
 msgid "Note saved."
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:272
+#: packages/admin/src/reports/ReportsPage.tsx:276
 msgid "Nothing booked in this range."
 msgstr ""
 
@@ -1399,11 +1490,11 @@ msgstr ""
 msgid "Nothing is refunded."
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:105
+#: packages/admin/src/catalog/TimeOff.tsx:104
 msgid "Nothing planned."
 msgstr ""
 
-#: packages/admin/src/App.tsx:114
+#: packages/admin/src/App.tsx:117
 msgid "Notifications"
 msgstr ""
 
@@ -1411,7 +1502,7 @@ msgstr ""
 msgid "Notifications (email and SMS)"
 msgstr ""
 
-#: packages/widget/src/month.ts:119
+#: packages/shared/src/month.ts:119
 msgid "November"
 msgstr ""
 
@@ -1419,7 +1510,7 @@ msgstr ""
 msgid "Number"
 msgstr ""
 
-#: packages/widget/src/month.ts:118
+#: packages/shared/src/month.ts:118
 msgid "October"
 msgstr ""
 
@@ -1431,16 +1522,20 @@ msgstr ""
 msgid "On"
 msgstr ""
 
-#: packages/admin/src/policies/SettingsPage.tsx:30
-#: packages/admin/src/setup/SetupWizard.tsx:44
+#: packages/admin/src/policies/SettingsPage.tsx:40
+#: packages/admin/src/setup/SetupWizard.tsx:50
 msgid "Online payment"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:362
+#: packages/admin/src/appointments/AppointmentDetail.tsx:368
 msgid "Only staff see this."
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:228
+#: packages/admin/src/setup/BookingRulesForm.tsx:91
+msgid "Open for booking up to (days ahead)"
+msgstr ""
+
+#: packages/admin/src/setup/SetupWizard.tsx:235
 msgid "Open Saturday to Thursday; change the days later under Locations."
 msgstr ""
 
@@ -1448,15 +1543,15 @@ msgstr ""
 msgid "Open the setup wizard"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:132
+#: packages/admin/src/setup/SetupWizard.tsx:139
 msgid "Opens at"
 msgstr ""
 
-#: packages/admin/src/calendar/QuickBook.tsx:257
+#: packages/admin/src/calendar/QuickBook.tsx:260
 msgid "Option"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:232
+#: packages/admin/src/catalog/ServicesPage.tsx:241
 msgid "Option %d"
 msgstr ""
 
@@ -1464,7 +1559,7 @@ msgstr ""
 msgid "Optional modules"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:45
+#: packages/admin/src/catalog/ServicesPage.tsx:46
 msgid "Options"
 msgstr ""
 
@@ -1472,11 +1567,11 @@ msgstr ""
 msgid "Options (comma separated)"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:220
+#: packages/admin/src/catalog/ServicesPage.tsx:229
 msgid "Options and prices"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:140
+#: packages/admin/src/catalog/ServicesPage.tsx:149
 #: packages/admin/src/catalog/screens.tsx:163
 #: packages/admin/src/catalog/screens.tsx:283
 #: packages/admin/src/catalog/screens.tsx:382
@@ -1484,7 +1579,7 @@ msgstr ""
 msgid "Order"
 msgstr ""
 
-#: packages/widget/src/month.ts:96
+#: packages/shared/src/month.ts:96
 msgid "Ordibehesht"
 msgstr ""
 
@@ -1492,16 +1587,16 @@ msgstr ""
 msgid "Overdue"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:399
+#: packages/admin/src/catalog/ServicesPage.tsx:408
 msgid "Own minutes"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:362
+#: packages/admin/src/catalog/ServicesPage.tsx:371
 msgid "Own price (IRR)"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:288
-#: packages/admin/src/customers/CustomerList.tsx:164
+#: packages/admin/src/appointments/AppointmentsPage.tsx:282
+#: packages/admin/src/customers/CustomerList.tsx:231
 msgid "Page %1$d of %2$d (%3$d)"
 msgstr ""
 
@@ -1509,16 +1604,20 @@ msgstr ""
 msgid "Page not found"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:56
-#: packages/admin/src/appointments/AppointmentsPage.tsx:48
+#: packages/admin/src/appointments/AppointmentDetail.tsx:57
+#: packages/admin/src/appointments/AppointmentsPage.tsx:49
 msgid "Paid"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:50
+#: packages/admin/src/setup/BrandForm.tsx:132
+msgid "Palette"
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentsPage.tsx:51
 msgid "Partly refunded"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:44
+#: packages/admin/src/appointments/AppointmentDetail.tsx:45
 msgid "Party"
 msgstr ""
 
@@ -1530,7 +1629,7 @@ msgstr ""
 msgid "Pattern code"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:428
+#: packages/widget/src/BookingFlow.tsx:472
 msgid "Pay online and book"
 msgstr ""
 
@@ -1538,27 +1637,27 @@ msgstr ""
 msgid "Pay through WooCommerce"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:221
+#: packages/admin/src/appointments/AppointmentDetail.tsx:225
 msgid "Payment"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:219
+#: packages/admin/src/appointments/AppointmentDetail.tsx:223
 msgid "People"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:25
+#: packages/admin/src/coupons/Coupons.tsx:26
 msgid "Percent"
 msgstr ""
 
 #: packages/admin/src/calendar/QuickBook.tsx:319
 #: packages/admin/src/catalog/screens.tsx:131
 #: packages/admin/src/catalog/screens.tsx:268
-#: packages/admin/src/customers/CustomerList.tsx:122
-#: packages/admin/src/customers/CustomersPage.tsx:87
+#: packages/admin/src/customers/CustomerList.tsx:189
+#: packages/admin/src/customers/CustomersPage.tsx:88
 msgid "Phone"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:143
+#: packages/admin/src/setup/BrandForm.tsx:169
 msgid "Pick a colour"
 msgstr ""
 
@@ -1566,48 +1665,49 @@ msgstr ""
 msgid "Plugin"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:283
-#: packages/admin/src/calendar/CalendarPage.tsx:186
-#: packages/admin/src/customers/CustomerList.tsx:159
+#: packages/admin/src/appointments/AppointmentsPage.tsx:277
+#: packages/admin/src/calendar/CalendarPage.tsx:184
+#: packages/admin/src/customers/CustomerList.tsx:226
 msgid "Previous"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:473
+#: packages/admin/src/DateField.tsx:187
+#: packages/widget/src/Widget.tsx:477
 msgid "Previous month"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:233
-#: packages/widget/src/BookingFlow.tsx:30
+#: packages/admin/src/appointments/AppointmentDetail.tsx:237
+#: packages/widget/src/BookingFlow.tsx:44
 msgid "Price"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:260
-#: packages/admin/src/catalog/ServicesPage.tsx:606
+#: packages/admin/src/catalog/ServicesPage.tsx:269
+#: packages/admin/src/catalog/ServicesPage.tsx:615
 msgid "Price (IRR)"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:369
+#: packages/admin/src/setup/SetupWizard.tsx:376
 msgid "Price (rials)"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:201
+#: packages/admin/src/timeRules/TimeRules.tsx:198
 msgid "Price change (%, negative for a discount)"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:210
+#: packages/admin/src/timeRules/TimeRules.tsx:207
 msgid "Priority"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:420
+#: packages/admin/src/setup/SetupWizard.tsx:427
 msgid "Put this shortcode on a page to show the booking form:"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:470
+#: packages/admin/src/catalog/ServicesPage.tsx:479
 msgid "Quantity"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:423
-#: packages/admin/src/calendar/CalendarPage.tsx:766
+#: packages/admin/src/appointments/AppointmentDetail.tsx:429
+#: packages/admin/src/calendar/CalendarPage.tsx:762
 msgid "Reason"
 msgstr ""
 
@@ -1623,8 +1723,16 @@ msgstr ""
 msgid "Refund percent"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:49
+#: packages/admin/src/appointments/AppointmentsPage.tsx:50
 msgid "Refunded"
+msgstr ""
+
+#: packages/admin/src/setup/DisplayForm.tsx:122
+msgid "Reload"
+msgstr ""
+
+#: packages/admin/src/setup/DisplayForm.tsx:114
+msgid "Reload the page to use the new language."
 msgstr ""
 
 #: packages/admin/src/notifications/NotificationsPage.tsx:56
@@ -1635,15 +1743,15 @@ msgstr ""
 msgid "Reminders and reservation expiry run on time."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:294
-#: packages/admin/src/catalog/ServicesPage.tsx:488
+#: packages/admin/src/catalog/ServicesPage.tsx:303
+#: packages/admin/src/catalog/ServicesPage.tsx:497
 #: packages/admin/src/catalog/WeeklySchedule.tsx:210
 #: packages/admin/src/policies/Policies.tsx:372
 #: packages/admin/src/setup/PaymentSettingsForm.tsx:126
 msgid "Remove"
 msgstr ""
 
-#: packages/admin/src/App.tsx:98
+#: packages/admin/src/App.tsx:101
 msgid "Reports"
 msgstr ""
 
@@ -1663,54 +1771,70 @@ msgstr ""
 msgid "Rescheduling"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:236
+#: packages/widget/src/BookingFlow.tsx:280
 msgid "Reserving your time…"
 msgstr ""
 
-#: packages/admin/src/App.tsx:88
-#: packages/admin/src/catalog/ServicesPage.tsx:465
+#: packages/admin/src/App.tsx:91
+#: packages/admin/src/catalog/ServicesPage.tsx:474
 msgid "Resources"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:228
-#: packages/admin/src/reports/ReportsPage.tsx:280
+#: packages/admin/src/reports/ReportsPage.tsx:232
+#: packages/admin/src/reports/ReportsPage.tsx:284
 msgid "Revenue"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:46
-#: packages/widget/src/BookingFlow.tsx:35
+#: packages/admin/src/palette.ts:32
+msgid "Rose"
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentDetail.tsx:47
+#: packages/widget/src/BookingFlow.tsx:49
 msgid "Rounding"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:216
+#: packages/admin/src/timeRules/TimeRules.tsx:213
 msgid "Rule active"
 msgstr ""
 
-#: packages/widget/src/month.ts:129
+#: packages/admin/src/setup/DisplayForm.tsx:63
+msgid "Same as the site"
+msgstr ""
+
+#: packages/shared/src/month.ts:129
 msgid "Sat"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:26
-#: packages/admin/src/timeRules/TimeRules.tsx:26
+#: packages/admin/src/timeRules/TimeRules.tsx:27
 msgid "Saturday"
 msgstr ""
 
 #: packages/admin/src/catalog/ItemEditor.tsx:128
-#: packages/admin/src/catalog/ServicesPage.tsx:635
+#: packages/admin/src/catalog/ServicesPage.tsx:644
 #: packages/admin/src/policies/Policies.tsx:166
 #: packages/admin/src/policies/Policies.tsx:252
 msgid "Save"
+msgstr ""
+
+#: packages/admin/src/setup/BookingRulesForm.tsx:132
+msgid "Save booking rules"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:259
 msgid "Save hours"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:161
+#: packages/admin/src/setup/DisplayForm.tsx:133
+msgid "Save language and calendar"
+msgstr ""
+
+#: packages/admin/src/setup/BrandForm.tsx:187
 msgid "Save look"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:374
+#: packages/admin/src/appointments/AppointmentDetail.tsx:380
 msgid "Save note"
 msgstr ""
 
@@ -1726,9 +1850,9 @@ msgstr ""
 msgid "Save template"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:548
+#: packages/admin/src/catalog/ServicesPage.tsx:557
 #: packages/admin/src/catalog/crud.ts:92
-#: packages/admin/src/holidays/HolidaysPage.tsx:120
+#: packages/admin/src/holidays/HolidaysPage.tsx:117
 #: packages/admin/src/notifications/NotificationsPage.tsx:243
 #: packages/admin/src/policies/Policies.tsx:76
 msgid "Saved."
@@ -1742,7 +1866,7 @@ msgstr ""
 msgid "Schema"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:162
+#: packages/admin/src/appointments/AppointmentsPage.tsx:168
 msgid "Search by code, name or phone"
 msgstr ""
 
@@ -1750,15 +1874,15 @@ msgstr ""
 msgid "Search by name"
 msgstr ""
 
-#: packages/admin/src/customers/CustomerList.tsx:93
+#: packages/admin/src/customers/CustomerList.tsx:152
 msgid "Search by name, phone or email"
 msgstr ""
 
-#: packages/admin/src/App.tsx:221
+#: packages/admin/src/App.tsx:317
 msgid "Sections"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:597
+#: packages/widget/src/Widget.tsx:601
 msgid "Selected: %1$s at %2$s"
 msgstr ""
 
@@ -1790,31 +1914,31 @@ msgstr ""
 msgid "Sender line"
 msgstr ""
 
-#: packages/widget/src/month.ts:117
+#: packages/shared/src/month.ts:117
 msgid "September"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:41
-#: packages/admin/src/appointments/AppointmentDetail.tsx:210
-#: packages/admin/src/appointments/AppointmentsPage.tsx:232
-#: packages/admin/src/calendar/QuickBook.tsx:244
-#: packages/admin/src/reports/ReportsPage.tsx:211
+#: packages/admin/src/appointments/AppointmentDetail.tsx:42
+#: packages/admin/src/appointments/AppointmentDetail.tsx:214
+#: packages/admin/src/appointments/AppointmentsPage.tsx:226
+#: packages/admin/src/calendar/QuickBook.tsx:247
+#: packages/admin/src/reports/ReportsPage.tsx:215
 msgid "Service"
 msgstr ""
 
-#: packages/admin/src/App.tsx:77
+#: packages/admin/src/App.tsx:80
 msgid "Service categories"
 msgstr ""
 
-#: assets/blocks.js:71
+#: assets/blocks.js:91
 msgid "Service ID"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:353
+#: packages/admin/src/setup/SetupWizard.tsx:360
 msgid "Service name"
 msgstr ""
 
-#: packages/admin/src/App.tsx:72
+#: packages/admin/src/App.tsx:75
 #: packages/admin/src/catalog/screens.tsx:396
 msgid "Services"
 msgstr ""
@@ -1828,24 +1952,25 @@ msgstr ""
 msgid "Set up an SMS provider in Settings first."
 msgstr ""
 
-#: assets/blocks.js:86
-#: packages/admin/src/App.tsx:119
+#: src/Modules/Admin/Presentation/PluginLinks.php:34
+#: assets/blocks.js:108
+#: packages/admin/src/App.tsx:122
 msgid "Settings"
 msgstr ""
 
-#: packages/admin/src/App.tsx:108
+#: packages/admin/src/App.tsx:111
 msgid "Setup"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:413
+#: packages/admin/src/setup/SetupWizard.tsx:420
 msgid "Setup is done."
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:414
+#: packages/admin/src/setup/SetupWizard.tsx:421
 msgid "Setup is done. The service can be booked now."
 msgstr ""
 
-#: packages/widget/src/month.ts:100
+#: packages/shared/src/month.ts:100
 msgid "Shahrivar"
 msgstr ""
 
@@ -1857,7 +1982,7 @@ msgstr ""
 msgid "Show only when field…"
 msgstr ""
 
-#: packages/admin/src/setup/BrandForm.tsx:105
+#: packages/admin/src/setup/BrandForm.tsx:106
 msgid "Shown in the admin menu and header. Empty keeps the product name."
 msgstr ""
 
@@ -1865,7 +1990,7 @@ msgstr ""
 msgid "shown when"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:263
+#: packages/widget/src/Panel.tsx:265
 msgid "Sign out"
 msgstr ""
 
@@ -1873,13 +1998,22 @@ msgstr ""
 msgid "Site administrator"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:109
+#: assets/blocks.js:61
+#: assets/blocks.js:74
+msgid "Site setting"
+msgstr ""
+
+#: packages/admin/src/setup/SetupWizard.tsx:116
 msgid "Skip this step"
 msgstr ""
 
+#: packages/admin/src/palette.ts:34
+msgid "Slate"
+msgstr ""
+
 #: packages/admin/src/notifications/NotificationsPage.tsx:70
-#: packages/admin/src/policies/SettingsPage.tsx:26
-#: packages/admin/src/setup/SetupWizard.tsx:43
+#: packages/admin/src/policies/SettingsPage.tsx:36
+#: packages/admin/src/setup/SetupWizard.tsx:49
 msgid "SMS"
 msgstr ""
 
@@ -1916,15 +2050,15 @@ msgstr ""
 msgid "Sort"
 msgstr ""
 
-#: packages/admin/src/App.tsx:83
-#: packages/admin/src/appointments/AppointmentDetail.tsx:217
-#: packages/admin/src/appointments/AppointmentsPage.tsx:183
-#: packages/admin/src/appointments/AppointmentsPage.tsx:233
-#: packages/admin/src/calendar/CalendarPage.tsx:245
+#: packages/admin/src/App.tsx:86
+#: packages/admin/src/appointments/AppointmentDetail.tsx:221
+#: packages/admin/src/appointments/AppointmentsPage.tsx:189
+#: packages/admin/src/appointments/AppointmentsPage.tsx:227
+#: packages/admin/src/calendar/CalendarPage.tsx:237
 msgid "Staff"
 msgstr ""
 
-#: assets/blocks.js:74
+#: assets/blocks.js:94
 msgid "Staff ID"
 msgstr ""
 
@@ -1932,32 +2066,36 @@ msgstr ""
 msgid "Staff member"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:346
+#: packages/admin/src/setup/SetupWizard.tsx:353
 msgid "Staff member name"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:691
+#: packages/admin/src/calendar/CalendarPage.tsx:687
 #: packages/admin/src/calendar/QuickBook.tsx:292
 msgid "Start"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:181
+#: packages/admin/src/setup/BookingRulesForm.tsx:68
+msgid "Start times every (minutes)"
+msgstr ""
+
+#: packages/admin/src/timeRules/TimeRules.tsx:182
 msgid "Starts before"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:173
+#: packages/admin/src/timeRules/TimeRules.tsx:174
 msgid "Starts from"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:168
-#: packages/admin/src/appointments/AppointmentsPage.tsx:234
+#: packages/admin/src/appointments/AppointmentsPage.tsx:174
+#: packages/admin/src/appointments/AppointmentsPage.tsx:228
 #: packages/admin/src/catalog/fields.tsx:147
-#: packages/admin/src/customers/CustomerHistory.tsx:49
-#: packages/admin/src/customers/CustomerList.tsx:99
+#: packages/admin/src/customers/CustomerHistory.tsx:52
+#: packages/admin/src/customers/CustomerList.tsx:158
 msgid "Status"
 msgstr ""
 
-#: packages/admin/src/reports/DashboardPage.tsx:146
+#: packages/admin/src/reports/DashboardPage.tsx:155
 msgid "Still to come today"
 msgstr ""
 
@@ -1973,29 +2111,33 @@ msgstr ""
 msgid "Summary"
 msgstr ""
 
-#: packages/widget/src/month.ts:130
+#: packages/shared/src/month.ts:130
 msgid "Sun"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:27
-#: packages/admin/src/timeRules/TimeRules.tsx:27
+#: packages/admin/src/timeRules/TimeRules.tsx:28
 msgid "Sunday"
 msgstr ""
 
-#: packages/admin/src/App.tsx:246
+#: packages/admin/src/App.tsx:209
 msgid "System"
 msgstr ""
 
-#: packages/admin/src/App.tsx:124
+#: packages/admin/src/App.tsx:127
 msgid "System status"
 msgstr ""
 
-#: packages/admin/src/customers/CustomersPage.tsx:111
+#: packages/admin/src/customers/CustomersPage.tsx:110
 msgid "Tags"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:189
+#: packages/widget/src/BookingFlow.tsx:217
 msgid "Taking you to the payment page…"
+msgstr ""
+
+#: packages/admin/src/palette.ts:21
+msgid "Teal"
 msgstr ""
 
 #: packages/admin/src/setup/SmsSettingsForm.tsx:113
@@ -2006,18 +2148,22 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#: src/Modules/Admin/Presentation/AdminPage.php:95
+#: assets/blocks.js:41
+msgid "Thank-you page"
+msgstr ""
+
+#: src/Modules/Admin/Presentation/AdminPage.php:105
 msgid ""
 "The admin app is not built. Run \"pnpm install\" and \"pnpm build\" in the "
 "plugin folder."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:152
+#: packages/widget/src/Panel.tsx:154
 #: packages/widget/src/Widget.tsx:320
 msgid "The booking form is not configured."
 msgstr ""
 
-#: src/Modules/Widget/Presentation/Embeds.php:182
+#: src/Modules/Widget/Presentation/Embeds.php:205
 msgid "The booking widget is not built. Run \"pnpm build\"."
 msgstr ""
 
@@ -2045,11 +2191,21 @@ msgstr ""
 msgid "The job queue is stalled"
 msgstr ""
 
-#: packages/admin/src/holidays/HolidaysPage.tsx:69
+#: packages/admin/src/holidays/HolidaysPage.tsx:72
 msgid "The key a location’s holiday calendar setting uses, e.g. \"ir\"."
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:196
+#: packages/admin/src/setup/DisplayForm.tsx:55
+msgid ""
+"The language of this plugin’s screens and of the booking form. It does not "
+"have to be the language of WordPress."
+msgstr ""
+
+#: packages/admin/src/setup/BookingRulesForm.tsx:108
+msgid "The least busy that day"
+msgstr ""
+
+#: packages/admin/src/setup/SetupWizard.tsx:203
 msgid "The location is created."
 msgstr ""
 
@@ -2065,7 +2221,7 @@ msgid ""
 "of names and numbers."
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:759
+#: packages/admin/src/calendar/CalendarPage.tsx:755
 msgid "The policy does not allow this move"
 msgstr ""
 
@@ -2085,7 +2241,7 @@ msgstr ""
 msgid "The server is busy. Please try again in a moment."
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:323
+#: packages/admin/src/setup/SetupWizard.tsx:330
 msgid "The service is created."
 msgstr ""
 
@@ -2097,7 +2253,7 @@ msgstr ""
 msgid "The sodium extension is missing"
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:375
+#: packages/admin/src/setup/SetupWizard.tsx:382
 msgid "The staff member works 09:00 to 17:00, Saturday to Thursday."
 msgstr ""
 
@@ -2109,23 +2265,23 @@ msgstr ""
 msgid "The time zone data is out of date for Iran"
 msgstr ""
 
-#: packages/admin/src/App.tsx:241
+#: packages/admin/src/App.tsx:218
 msgid "Theme"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:87
+#: packages/widget/src/Panel.tsx:89
 msgid "This appointment has already been moved as many times as allowed."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:91
+#: packages/widget/src/Panel.tsx:93
 msgid "This appointment has started."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:99
+#: packages/widget/src/Panel.tsx:101
 msgid "This change is not allowed now."
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:258
+#: packages/admin/src/calendar/CalendarPage.tsx:250
 msgid "This location has no active staff."
 msgstr ""
 
@@ -2140,22 +2296,22 @@ msgid ""
 "tzdata package or PHP."
 msgstr ""
 
-#: packages/admin/src/calendar/QuickBook.tsx:235
+#: packages/admin/src/calendar/QuickBook.tsx:238
 msgid "This staff member serves no active service."
 msgstr ""
 
-#: packages/widget/src/month.ts:134
+#: packages/shared/src/month.ts:134
 msgid "Thu"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:31
-#: packages/admin/src/timeRules/TimeRules.tsx:31
+#: packages/admin/src/timeRules/TimeRules.tsx:32
 msgid "Thursday"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:188
-#: packages/admin/src/appointments/AppointmentsPage.tsx:230
-#: packages/admin/src/customers/CustomerHistory.tsx:48
+#: packages/admin/src/appointments/AppointmentDetail.tsx:192
+#: packages/admin/src/appointments/AppointmentsPage.tsx:224
+#: packages/admin/src/customers/CustomerHistory.tsx:51
 msgid "Time"
 msgstr ""
 
@@ -2163,15 +2319,15 @@ msgstr ""
 msgid "Time (UTC)"
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:50
+#: packages/admin/src/catalog/TimeOff.tsx:48
 msgid "Time off"
 msgstr ""
 
-#: packages/admin/src/catalog/TimeOff.tsx:96
+#: packages/admin/src/catalog/TimeOff.tsx:95
 msgid "Time off and extra hours"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:42
+#: packages/admin/src/appointments/AppointmentDetail.tsx:43
 msgid "Time pricing"
 msgstr ""
 
@@ -2180,38 +2336,38 @@ msgstr ""
 msgid "Time zone"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:31
+#: packages/widget/src/BookingFlow.tsx:45
 msgid "Time-based price"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:79
+#: packages/admin/src/timeRules/TimeRules.tsx:80
 msgid "Time-based prices"
 msgstr ""
 
-#: packages/widget/src/month.ts:98
+#: packages/shared/src/month.ts:98
 msgid "Tir"
 msgstr ""
 
 #: packages/admin/src/catalog/screens.tsx:177
 #: packages/admin/src/catalog/screens.tsx:242
-#: packages/admin/src/holidays/HolidaysPage.tsx:166
+#: packages/admin/src/holidays/HolidaysPage.tsx:155
 msgid "Title"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:210
-#: packages/admin/src/catalog/TimeOff.tsx:232
+#: packages/admin/src/appointments/AppointmentsPage.tsx:208
+#: packages/admin/src/catalog/TimeOff.tsx:219
 #: packages/admin/src/catalog/WeeklySchedule.tsx:188
 #: packages/admin/src/notifications/NotificationsPage.tsx:262
 #: packages/admin/src/notifications/NotificationsPage.tsx:398
 msgid "To"
 msgstr ""
 
-#: packages/admin/src/reports/ReportsPage.tsx:127
+#: packages/admin/src/reports/ReportsPage.tsx:124
 msgid "To date"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:194
-#: packages/admin/src/reports/DashboardPage.tsx:95
+#: packages/admin/src/calendar/CalendarPage.tsx:192
+#: packages/admin/src/reports/DashboardPage.tsx:100
 msgid "Today"
 msgstr ""
 
@@ -2219,27 +2375,27 @@ msgstr ""
 msgid "Too many requests. Please wait a moment and try again."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:247
-#: packages/admin/src/appointments/AppointmentsPage.tsx:235
-#: packages/admin/src/customers/CustomerHistory.tsx:50
+#: packages/admin/src/appointments/AppointmentDetail.tsx:251
+#: packages/admin/src/appointments/AppointmentsPage.tsx:229
+#: packages/admin/src/customers/CustomerHistory.tsx:53
 msgid "Total"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:328
+#: packages/widget/src/BookingFlow.tsx:372
 msgid "Total: %s IRR"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:216
-#: packages/widget/src/Panel.tsx:295
+#: packages/widget/src/BookingFlow.tsx:244
+#: packages/widget/src/Panel.tsx:297
 msgid "Tracking code: %s"
 msgstr ""
 
-#: packages/widget/src/month.ts:132
+#: packages/shared/src/month.ts:132
 msgid "Tue"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:29
-#: packages/admin/src/timeRules/TimeRules.tsx:29
+#: packages/admin/src/timeRules/TimeRules.tsx:30
 msgid "Tuesday"
 msgstr ""
 
@@ -2247,11 +2403,11 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentsPage.tsx:46
+#: packages/admin/src/appointments/AppointmentsPage.tsx:47
 msgid "Unpaid"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:44
+#: packages/admin/src/coupons/Coupons.tsx:45
 msgid "used"
 msgstr ""
 
@@ -2259,16 +2415,20 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:190
+#: packages/admin/src/coupons/Coupons.tsx:189
 msgid "Valid from"
 msgstr ""
 
-#: packages/admin/src/coupons/Coupons.tsx:197
+#: packages/admin/src/coupons/Coupons.tsx:194
 msgid "Valid until"
 msgstr ""
 
 #: packages/admin/src/notifications/NotificationsPage.tsx:479
 msgid "Values"
+msgstr ""
+
+#: src/Modules/Admin/Presentation/AdminPage.php:59
+msgid "Vaqtyar"
 msgstr ""
 
 #: packages/widget/src/PhoneCheck.tsx:159
@@ -2283,7 +2443,7 @@ msgstr ""
 msgid "Waiting"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:309
+#: packages/widget/src/BookingFlow.tsx:353
 msgid "We are holding this time for you: %s"
 msgstr ""
 
@@ -2293,20 +2453,20 @@ msgid ""
 "soon as it arrives."
 msgstr ""
 
-#: packages/widget/src/month.ts:133
+#: packages/shared/src/month.ts:133
 msgid "Wed"
 msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:30
-#: packages/admin/src/timeRules/TimeRules.tsx:30
+#: packages/admin/src/timeRules/TimeRules.tsx:31
 msgid "Wednesday"
 msgstr ""
 
-#: packages/admin/src/calendar/CalendarPage.tsx:229
+#: packages/admin/src/calendar/CalendarPage.tsx:221
 msgid "Week"
 msgstr ""
 
-#: packages/admin/src/timeRules/TimeRules.tsx:158
+#: packages/admin/src/timeRules/TimeRules.tsx:159
 msgid "Weekdays (none means every day)"
 msgstr ""
 
@@ -2321,6 +2481,10 @@ msgstr ""
 #: packages/admin/src/notifications/NotificationsPage.tsx:261
 #: packages/admin/src/notifications/NotificationsPage.tsx:374
 msgid "When"
+msgstr ""
+
+#: packages/admin/src/setup/BookingRulesForm.tsx:100
+msgid "When the customer does not choose staff"
 msgstr ""
 
 #: packages/widget/src/Widget.tsx:416
@@ -2351,15 +2515,15 @@ msgid ""
 "in the appointment, for example {customer_name}."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:368
+#: packages/widget/src/Panel.tsx:395
 msgid "Yes, cancel it"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:277
+#: packages/widget/src/Panel.tsx:279
 msgid "You have no appointments yet."
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:198
+#: packages/widget/src/BookingFlow.tsx:226
 msgid "Your appointment is booked."
 msgstr ""
 
@@ -2367,7 +2531,7 @@ msgstr ""
 msgid "Your booking site is not set up yet."
 msgstr ""
 
-#: packages/admin/src/setup/SetupWizard.tsx:40
+#: packages/admin/src/setup/SetupWizard.tsx:46
 msgid "Your brand"
 msgstr ""
 
@@ -2379,7 +2543,7 @@ msgstr ""
 msgid "Your phone number is verified."
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:306
+#: packages/widget/src/BookingFlow.tsx:350
 msgid "Your reserved time has expired."
 msgstr ""
 
@@ -2391,62 +2555,62 @@ msgstr ""
 msgid "Zibal"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:104
+#: src/Shared/DateFormatter.php:106
 msgctxt "Jalali month"
 msgid "Aban"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:105
+#: src/Shared/DateFormatter.php:107
 msgctxt "Jalali month"
 msgid "Azar"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:107
+#: src/Shared/DateFormatter.php:109
 msgctxt "Jalali month"
 msgid "Bahman"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:106
+#: src/Shared/DateFormatter.php:108
 msgctxt "Jalali month"
 msgid "Dey"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:108
+#: src/Shared/DateFormatter.php:110
 msgctxt "Jalali month"
 msgid "Esfand"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:97
+#: src/Shared/DateFormatter.php:99
 msgctxt "Jalali month"
 msgid "Farvardin"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:99
+#: src/Shared/DateFormatter.php:101
 msgctxt "Jalali month"
 msgid "Khordad"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:103
+#: src/Shared/DateFormatter.php:105
 msgctxt "Jalali month"
 msgid "Mehr"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:101
+#: src/Shared/DateFormatter.php:103
 msgctxt "Jalali month"
 msgid "Mordad"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:98
+#: src/Shared/DateFormatter.php:100
 msgctxt "Jalali month"
 msgid "Ordibehesht"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:102
+#: src/Shared/DateFormatter.php:104
 msgctxt "Jalali month"
 msgid "Shahrivar"
 msgstr ""
 
-#: src/Shared/DateFormatter.php:100
+#: src/Shared/DateFormatter.php:102
 msgctxt "Jalali month"
 msgid "Tir"
 msgstr ""

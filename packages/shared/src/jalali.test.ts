@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDate, fromJalali, parseLocalDate, toJalali } from './jalali';
+import {
+	formatDate,
+	fromJalali,
+	latinDigits,
+	parseLocalDate,
+	parseTypedDate,
+	toJalali,
+} from './jalali';
 
 describe( 'jalali', () => {
 	it( 'converts both ways, around Nowruz and in a leap year', () => {
@@ -52,4 +59,38 @@ describe( 'jalali', () => {
 			expect( () => parseLocalDate( value ) ).toThrow( RangeError );
 		}
 	);
+} );
+
+describe( 'typed dates', () => {
+	it( 'reads Latin, Persian and Arabic digits with any separator', () => {
+		expect( latinDigits( '۱۴۰۵/٠٧/03' ) ).toBe( '1405/07/03' );
+		for ( const text of [
+			'1405/07/03',
+			'1405-7-3',
+			'۱۴۰۵/۰۷/۰۳',
+			' 1405.07.03 ',
+		] ) {
+			expect( parseTypedDate( text, 'jalali' ) ).toBe( '2026-09-25' );
+		}
+		expect( parseTypedDate( '2026-09-25', 'gregorian' ) ).toBe(
+			'2026-09-25'
+		);
+	} );
+
+	it( 'rejects what is not a date of the calendar', () => {
+		// 1405 is a common year: Esfand has 29 days, and jalaali-js would roll 30 over.
+		for ( const text of [
+			'',
+			'1405/13/01',
+			'1405/12/30',
+			'1405/00/10',
+			'14/07/03',
+			'abc',
+		] ) {
+			expect( parseTypedDate( text, 'jalali' ) ).toBeNull();
+		}
+		expect( parseTypedDate( '2026-02-30', 'gregorian' ) ).toBeNull();
+		// A leap year has the 30th.
+		expect( parseTypedDate( '1403/12/30', 'jalali' ) ).toBe( '2025-03-20' );
+	} );
 } );

@@ -3,6 +3,24 @@
 All notable changes to this plugin. The format follows [Keep a Changelog](https://keepachangelog.com/);
 the version in the plugin header, `readme.txt` and here must be the same (`composer build:zip` checks it).
 
+## [1.1.0] - 2026-10-01
+
+### Changed
+- The admin app has a new, minimal look in the style of io98.ir: a light page, white cards, one accent colour. Dark mode follows the system or a choice in the header.
+- **Palette:** pick one of six ready palettes or any colour under Settings, Brand. Buttons, links, the calendar, charts and the WordPress components all follow it.
+- **Calendar and language:** Settings, Language and calendar sets the calendar (Jalali or Gregorian), the digits and the language of the plugin's screens and booking form (Persian, English or the site's), independent of WordPress. Persian shows the name as "وقت یار", English as "Vaqtyar".
+- Every date field in the admin is now a Jalali date field (typed, or from a month grid) when the calendar is Jalali, instead of the browser's Gregorian date input. Dates, times, amounts and counts follow the chosen digits.
+- The shortcode and block take the calendar and digits from the site setting unless they name their own.
+- The plugin's translations are now loaded on init from the plugin folder; before, the PHP side (menu name, emails) read English whatever the site language.
+
+### Added
+- A custom admin menu icon with "io98", an "io98" credit in the admin footer and the plugins list, Author and Author URI in the plugin header.
+- Booking rules under Settings: step between start times, minimum notice, how far ahead booking is open, who gets a booking when the customer does not choose (`GET/PUT /booking-rules`).
+- Add to calendar (.ics) for a customer after booking and in the customer panel.
+- A thank-you page for the booking form (`thanks` attribute, or the block field): an address of the same site, with the tracking code added.
+- Export the customers list as CSV; the shortcode of each service in the services list.
+- An illustrated step-by-step guide in `docs/guide` (Persian) and a parity review against the reference plugins.
+
 ## [1.0.0] - 2026-09-30
 
 The first release.

@@ -197,7 +197,7 @@ describe( 'the setup screens', () => {
 		expect( container.querySelector( 'h1' )?.textContent ).toBe( 'Setup' );
 		expect(
 			container.querySelector( '[aria-current="step"]' )?.textContent
-		).toBe( 'Your brand' );
+		).toBe( 'Language and calendar' );
 	} );
 
 	it( 'stops nudging once the wizard is done', async () => {

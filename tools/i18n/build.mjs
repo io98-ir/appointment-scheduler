@@ -242,6 +242,24 @@ for ( const locale of LOCALES ) {
 		console.log( `${ locale }: wrote .mo and ${ Object.keys( HANDLES ).length } script files` );
 	}
 }
+/*
+ * English needs no translations, but it needs a file: Localization loads the
+ * plugin's own language, and without an English .mo WordPress would fall back
+ * to the site's (Persian) one when the two differ.
+ */
+if ( args.has( '--build' ) ) {
+	writeFileSync(
+		join( root, 'languages', `${ DOMAIN }-en_US.mo` ),
+		gettext.mo.compile( {
+			charset: 'utf-8',
+			headers: {
+				Language: 'en_US',
+				'Plural-Forms': 'nplurals=2; plural=n != 1;',
+			},
+			translations: { '': { '': { msgid: '', msgstr: [ '' ] } } },
+		} )
+	);
+}
 if ( args.has( '--check' ) && missing > 0 ) {
 	process.exit( 1 );
 }

@@ -79,6 +79,27 @@ describe( 'readConfig', () => {
 			nonce: 'n',
 			brand: { name: '', logo_url: '', color: '' },
 			productName: '',
+			display: { calendar: 'jalali', digits: 'latin', language: 'auto' },
+			dir: 'ltr',
+			author: { name: '', url: '' },
+		} );
+	} );
+
+	it( 'reads how the page shows dates, and the maker', () => {
+		expect(
+			readConfig(
+				element(
+					'{"restUrl":"https://a.test/","nonce":"n","display":{"calendar":"gregorian","digits":"persian","language":"fa","dir":"rtl"},"author":{"name":"io98","url":"https://io98.ir"}}'
+				)
+			)
+		).toMatchObject( {
+			display: {
+				calendar: 'gregorian',
+				digits: 'persian',
+				language: 'fa',
+			},
+			dir: 'rtl',
+			author: { name: 'io98', url: 'https://io98.ir' },
 		} );
 	} );
 

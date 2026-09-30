@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatDate, type Holiday } from '@vaqtyar/shared';
+import type { Holiday } from '@vaqtyar/shared';
 import { Button, Notice, Spinner, TextControl } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
@@ -8,6 +8,8 @@ import { store as noticesStore } from '@wordpress/notices';
 import type { FormEvent } from 'react';
 
 import { useApi } from '../api';
+import { DateField } from '../DateField';
+import { useDate } from '../display';
 import { SIZE } from '../catalog/fields';
 import { errorMessage } from '../query';
 
@@ -42,6 +44,7 @@ function yearFrom( first: string ): { from: string; to: string } {
 export function HolidaysPage() {
 	const [ calendar, setCalendar ] = useState( DEFAULT_CALENDAR );
 	const api = useApi();
+	const showDate = useDate();
 	const client = useQueryClient();
 	const { createSuccessNotice } = useDispatch( noticesStore );
 	const range = yearFrom( today() );
@@ -90,13 +93,7 @@ export function HolidaysPage() {
 				<ul className="vqy-admin__exceptions">
 					{ list.data.map( ( holiday ) => (
 						<li key={ holiday.date }>
-							<span dir="ltr">
-								{ formatDate(
-									holiday.date,
-									'jalali',
-									'latin'
-								) }
-							</span>{ ' ' }
+							<span dir="ltr">{ showDate( holiday.date ) }</span>{ ' ' }
 							{ holiday.title }
 							{ holiday.source === 'dataset' &&
 								` (${ __(
@@ -148,17 +145,9 @@ function AddHoliday( {
 
 	return (
 		<form className="vqy-admin__inline-form" onSubmit={ submit }>
-			<TextControl
-				{ ...SIZE }
-				type="date"
+			<DateField
 				label={ __( 'Date', 'vaqtyar' ) }
-				help={
-					date !== ''
-						? formatDate( date, 'jalali', 'latin' )
-						: undefined
-				}
 				value={ date }
-				required
 				onChange={ setDate }
 			/>
 			<TextControl

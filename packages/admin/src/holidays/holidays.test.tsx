@@ -171,7 +171,8 @@ describe( 'the holidays screen', () => {
 			'No holidays in this calendar yet.'
 		);
 
-		await type( input( container, 'Date' ), '2026-10-05' );
+		// The screens read Jalali by default: 13 Mehr 1405.
+		await type( input( container, 'Date' ), '1405/07/13' );
 		await type( input( container, 'Title' ), 'Test day' );
 		await click( button( 'Add' ) );
 

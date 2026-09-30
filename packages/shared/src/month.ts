@@ -4,7 +4,7 @@ import {
 	toJalali,
 	type Calendar,
 	type DateParts,
-} from '@vaqtyar/shared';
+} from './jalali';
 import { __ } from '@wordpress/i18n';
 
 /** A month of the shown calendar: Jalali 1405/07, or Gregorian 2026/09. */

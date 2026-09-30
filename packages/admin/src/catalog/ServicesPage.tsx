@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type {
-	Extra,
-	Resource,
-	Service,
-	ServiceVariant,
-	Staff,
+import {
+	SLUG,
+	type Extra,
+	type Resource,
+	type Service,
+	type ServiceVariant,
+	type Staff,
 } from '@vaqtyar/shared';
 import {
 	Button,
@@ -51,6 +52,14 @@ const COLUMNS: Column< Service >[] = [
 		render: ( item ) =>
 			item.variants.find( ( variant ) => variant.is_default )
 				?.duration_min ?? 0,
+	},
+	{
+		id: 'shortcode',
+		label: __( 'Booking form for this service', 'vaqtyar' ),
+		// A page can offer just this service: paste the shortcode into it.
+		render: ( item ) => (
+			<code dir="ltr">{ `[${ SLUG }_booking service="${ item.id }"]` }</code>
+		),
 	},
 	statusColumn(),
 ];

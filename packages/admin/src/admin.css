@@ -1,71 +1,186 @@
 /*
- * Logical properties only and no hard-coded colors (principles §5). Dark
- * mode is the browser's: color-scheme picks the light or dark system colors
- * (Canvas, CanvasText, …) from data-theme (theme.ts), and "auto" lets the
- * system decide.
+ * Minimal and light (ADR-020): tokens.css holds every colour, this file only
+ * spaces and shapes things. Logical properties only (principles §5), so one
+ * sheet serves RTL and LTR.
  */
 .vqy-admin {
-	--vqy-accent: var(--wp-admin-theme-color, currentcolor);
-
-	color-scheme: light dark;
 	margin-inline-end: 20px;
-	margin-block-start: 10px;
-	padding-block: 16px;
-	padding-inline: 20px;
-	background: Canvas;
-	color: CanvasText;
-	border: 1px solid GrayText;
-	border-radius: 4px;
-}
-
-.vqy-admin[data-theme="light"] {
-	color-scheme: light;
-}
-
-.vqy-admin[data-theme="dark"] {
-	color-scheme: dark;
+	margin-block-start: 12px;
+	padding-block: 20px 12px;
+	padding-inline: 24px;
+	background: var(--vqy-bg);
+	color: var(--vqy-text);
+	border: 1px solid var(--vqy-border);
+	border-radius: var(--vqy-radius);
+	font-family: var(--vqy-font);
+	font-size: 14px;
+	line-height: 1.6;
 }
 
 .vqy-admin a {
-	color: LinkText;
+	color: var(--vqy-accent-text);
 }
 
+/* The WordPress components, brought in line with the tokens. */
+.vqy-admin .components-button.is-primary {
+	background: var(--vqy-accent);
+	color: var(--vqy-on-accent);
+	border-radius: var(--vqy-radius-sm);
+}
+
+.vqy-admin .components-button.is-primary:hover:not(:disabled),
+.vqy-admin .components-button.is-primary:active:not(:disabled) {
+	background: var(--vqy-accent-hover);
+	color: var(--vqy-on-accent);
+}
+
+.vqy-admin .components-button.is-secondary,
+.vqy-admin .components-button.is-tertiary {
+	border-radius: var(--vqy-radius-sm);
+	color: var(--vqy-accent-text);
+}
+
+.vqy-admin .components-button.is-secondary {
+	box-shadow: inset 0 0 0 1px var(--vqy-accent-line);
+}
+
+.vqy-admin .components-text-control__input,
+.vqy-admin .components-select-control__input,
+.vqy-admin .components-textarea-control__input,
+.vqy-admin .components-input-control__container {
+	background: var(--vqy-surface);
+	color: var(--vqy-text);
+	border-color: var(--vqy-border-strong);
+	border-radius: var(--vqy-radius-sm);
+}
+
+.vqy-admin .components-base-control__label,
+.vqy-admin .components-input-control__label {
+	color: var(--vqy-text);
+}
+
+.vqy-admin .components-base-control__help {
+	color: var(--vqy-muted);
+}
+
+/* Header: the name, the sections as quiet pills, the theme at the end. */
 .vqy-admin__header {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: end;
+	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
-	padding-block-end: 12px;
-	border-block-end: 1px solid GrayText;
+	gap: 12px 20px;
+	padding-block-end: 16px;
+	border-block-end: 1px solid var(--vqy-border);
+}
+
+.vqy-admin__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--vqy-text);
+	font-size: 1.15em;
+	font-weight: 700;
+}
+
+.vqy-admin__brand::before {
+	content: "";
+	inline-size: 10px;
+	block-size: 10px;
+	background: var(--vqy-accent);
+	border-radius: 50%;
+}
+
+.vqy-admin__brand:has(img)::before {
+	display: none;
+}
+
+.vqy-admin__logo {
+	block-size: 32px;
+	inline-size: auto;
 }
 
 .vqy-admin__nav {
 	display: flex;
+	flex: 1 1 auto;
 	flex-wrap: wrap;
-	gap: 4px;
+	gap: 2px;
 }
 
 .vqy-admin .vqy-admin__link {
-	padding-block: 6px;
-	padding-inline: 10px;
-	border-block-end: 2px solid transparent;
-	color: CanvasText;
+	padding-block: 5px;
+	padding-inline: 12px;
+	border-radius: var(--vqy-radius-pill);
+	color: var(--vqy-muted);
 	text-decoration: none;
+	transition: background-color 0.15s, color 0.15s;
+}
+
+.vqy-admin .vqy-admin__link:hover {
+	background: var(--vqy-surface-2);
+	color: var(--vqy-text);
 }
 
 .vqy-admin .vqy-admin__link[aria-current="page"] {
-	border-block-end-color: var(--vqy-accent);
+	background: var(--vqy-accent-soft);
+	color: var(--vqy-accent-text);
 	font-weight: 600;
 }
 
+.vqy-admin .vqy-admin__link:focus-visible {
+	outline: 2px solid var(--vqy-accent);
+	outline-offset: 1px;
+}
+
+.vqy-admin__theme {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	background: var(--vqy-surface-2);
+	border-radius: var(--vqy-radius-pill);
+}
+
+.vqy-admin__theme button {
+	padding-block: 3px;
+	padding-inline: 10px;
+	background: transparent;
+	color: var(--vqy-muted);
+	border: 0;
+	border-radius: var(--vqy-radius-pill);
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.vqy-admin__theme button[aria-pressed="true"] {
+	background: var(--vqy-surface);
+	color: var(--vqy-text);
+	box-shadow: var(--vqy-shadow);
+}
+
 .vqy-admin__main {
-	padding-block-start: 16px;
+	padding-block-start: 20px;
 }
 
 .vqy-admin__title {
-	margin-block-end: 1em;
-	color: inherit;
+	margin-block: 0 1em;
+	color: var(--vqy-text);
+	font-size: 1.5em;
+	font-weight: 700;
+}
+
+.vqy-admin__footer {
+	margin-block-start: 28px;
+	padding-block-start: 12px;
+	border-block-start: 1px solid var(--vqy-border);
+	color: var(--vqy-muted);
+	font-size: 12px;
+	text-align: center;
+}
+
+.vqy-admin__footer a {
+	font-weight: 700;
+	text-decoration: none;
 }
 
 .vqy-admin__snackbars {
@@ -88,15 +203,62 @@
 	min-inline-size: 220px;
 }
 
+.vqy-admin__week {
+	border-collapse: collapse;
+	inline-size: 100%;
+}
+
+.vqy-admin .vqy-admin__week th,
+.vqy-admin .vqy-admin__week td {
+	padding-block: 8px;
+	border-block-end: 1px solid var(--vqy-border);
+	text-align: start;
+	vertical-align: top;
+}
+
+.vqy-admin .vqy-admin__week td {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+/* Tables: no stripes or boxes, a thin line between rows. */
 .vqy-admin .vqy-admin__table {
-	background: Canvas;
-	color: CanvasText;
+	inline-size: 100%;
+	border-collapse: collapse;
+	background: var(--vqy-surface);
+	color: var(--vqy-text);
+	border: 1px solid var(--vqy-border);
+	border-radius: var(--vqy-radius);
+	box-shadow: var(--vqy-shadow);
 }
 
 .vqy-admin .vqy-admin__table th,
 .vqy-admin .vqy-admin__table td {
+	padding-block: 10px;
+	padding-inline: 14px;
+	border-block-end: 1px solid var(--vqy-border);
+	background: transparent;
 	color: inherit;
 	text-align: start;
+}
+
+.vqy-admin .vqy-admin__table th {
+	color: var(--vqy-muted);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.vqy-admin .vqy-admin__table tbody tr:last-child td {
+	border-block-end: 0;
+}
+
+.vqy-admin .vqy-admin__table.striped > tbody > :nth-child(odd) {
+	background: transparent;
+}
+
+.vqy-admin .vqy-admin__table tbody tr:hover td {
+	background: var(--vqy-surface-2);
 }
 
 .vqy-admin__actions {
@@ -108,24 +270,30 @@
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+.vqy-admin__form {
 	max-inline-size: 720px;
 }
 
+/* A panel is a card. */
 .vqy-admin__panel {
+	max-inline-size: 960px;
 	margin-block-start: 24px;
-	padding-block: 16px;
-	padding-inline: 16px;
-	border: 1px solid GrayText;
-	border-radius: 4px;
+	padding-block: 18px;
+	padding-inline: 20px;
+	background: var(--vqy-surface);
+	border: 1px solid var(--vqy-border);
+	border-radius: var(--vqy-radius);
+	box-shadow: var(--vqy-shadow);
 }
 
 .vqy-admin__panel > h2,
 .vqy-admin__panel > legend {
 	margin: 0;
-	padding-inline: 4px;
-	color: inherit;
+	color: var(--vqy-text);
 	font-size: 1.1em;
-	font-weight: 600;
+	font-weight: 700;
 }
 
 .vqy-admin__row,
@@ -158,34 +326,15 @@
 	gap: 8px;
 }
 
-.vqy-admin__week {
-	border-collapse: collapse;
-	inline-size: 100%;
-}
-
-.vqy-admin .vqy-admin__week th,
-.vqy-admin .vqy-admin__week td {
-	padding-block: 8px;
-	border-block-end: 1px solid GrayText;
-	text-align: start;
-	vertical-align: top;
-}
-
-.vqy-admin .vqy-admin__week td {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
 .vqy-admin__muted {
-	color: GrayText;
+	color: var(--vqy-muted);
 }
 
 .vqy-admin__swatch {
 	display: inline-block;
 	inline-size: 16px;
 	block-size: 16px;
-	border: 1px solid GrayText;
+	border: 1px solid var(--vqy-border-strong);
 	border-radius: 50%;
 	vertical-align: middle;
 }
@@ -194,6 +343,9 @@
 	inline-size: 64px;
 	block-size: 40px;
 	padding: 2px;
+	background: var(--vqy-surface);
+	border: 1px solid var(--vqy-border-strong);
+	border-radius: var(--vqy-radius-sm);
 }
 
 .vqy-admin__exceptions {
@@ -201,10 +353,130 @@
 	padding-inline-start: 1.2em;
 }
 
+/* The owner's palette: swatches to pick from, then any colour. */
+.vqy-palette {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.vqy-palette legend {
+	margin-block-end: 8px;
+	padding: 0;
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+}
+
+.vqy-palette__option {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding-block: 5px;
+	padding-inline: 12px 14px;
+	background: var(--vqy-surface);
+	color: var(--vqy-text);
+	border: 1px solid var(--vqy-border-strong);
+	border-radius: var(--vqy-radius-pill);
+	font: inherit;
+	cursor: pointer;
+}
+
+.vqy-palette__option[aria-pressed="true"] {
+	border-color: var(--vqy-accent);
+	box-shadow: 0 0 0 1px var(--vqy-accent);
+}
+
+.vqy-palette__dot {
+	inline-size: 16px;
+	block-size: 16px;
+	border-radius: 50%;
+}
+
+/* The date field with a Jalali calendar beside it. */
+.vqy-date {
+	position: relative;
+}
+
+.vqy-date__row {
+	display: flex;
+	align-items: end;
+	gap: 6px;
+}
+
+.vqy-date__popup {
+	position: absolute;
+	inset-block-start: 100%;
+	inset-inline-start: 0;
+	z-index: 10;
+	inline-size: 280px;
+	margin-block-start: 4px;
+	padding: 12px;
+	background: var(--vqy-surface);
+	color: var(--vqy-text);
+	border: 1px solid var(--vqy-border-strong);
+	border-radius: var(--vqy-radius);
+	box-shadow: var(--vqy-shadow);
+}
+
+.vqy-date__nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 4px;
+	margin-block-end: 8px;
+}
+
+.vqy-date__grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+	text-align: center;
+}
+
+.vqy-date__weekday {
+	color: var(--vqy-muted);
+	font-size: 11px;
+}
+
+.vqy-date__day {
+	padding-block: 6px;
+	background: transparent;
+	color: inherit;
+	border: 0;
+	border-radius: var(--vqy-radius-sm);
+	font: inherit;
+	cursor: pointer;
+}
+
+.vqy-date__day:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.vqy-date__day:hover:not(:disabled) {
+	background: var(--vqy-surface-2);
+}
+
+.vqy-date__day[aria-pressed="true"] {
+	background: var(--vqy-accent);
+	color: var(--vqy-on-accent);
+}
+
+.vqy-date__pair {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: 8px;
+}
+
 .vqy-calendar__grid {
 	display: grid;
 	overflow-x: auto;
-	border-block-start: 1px solid GrayText;
+	border-block-start: 1px solid var(--vqy-border);
 }
 
 .vqy-calendar__head {
@@ -213,8 +485,8 @@
 	z-index: 2;
 	padding-block: 6px;
 	padding-inline: 4px;
-	background: Canvas;
-	border-block-end: 1px solid GrayText;
+	background: var(--vqy-bg);
+	border-block-end: 1px solid var(--vqy-border);
 	font-weight: 600;
 	text-align: center;
 }
@@ -227,13 +499,13 @@
 .vqy-calendar__hours span {
 	position: absolute;
 	inset-inline-end: 6px;
-	color: GrayText;
+	color: var(--vqy-muted);
 	font-size: 0.85em;
 }
 
 .vqy-calendar__column {
-	border-inline-start: 1px solid GrayText;
-	background-image: linear-gradient(to bottom, color-mix(in srgb, GrayText 30%, transparent) 1px, transparent 1px);
+	border-inline-start: 1px solid var(--vqy-border);
+	background-image: linear-gradient(to bottom, var(--vqy-border) 1px, transparent 1px);
 	cursor: copy;
 }
 
@@ -241,12 +513,12 @@
 	position: absolute;
 	overflow: hidden;
 	padding-block: 2px;
-	padding-inline: 4px;
-	background: color-mix(in srgb, var(--vqy-accent) 15%, Canvas);
-	color: CanvasText;
-	border: 1px solid GrayText;
-	border-inline-start-width: 4px;
-	border-radius: 3px;
+	padding-inline: 6px;
+	background: var(--vqy-accent-soft);
+	color: var(--vqy-text);
+	border: 1px solid var(--vqy-accent-line);
+	border-inline-start: 4px solid var(--vqy-accent);
+	border-radius: var(--vqy-radius-sm);
 	font: inherit;
 	font-size: 0.85em;
 	line-height: 1.3;
@@ -279,15 +551,17 @@
 .vqy-status {
 	display: inline-block;
 	padding-block: 1px;
-	padding-inline: 8px;
-	border: 1px solid GrayText;
-	border-radius: 10px;
+	padding-inline: 10px;
+	border: 1px solid var(--vqy-border-strong);
+	border-radius: var(--vqy-radius-pill);
 	font-size: 12px;
 	font-weight: 400;
 }
 
 .vqy-status--confirmed {
-	border-color: var(--vqy-accent);
+	background: var(--vqy-accent-soft);
+	border-color: var(--vqy-accent-line);
+	color: var(--vqy-accent-text);
 }
 
 .vqy-status--pending-approval,
@@ -298,7 +572,7 @@
 .vqy-status--cancelled,
 .vqy-status--expired,
 .vqy-status--no-show {
-	color: GrayText;
+	color: var(--vqy-muted);
 }
 
 .vqy-appointment {
@@ -313,6 +587,10 @@
 
 .vqy-appointment__facts > div {
 	display: contents;
+}
+
+.vqy-appointment__facts dt {
+	color: var(--vqy-muted);
 }
 
 .vqy-appointment__facts dd {
@@ -334,14 +612,16 @@
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	padding-block: 12px;
-	padding-inline: 16px;
-	border: 1px solid GrayText;
-	border-radius: 4px;
+	padding-block: 14px;
+	padding-inline: 18px;
+	background: var(--vqy-surface);
+	border: 1px solid var(--vqy-border);
+	border-radius: var(--vqy-radius);
+	box-shadow: var(--vqy-shadow);
 }
 
 .vqy-admin__stat strong {
-	font-size: 1.4em;
+	font-size: 1.5em;
 }
 
 .vqy-admin__bars {
@@ -362,23 +642,10 @@
 
 .vqy-admin__bar {
 	display: block;
-	block-size: 12px;
+	block-size: 10px;
 	min-inline-size: 2px;
-	background: Highlight;
-	border-radius: 2px;
-}
-
-.vqy-admin__brand {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 1.1em;
-	font-weight: 600;
-}
-
-.vqy-admin__logo {
-	block-size: 32px;
-	inline-size: auto;
+	background: var(--vqy-accent);
+	border-radius: var(--vqy-radius-pill);
 }
 
 .vqy-admin__steps {
@@ -390,8 +657,13 @@
 	list-style: none;
 }
 
+.vqy-admin__steps li {
+	color: var(--vqy-muted);
+}
+
 .vqy-admin__steps li[aria-current="step"] {
 	border-block-end: 2px solid var(--vqy-accent);
+	color: var(--vqy-text);
 	font-weight: 600;
 }
 
@@ -407,9 +679,12 @@
 
 .vqy-admin__check {
 	margin: 0;
-	padding-block: 8px;
+	padding-block: 10px;
 	padding-inline: 16px;
-	border-inline-start: 4px solid GrayText;
+	background: var(--vqy-surface);
+	border: 1px solid var(--vqy-border);
+	border-inline-start: 4px solid var(--vqy-muted);
+	border-radius: var(--vqy-radius-sm);
 }
 
 .vqy-admin__check p {
@@ -430,5 +705,5 @@
 
 .vqy-admin__badge {
 	font-size: 0.85em;
-	color: GrayText;
+	color: var(--vqy-muted);
 }

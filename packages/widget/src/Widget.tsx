@@ -1,8 +1,13 @@
 import {
 	ApiClient,
+	cursorOf,
 	formatAmount,
 	formatDate,
 	formatDigits,
+	monthGrid,
+	monthName,
+	shiftMonth,
+	weekdayNames,
 	type AvailabilityDay,
 	type AvailabilityFirst,
 	type AvailabilityMonth,
@@ -11,19 +16,12 @@ import {
 	type Digits,
 	type MenuService,
 	type MenuStaff,
+	type MonthCursor,
 	type PublicMenu,
 } from '@vaqtyar/shared';
 import { __, sprintf } from '@wordpress/i18n';
 import { useId, useMemo, useState } from 'preact/hooks';
 
-import {
-	cursorOf,
-	monthGrid,
-	monthName,
-	shiftMonth,
-	weekdayNames,
-	type MonthCursor,
-} from './month';
 import { BookingFlow } from './BookingFlow';
 import { useFetch } from './useFetch';
 
@@ -39,6 +37,8 @@ export interface WidgetConfig {
 	staff?: number;
 	calendar?: Calendar;
 	digits?: Digits;
+	/** An address of the site to go to after a booking, with the code added. */
+	thanks?: string;
 	/** The query parameter a payment gateway's return page carries the outcome in. */
 	paymentParam?: string;
 	[ key: string ]: unknown;
@@ -452,6 +452,10 @@ export function Widget( {
 					} }
 					serviceId={ service.id }
 					coupon={ coupon.trim() }
+					title={ service.name }
+					thanksUrl={
+						typeof config.thanks === 'string' ? config.thanks : ''
+					}
 					calendar={ calendar }
 					digits={ digits }
 					clientFor={ clientFor }

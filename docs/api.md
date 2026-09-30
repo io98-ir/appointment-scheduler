@@ -34,6 +34,14 @@
 - شعبه‌ای که پرسنل یا منبع حذف‌نشده دارد حذف نمی‌شود (`location_in_use`)، چون ساعات کاری آن‌ها در منطقه زمانی همان شعبه حساب می‌شود.
 - حذف دسته، خدمت یا پرسنل آبشاری نیست. ارجاع به آیتم حذف‌شده می‌ماند و `CatalogApi` آن را نادیده می‌گیرد.
 
+## قوانین رزرو سراسری (Admin)
+Capability `manage_schedules` (پیش‌فرض: administrator)؛ `BookingRulesService` آن را دوباره بررسی می‌کند.
+
+| Route | کار |
+|---|---|
+| `GET /booking-rules` | `{slot_step_min, min_notice_min, max_advance_days, staff_choice}`. پیش‌فرض 30، 60، 60 و `least_busy` |
+| `PUT /booking-rules` | جایگزینی هر چهار. `slot_step_min` 1 تا 1440 (422 `invalid_slot_step`)، `min_notice_min` 0 تا 525600 (422 `invalid_min_notice`)، `max_advance_days` 1 تا 730 (422 `invalid_max_advance`)، `staff_choice` یکی از `least_busy` و `priority`. گام خود Variant (`slot_step_min` خدمت) بر این مقدم است. ذخیره cache اسلات‌ها را باطل می‌کند |
+
 ## برنامه کاری (Admin)
 همه routeها Capability `manage_schedules` لازم دارند (پیش‌فرض: administrator). `ScheduleService` آن را دوباره بررسی می‌کند. `{owner_type}` یکی از `staff`، `resource`، `location` است. صاحب باید در کاتالوگ باشد (حذف‌نشده، فعال یا غیرفعال)، وگرنه 404 مثل `staff_not_found`. ساعت‌ها `HH:MM` به وقت محلی شعبه‌اند و تاریخ‌ها `YYYY-MM-DD`.
 
@@ -134,8 +142,8 @@
 ## جاسازی ویجت و پنل (Shortcode و بلوک)
 | | |
 |---|---|
-| `[vaqtyar_booking]` | فرم رزرو. ویژگی‌ها (همه اختیاری): `service`، `variant`، `location`، `staff` (شناسه؛ 0 یعنی مشتری انتخاب می‌کند)، `calendar` (`jalali` پیش‌فرض یا `gregorian`)، `digits` (`latin` پیش‌فرض یا `persian`) |
-| `[vaqtyar_panel]` | پنل مشتری (نوبت‌ها، لغو و جابجایی). فقط `calendar` و `digits` |
+| `[vaqtyar_booking]` | فرم رزرو. ویژگی‌ها (همه اختیاری): `service`، `variant`، `location`، `staff` (شناسه؛ 0 یعنی مشتری انتخاب می‌کند)، `calendar` (`jalali` یا `gregorian`)، `digits` (`latin` یا `persian`)، `thanks` (آدرس صفحه‌ی تشکر از **همین سایت**؛ آدرس سایت دیگر حذف می‌شود؛ بعد از رزرو، `code` به آن اضافه می‌شود). `calendar` و `digits` اگر نیامدند از تنظیم `GET /general` می‌آیند |
+| `[vaqtyar_panel]` | پنل مشتری (نوبت‌ها، لغو و جابجایی، افزودن به تقویم). فقط `calendar` و `digits` |
 | بلوک `vaqtyar/booking` و `vaqtyar/panel` | همان ویژگی‌ها، در دسته «ابزارک‌ها». رندر سمت سرور است و ویرایشگر از `assets/blocks.js` (بدون build) می‌آید |
 
 هر کدام یک `<div data-{slug}-widget>` یا `<div data-{slug}-panel>` با config به‌صورت JSON می‌نویسد (`restUrl` و ویژگی‌های غیرصفر) که `packages/widget` mount می‌کند. اسکریپت و استایل ویجت (`build/widget.*`) فقط وقتی اولین embed رندر شود enqueue می‌شوند، پس صفحه بدون آن چیزی بارگذاری نمی‌کند. بدون `pnpm build` مهمان چیزی نمی‌بیند و مدیر یک پیام. پوشه `assets/` باید در zip انتشار باشد (T6.6).
@@ -177,6 +185,8 @@
 |---|---|
 | `GET /brand` | `{name, logo_url, color}`؛ رشته خالی یعنی پیش‌فرض (نام محصول، بدون لوگو، رنگ تم) |
 | `PUT /brand` | جایگزینی. `name` تا 60 کاراکتر بدون `<` و `>`، `logo_url` آدرس http یا https تا 500 کاراکتر، `color` به شکل `#rrggbb` (به حروف کوچک ذخیره می‌شود). خطاها: 422 `invalid_brand_name`، `invalid_brand_logo`، `invalid_brand_color` |
+| `GET /general` | `{calendar, digits, language}`: تقویم (`jalali` پیش‌فرض یا `gregorian`)، ارقام (`persian` پیش‌فرض یا `latin`) و زبان افزونه (`auto` پیش‌فرض، `fa` یا `en`). `auto` یعنی زبان وردپرس: فارسی برای سایت فارسی و انگلیسی برای بقیه |
+| `PUT /general` | جایگزینی هر سه. مقدار خارج از فهرست: 400 `rest_invalid_param` (پیش از ذخیره). زبان از بارگذاری بعدی صفحه اعمال می‌شود؛ تقویم و ارقام فوراً |
 | `GET /onboarding` | `{done}`: آیا ویزارد نصب تمام یا رد شده است |
 | `PUT /onboarding` | `done` (بولی، الزامی). `false` ویزارد را دوباره نشان می‌دهد |
 | `GET /payments/settings` | `{gateways: [{id, secret, set, fixed}], woocommerce: {available, enabled}}`. `id` یکی از `zarinpal` و `zibal`؛ `secret` نام secret همان درگاه؛ `fixed` یعنی مقدار در wp-config.php تعریف شده. merchant id هرگز برنمی‌گردد |
