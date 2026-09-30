@@ -16,6 +16,18 @@
 
 ---
 
+## 2026-09-30 — سشن 34 — آماده‌سازی انتشار 1.0.0
+**Taskها:** بستن M6 (T6.4، T6.5، T6.6 ✅ با قید «اجرا نشده در CI»)
+**تصمیم مالک:** (۱) CI را ولش کنیم (billing)؛ (۲) نام «Vaqtyar» (وقت‌یار) می‌ماند (تصمیم باز #1 بسته شد)؛ (۳) کارهای نهایی را انجام بده تا production ready شود.
+**انجام شد:** صفحه **Notifications** در Admin (`packages/admin/src/notifications`): فهرست قالب‌ها، افزودن، ویرایش (رویداد، مخاطب، کانال، فاصله یادآوری، موضوع، متن با فهرست جای‌نگه‌دارها، روشن/خاموش)، حذف، و برای قالب پیامکی کد الگو و نام مقدارها برای هر سرویس‌دهنده‌ای که تنظیم شده؛ نوع‌های `NotificationTemplate` در `@vaqtyar/shared`؛ مسیر `/notifications` و آزمون a11y آن؛ 27 رشته ترجمه تازه (557 رشته، 0 بدون ترجمه). نسخه **1.0.0** در هدر افزونه، ثابت، `Stable tag` و `CHANGELOG`؛ `Tested up to: 7.1` (آخرین نسخه‌ی وردپرس از `api.wordpress.org`)؛ راهنمای فارسی به‌روز. tracker: M6 ✅، #1 بسته، فهرست «اجرا/تأییدنشده» و بک‌لاگ بعد از 1.0 در «Task بعدی» و worklog.
+**تصمیم‌ها و فرض‌ها:** (۱) تأیید پرداخت آفلاین/ثبت استرداد و جابه‌جایی نوبت توسط پرسنل را در 1.0 به رابط نیاوردم: پرداخت «در محل» اصلاً ردیف پرداخت نمی‌سازد و جابه‌جایی = لغو و ثبت مجدد با «New appointment» در تقویم (مشتری خودش جابه‌جا می‌کند)؛ هر دو در بک‌لاگ‌اند. (۲) `Tested up to: 7.1` ادعایی است که روی 7.x آزموده نشده (CI فقط 6.6 و latest را می‌سنجید و اجرا نشد). (۳) سقف سراسری OTP همچنان تصمیم محصول و پذیرفته‌شده است.
+**تأیید:** `composer check` سبز (unit 1024 تست)؛ `pnpm lint` (با typecheck)؛ `pnpm vitest run` ← 174 تست؛ `pnpm build`؛ `pnpm size` (ویجت 15.48KB، admin 39.67KB gz)؛ `pnpm i18n:check` ← 0 رشته بدون ترجمه؛ `composer build:zip` ← `dist/vaqtyar-1.0.0.zip` (0.7MB). **تأیید نشده:** هر چه در «Task بعدی» progress آمده (Integration، E2E، uninstall، plugin-check، نصب روی وردپرس واقعی).
+**مشکلات و باقیمانده:** فقط همان فهرست تأییدنشده‌ها و بک‌لاگ. هشدار `exhaustive-deps` قدیمی `Panel.tsx` هنوز هست.
+**قدم بعدی:** پیش از فروش، یک نصب دستی از zip روی وردپرس واقعی (فعال‌سازی، ویزارد، یک رزرو، لغو، حذف با و بدون گزینه حذف داده).
+**Commitها:** در commit بعدی.
+
+---
+
 ## 2026-09-30 — سشن 33 — T6.6: build انتشار و مستندات
 **Taskها:** T6.6 (✅ با قید: zip محلی ساخته و بررسی شد؛ CI اجرا نمی‌شود)
 **انجام شد:** `tools/Release/Packager.php` و `tools/build-zip.php` (`composer build:zip`): فایل‌های مجاز را در `dist/{slug}/` می‌چیند، `composer install --no-dev` را همان‌جا اجرا می‌کند، tests و docs وابستگی‌ها را حذف می‌کند، با `verify()` هر چیز خارج از فهرست مجاز را خطا می‌گیرد (پوشه تازه به zip نمی‌رود)، یکی‌بودن نسخه بین هدر، ثابت، `Stable tag` و `CHANGELOG` را می‌سنجد و `dist/{slug}-{version}.zip` می‌سازد. نوشته شد: `readme.txt`، `license.txt` (GPL-2.0 از gnu.org)، `CHANGELOG.md`، `user-guide-fa.md` (راهنمای فارسی مدیر)، `docs/hooks.md`، و فهرست `docs/README.md`. CI: job `package` (zip به‌عنوان artifact) و `plugin-check` حالا روی همان پوشه‌ی zip کار می‌کند (با `.wp-env.override.json` و slug از `identity.json`)؛ `EXCLUDED_DIRS` و ignore کد `no_plugin_readme` حذف شدند.

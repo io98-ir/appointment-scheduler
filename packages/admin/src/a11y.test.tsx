@@ -38,6 +38,7 @@ const ROUTES = [
 	'/locations',
 	'/reports',
 	'/holidays',
+	'/notifications',
 	'/settings',
 	'/status',
 	'/setup',

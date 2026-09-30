@@ -566,3 +566,29 @@ export interface ModuleSwitch {
 	switchable: boolean;
 	enabled: boolean;
 }
+
+export type TemplateTrigger =
+	'booked' | 'cancelled' | 'rescheduled' | 'reminder';
+export type TemplateAudience = 'customer' | 'staff' | 'admin';
+
+/** What an SMS provider's pattern needs: its code and the placeholder names it takes, in order. */
+export interface SmsPatternValue {
+	code: string;
+	args: string[];
+}
+
+/** GET /notification-templates (T5.4, T5.5). */
+export interface NotificationTemplate {
+	id: number;
+	trigger: TemplateTrigger;
+	audience: TemplateAudience;
+	/** "email", or "sms" once a provider is set up. */
+	channel: string;
+	/** Minutes before the start; only a reminder has one. */
+	offset_min: number | null;
+	subject: string;
+	body: string;
+	enabled: boolean;
+	/** By SMS provider id; a provider that is not listed gets the plain text. */
+	sms_patterns: Record< string, SmsPatternValue >;
+}

@@ -141,6 +141,17 @@
 	flex: 1 1 120px;
 }
 
+.vqy-admin__fieldset {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+
+.vqy-admin__fieldset > legend {
+	font-weight: 600;
+	padding-inline: 0;
+}
+
 .vqy-admin__buttons {
 	display: flex;
 	flex-wrap: wrap;

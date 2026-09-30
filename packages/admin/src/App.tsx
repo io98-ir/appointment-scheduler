@@ -22,6 +22,7 @@ import {
 import { ServicesPage } from './catalog/ServicesPage';
 import { CustomersPage } from './customers/CustomersPage';
 import { HolidaysPage } from './holidays/HolidaysPage';
+import { NotificationsPage } from './notifications/NotificationsPage';
 import { NotFound } from './NotFound';
 import { SetupWizard } from './setup/SetupWizard';
 import { SettingsPage } from './policies/SettingsPage';
@@ -107,6 +108,11 @@ const SECTIONS: Section[] = [
 		title: () => __( 'Setup', 'vaqtyar' ),
 		Page: SetupWizard,
 		menu: false,
+	},
+	{
+		path: '/notifications',
+		title: () => __( 'Notifications', 'vaqtyar' ),
+		Page: NotificationsPage,
 	},
 	{
 		path: '/settings',

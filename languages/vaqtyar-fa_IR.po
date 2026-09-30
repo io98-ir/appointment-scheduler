@@ -1137,6 +1137,87 @@ msgstr "حذف همه داده‌ها هنگام حذف افزونه"
 msgid "Deleting the plugin from the Plugins screen then removes every booking, customer, payment and setting for good. Off keeps them, so a reinstall finds everything as it was."
 msgstr "با حذف افزونه از صفحه افزونه‌ها، همه نوبت‌ها، مشتریان، پرداخت‌ها و تنظیمات برای همیشه پاک می‌شوند. اگر خاموش باشد می‌مانند و با نصب دوباره همه‌چیز همان‌طور که بود پیدا می‌شود."
 
+msgid "%d days before"
+msgstr "%d روز قبل"
+
+msgid "%d hours before"
+msgstr "%d ساعت قبل"
+
+msgid "%d minutes before"
+msgstr "%d دقیقه قبل"
+
+msgid "1440 is one day."
+msgstr "۱۴۴۰ دقیقه برابر یک روز است."
+
+msgid "A provider that needs an approved pattern takes its code here and the names, separated by commas, in the order the pattern lists its values. Leave the code empty to send the message as plain text."
+msgstr "سرویس‌دهنده‌ای که الگوی تأییدشده می‌خواهد، کد الگو را اینجا می‌گیرد و نام مقدارها را، با ویرگول جدا و به همان ترتیبی که الگو مقدارهایش را می‌شمارد. اگر کد را خالی بگذارید، پیام به‌صورت متن ساده فرستاده می‌شود."
+
+msgid "Add template"
+msgstr "افزودن قالب"
+
+msgid "Appointment booked"
+msgstr "ثبت نوبت"
+
+msgid "Appointment cancelled"
+msgstr "لغو نوبت"
+
+msgid "Appointment rescheduled"
+msgstr "جابه‌جایی نوبت"
+
+msgid "Channel"
+msgstr "کانال"
+
+msgid "Edit"
+msgstr "ویرایش"
+
+msgid "Minutes before the start"
+msgstr "چند دقیقه پیش از شروع"
+
+msgid "Notifications"
+msgstr "اعلان‌ها"
+
+msgid "Off"
+msgstr "خاموش"
+
+msgid "On"
+msgstr "روشن"
+
+msgid "Pattern code"
+msgstr "کد الگو"
+
+msgid "Reminder before the appointment"
+msgstr "یادآوری پیش از نوبت"
+
+msgid "Save template"
+msgstr "ذخیره قالب"
+
+msgid "Send this message"
+msgstr "ارسال این پیام"
+
+msgid "Set up an SMS provider in Settings first."
+msgstr "ابتدا در تنظیمات یک سرویس‌دهنده پیامک را راه‌اندازی کنید."
+
+msgid "Site administrator"
+msgstr "مدیر سایت"
+
+msgid "SMS patterns"
+msgstr "الگوهای پیامک"
+
+msgid "Staff member"
+msgstr "پرسنل"
+
+msgid "Subject"
+msgstr "موضوع"
+
+msgid "Values"
+msgstr "مقدارها"
+
+msgid "When"
+msgstr "چه زمانی"
+
+msgid "Write what customers and staff are told. Put a name between braces to fill in the appointment, for example {customer_name}."
+msgstr "آنچه به مشتری و پرسنل گفته می‌شود را بنویسید. نامی را بین آکولاد بگذارید تا با مشخصات نوبت پر شود، مثلاً {customer_name}."
+
 msgid "Saved. It applies from the next page load."
 msgstr "ذخیره شد. از بارگذاری بعدی صفحه اعمال می‌شود."
 

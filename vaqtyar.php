@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Vaqtyar
  * Description:       Appointment booking for WordPress.
- * Version:           0.1.0
+ * Version:           1.0.0
  * Requires at least: 6.6
  * Requires PHP:      8.1
  * License:           GPL-2.0-or-later
@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
-define('VAQTYAR_VERSION', '0.1.0');
+define('VAQTYAR_VERSION', '1.0.0');
 define('VAQTYAR_FILE', __FILE__);
 
 require_once __DIR__ . '/src/Kernel/Requirements.php';

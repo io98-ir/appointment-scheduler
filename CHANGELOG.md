@@ -3,9 +3,9 @@
 All notable changes to this plugin. The format follows [Keep a Changelog](https://keepachangelog.com/);
 the version in the plugin header, `readme.txt` and here must be the same (`composer build:zip` checks it).
 
-## [0.1.0] - Unreleased
+## [1.0.0] - 2026-09-30
 
-The first release candidate.
+The first release.
 
 ### Booking
 - Locations, staff, resources, services with several durations and prices, add-ons and categories.
@@ -23,12 +23,13 @@ The first release candidate.
 - Zarinpal and Zibal, WooCommerce (HPOS), offline payment, server-side verification, reconciliation, manual refunds.
 
 ### Notifications
-- Email and SMS (Kavenegar, IPPanel, SMS.ir, Melipayamak) with failover, SMS patterns, templates, reminders, quiet hours and a delivery log.
+- Email and SMS (Kavenegar, IPPanel, SMS.ir, Melipayamak) with failover, SMS patterns, reminders, quiet hours and a delivery log.
+- A Notifications screen to write, switch off and delete the message templates, with each SMS provider's pattern code and values.
 
 ### Admin
 - React admin app: dashboard, calendar, appointments, customers, catalog, reports with CSV export, settings.
 - White-label name, logo and colour; setup wizard; System status page; WordPress Site Health tests; switchable optional modules.
-- fa_IR translation (530 strings), right-to-left layout, Jalali calendar, Persian digits.
+- fa_IR translation (557 strings), right-to-left layout, Jalali calendar, Persian digits.
 
 ### Security
 - Every REST route has a permission callback and the application layer checks authorization again.

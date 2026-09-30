@@ -1,8 +1,8 @@
 === Vaqtyar ===
 Requires at least: 6.6
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: booking, appointments, scheduling, jalali, iran
@@ -63,10 +63,10 @@ The plugin trusts only the connecting address. Return the visitor's real address
 
 == Changelog ==
 
-= 0.1.0 =
-* First release candidate. See CHANGELOG.md for the full list.
+= 1.0.0 =
+* First release. See CHANGELOG.md for the full list.
 
 == Upgrade Notice ==
 
-= 0.1.0 =
-First release candidate.
+= 1.0.0 =
+First release.

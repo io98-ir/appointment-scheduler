@@ -59,6 +59,18 @@ msgstr ""
 msgid "%d cancelled"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:162
+msgid "%d days before"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:169
+msgid "%d hours before"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:176
+msgid "%d minutes before"
+msgstr ""
+
 #: src/Kernel/Plugin.php:167
 msgid ""
 "%s could not update its database tables and is paused. The PHP error log "
@@ -93,12 +105,23 @@ msgstr ""
 msgid "0 lets the customer choose."
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:391
+msgid "1440 is one day."
+msgstr ""
+
 #: src/Modules/Customers/Presentation/Rest/OtpRoutes.php:110
 msgid "A code was sent recently. Please wait a moment before asking for another."
 msgstr ""
 
 #: packages/admin/src/setup/PaymentSettingsForm.tsx:32
 msgid "A merchant id is stored. Type a new one to replace it."
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:448
+msgid ""
+"A provider that needs an approved pattern takes its code here and the "
+"names, separated by commas, in the order the pattern lists its values. "
+"Leave the code empty to send the message as plain text."
 msgstr ""
 
 #: packages/admin/src/catalog/screens.tsx:342
@@ -118,6 +141,7 @@ msgid "Accent colour"
 msgstr ""
 
 #: packages/admin/src/catalog/CatalogList.tsx:98
+#: packages/admin/src/notifications/NotificationsPage.tsx:265
 msgid "Actions"
 msgstr ""
 
@@ -196,6 +220,10 @@ msgstr ""
 msgid "Add staff member"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:254
+msgid "Add template"
+msgstr ""
+
 #: packages/admin/src/timeRules/TimeRules.tsx:226
 msgid "Add time-based price"
 msgstr ""
@@ -266,6 +294,10 @@ msgstr ""
 msgid "Appointment %d"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:53
+msgid "Appointment booked"
+msgstr ""
+
 #: packages/admin/src/calendar/QuickBook.tsx:199
 msgid "Appointment booked."
 msgstr ""
@@ -274,15 +306,23 @@ msgstr ""
 msgid "Appointment booking for WordPress."
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:54
+msgid "Appointment cancelled"
+msgstr ""
+
 #: packages/admin/src/calendar/CalendarPage.tsx:330
 msgid "Appointment moved."
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:55
+msgid "Appointment rescheduled"
 msgstr ""
 
 #: packages/admin/src/appointments/AppointmentDetail.tsx:113
 msgid "Appointment updated."
 msgstr ""
 
-#: packages/admin/src/App.tsx:61
+#: packages/admin/src/App.tsx:62
 #: packages/admin/src/customers/CustomerHistory.tsx:33
 #: packages/admin/src/reports/ReportsPage.tsx:227
 #: packages/admin/src/reports/ReportsPage.tsx:279
@@ -421,7 +461,7 @@ msgid "by the customer"
 msgstr ""
 
 #: assets/blocks.js:40
-#: packages/admin/src/App.tsx:56
+#: packages/admin/src/App.tsx:57
 #: packages/admin/src/holidays/HolidaysPage.tsx:68
 msgid "Calendar"
 msgstr ""
@@ -434,6 +474,7 @@ msgstr ""
 #: packages/admin/src/calendar/CalendarPage.tsx:782
 #: packages/admin/src/calendar/QuickBook.tsx:366
 #: packages/admin/src/catalog/CatalogList.tsx:170
+#: packages/admin/src/notifications/NotificationsPage.tsx:508
 msgid "Cancel"
 msgstr ""
 
@@ -493,6 +534,11 @@ msgstr ""
 
 #: packages/admin/src/catalog/ServicesPage.tsx:182
 msgid "Category"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:263
+#: packages/admin/src/notifications/NotificationsPage.tsx:413
+msgid "Channel"
 msgstr ""
 
 #: packages/admin/src/fields/Fields.tsx:35
@@ -617,6 +663,7 @@ msgstr ""
 #: packages/admin/src/appointments/AppointmentDetail.tsx:193
 #: packages/admin/src/appointments/AppointmentsPage.tsx:231
 #: packages/admin/src/calendar/QuickBook.tsx:338
+#: packages/admin/src/notifications/NotificationsPage.tsx:60
 msgid "Customer"
 msgstr ""
 
@@ -628,7 +675,7 @@ msgstr ""
 msgid "Customer note"
 msgstr ""
 
-#: packages/admin/src/App.tsx:66
+#: packages/admin/src/App.tsx:67
 msgid "Customers"
 msgstr ""
 
@@ -636,11 +683,11 @@ msgstr ""
 msgid "Customers at the same time"
 msgstr ""
 
-#: packages/admin/src/App.tsx:248
+#: packages/admin/src/App.tsx:254
 msgid "Dark"
 msgstr ""
 
-#: packages/admin/src/App.tsx:51
+#: packages/admin/src/App.tsx:52
 msgid "Dashboard"
 msgstr ""
 
@@ -751,9 +798,14 @@ msgstr ""
 msgid "e.g. Dentist"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:296
+msgid "Edit"
+msgstr ""
+
 #: packages/admin/src/catalog/screens.tsx:261
 #: packages/admin/src/customers/CustomerList.tsx:123
 #: packages/admin/src/customers/CustomersPage.tsx:96
+#: packages/admin/src/notifications/NotificationsPage.tsx:67
 msgid "Email"
 msgstr ""
 
@@ -898,7 +950,7 @@ msgstr ""
 msgid "Holiday calendar"
 msgstr ""
 
-#: packages/admin/src/App.tsx:102
+#: packages/admin/src/App.tsx:103
 msgid "Holidays"
 msgstr ""
 
@@ -1022,7 +1074,7 @@ msgstr ""
 msgid "Lets customers book an appointment."
 msgstr ""
 
-#: packages/admin/src/App.tsx:244
+#: packages/admin/src/App.tsx:250
 msgid "Light"
 msgstr ""
 
@@ -1055,7 +1107,7 @@ msgstr ""
 msgid "Location name"
 msgstr ""
 
-#: packages/admin/src/App.tsx:92
+#: packages/admin/src/App.tsx:93
 msgid "Locations"
 msgstr ""
 
@@ -1101,6 +1153,7 @@ msgstr ""
 msgid "Merchant id"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:434
 #: packages/admin/src/status/StatusPage.tsx:220
 msgid "Message"
 msgstr ""
@@ -1108,6 +1161,10 @@ msgstr ""
 #: packages/admin/src/catalog/ServicesPage.tsx:50
 #: packages/admin/src/catalog/ServicesPage.tsx:252
 msgid "Minutes"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:390
+msgid "Minutes before the start"
 msgstr ""
 
 #: packages/widget/src/Panel.tsx:69
@@ -1346,6 +1403,10 @@ msgstr ""
 msgid "Nothing planned."
 msgstr ""
 
+#: packages/admin/src/App.tsx:114
+msgid "Notifications"
+msgstr ""
+
 #: packages/admin/src/status/StatusPage.tsx:22
 msgid "Notifications (email and SMS)"
 msgstr ""
@@ -1360,6 +1421,14 @@ msgstr ""
 
 #: packages/widget/src/month.ts:118
 msgid "October"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:287
+msgid "Off"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:286
+msgid "On"
 msgstr ""
 
 #: packages/admin/src/policies/SettingsPage.tsx:30
@@ -1455,6 +1524,10 @@ msgstr ""
 
 #: packages/admin/src/setup/SmsSettingsForm.tsx:46
 msgid "Password"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:467
+msgid "Pattern code"
 msgstr ""
 
 #: packages/widget/src/BookingFlow.tsx:428
@@ -1554,6 +1627,10 @@ msgstr ""
 msgid "Refunded"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:56
+msgid "Reminder before the appointment"
+msgstr ""
+
 #: src/Modules/Admin/Presentation/HealthText.php:66
 msgid "Reminders and reservation expiry run on time."
 msgstr ""
@@ -1566,7 +1643,7 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: packages/admin/src/App.tsx:97
+#: packages/admin/src/App.tsx:98
 msgid "Reports"
 msgstr ""
 
@@ -1590,7 +1667,7 @@ msgstr ""
 msgid "Reserving your time…"
 msgstr ""
 
-#: packages/admin/src/App.tsx:87
+#: packages/admin/src/App.tsx:88
 #: packages/admin/src/catalog/ServicesPage.tsx:465
 msgid "Resources"
 msgstr ""
@@ -1645,11 +1722,15 @@ msgstr ""
 msgid "Save SMS settings"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:505
+msgid "Save template"
+msgstr ""
+
 #: packages/admin/src/catalog/ServicesPage.tsx:548
 #: packages/admin/src/catalog/crud.ts:92
 #: packages/admin/src/holidays/HolidaysPage.tsx:120
+#: packages/admin/src/notifications/NotificationsPage.tsx:243
 #: packages/admin/src/policies/Policies.tsx:76
-#: packages/admin/src/setup/BrandForm.tsx:66
 msgid "Saved."
 msgstr ""
 
@@ -1673,7 +1754,7 @@ msgstr ""
 msgid "Search by name, phone or email"
 msgstr ""
 
-#: packages/admin/src/App.tsx:215
+#: packages/admin/src/App.tsx:221
 msgid "Sections"
 msgstr ""
 
@@ -1701,6 +1782,10 @@ msgstr ""
 msgid "Send test"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:494
+msgid "Send this message"
+msgstr ""
+
 #: packages/admin/src/setup/SmsSettingsForm.tsx:192
 msgid "Sender line"
 msgstr ""
@@ -1717,7 +1802,7 @@ msgstr ""
 msgid "Service"
 msgstr ""
 
-#: packages/admin/src/App.tsx:76
+#: packages/admin/src/App.tsx:77
 msgid "Service categories"
 msgstr ""
 
@@ -1729,7 +1814,7 @@ msgstr ""
 msgid "Service name"
 msgstr ""
 
-#: packages/admin/src/App.tsx:71
+#: packages/admin/src/App.tsx:72
 #: packages/admin/src/catalog/screens.tsx:396
 msgid "Services"
 msgstr ""
@@ -1739,12 +1824,16 @@ msgstr ""
 msgid "Set in wp-config.php."
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:455
+msgid "Set up an SMS provider in Settings first."
+msgstr ""
+
 #: assets/blocks.js:86
-#: packages/admin/src/App.tsx:113
+#: packages/admin/src/App.tsx:119
 msgid "Settings"
 msgstr ""
 
-#: packages/admin/src/App.tsx:107
+#: packages/admin/src/App.tsx:108
 msgid "Setup"
 msgstr ""
 
@@ -1780,13 +1869,22 @@ msgstr ""
 msgid "Sign out"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:62
+msgid "Site administrator"
+msgstr ""
+
 #: packages/admin/src/setup/SetupWizard.tsx:109
 msgid "Skip this step"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:70
 #: packages/admin/src/policies/SettingsPage.tsx:26
 #: packages/admin/src/setup/SetupWizard.tsx:43
 msgid "SMS"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:446
+msgid "SMS patterns"
 msgstr ""
 
 #: packages/admin/src/setup/SmsSettingsForm.tsx:157
@@ -1818,7 +1916,7 @@ msgstr ""
 msgid "Sort"
 msgstr ""
 
-#: packages/admin/src/App.tsx:82
+#: packages/admin/src/App.tsx:83
 #: packages/admin/src/appointments/AppointmentDetail.tsx:217
 #: packages/admin/src/appointments/AppointmentsPage.tsx:183
 #: packages/admin/src/appointments/AppointmentsPage.tsx:233
@@ -1828,6 +1926,10 @@ msgstr ""
 
 #: assets/blocks.js:74
 msgid "Staff ID"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:61
+msgid "Staff member"
 msgstr ""
 
 #: packages/admin/src/setup/SetupWizard.tsx:346
@@ -1863,6 +1965,10 @@ msgstr ""
 msgid "Stored. Type a new value to replace it."
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:424
+msgid "Subject"
+msgstr ""
+
 #: packages/admin/src/reports/ReportsPage.tsx:173
 msgid "Summary"
 msgstr ""
@@ -1876,11 +1982,11 @@ msgstr ""
 msgid "Sunday"
 msgstr ""
 
-#: packages/admin/src/App.tsx:240
+#: packages/admin/src/App.tsx:246
 msgid "System"
 msgstr ""
 
-#: packages/admin/src/App.tsx:118
+#: packages/admin/src/App.tsx:124
 msgid "System status"
 msgstr ""
 
@@ -2003,7 +2109,7 @@ msgstr ""
 msgid "The time zone data is out of date for Iran"
 msgstr ""
 
-#: packages/admin/src/App.tsx:235
+#: packages/admin/src/App.tsx:241
 msgid "Theme"
 msgstr ""
 
@@ -2095,6 +2201,8 @@ msgstr ""
 #: packages/admin/src/appointments/AppointmentsPage.tsx:210
 #: packages/admin/src/catalog/TimeOff.tsx:232
 #: packages/admin/src/catalog/WeeklySchedule.tsx:188
+#: packages/admin/src/notifications/NotificationsPage.tsx:262
+#: packages/admin/src/notifications/NotificationsPage.tsx:398
 msgid "To"
 msgstr ""
 
@@ -2159,6 +2267,10 @@ msgstr ""
 msgid "Valid until"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:479
+msgid "Values"
+msgstr ""
+
 #: packages/widget/src/PhoneCheck.tsx:159
 msgid "Verify"
 msgstr ""
@@ -2206,6 +2318,11 @@ msgstr ""
 msgid "What is %1$s + %2$s?"
 msgstr ""
 
+#: packages/admin/src/notifications/NotificationsPage.tsx:261
+#: packages/admin/src/notifications/NotificationsPage.tsx:374
+msgid "When"
+msgstr ""
+
 #: packages/widget/src/Widget.tsx:416
 msgid "With"
 msgstr ""
@@ -2226,6 +2343,12 @@ msgstr ""
 
 #: packages/admin/src/catalog/WeeklySchedule.tsx:151
 msgid "Work"
+msgstr ""
+
+#: packages/admin/src/notifications/NotificationsPage.tsx:224
+msgid ""
+"Write what customers and staff are told. Put a name between braces to fill "
+"in the appointment, for example {customer_name}."
 msgstr ""
 
 #: packages/widget/src/Panel.tsx:368
