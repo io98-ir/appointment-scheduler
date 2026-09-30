@@ -13,6 +13,11 @@
 | | [05-delivery/03-agent-workflow.md](05-delivery/03-agent-workflow.md) | روش کار با Agent: شروع، اجرا و پایان سشن |
 | | [05-delivery/04-worklog.md](05-delivery/04-worklog.md) | **Worklog** زمانی همه کارها |
 | | [05-delivery/05-agent-tooling.md](05-delivery/05-agent-tooling.md) | Skillها و Pluginهای نصب‌شده، اولویت، تعارض‌ها |
+| | [05-delivery/06-i18n-a11y-perf-report.md](05-delivery/06-i18n-a11y-perf-report.md) | گزارش ترجمه، دسترس‌پذیری و کارایی (T6.3) |
+| | [05-delivery/07-security-review.md](05-delivery/07-security-review.md) | بازبینی امنیتی، یافته‌ها و ریسک‌های پذیرفته‌شده (T6.4) |
+| **مرجع توسعه‌دهنده** | [api.md](api.md) | REST API |
+| | [hooks.md](hooks.md) | hookها، قراردادهای درگاه و کانال، capabilityها |
+| **راهنمای کاربر** | [../user-guide-fa.md](../user-guide-fa.md) | راهنمای فارسی مدیر کسب‌وکار (داخل zip هم هست) |
 | **تحقیق** | [01-research/01-competitors.md](01-research/01-competitors.md) | تحلیل محصولات مرجع و شکایات کاربران |
 | | [01-research/02-gap-analysis.md](01-research/02-gap-analysis.md) | ماتریس مقایسه، دردها، تمایزها |
 | | [01-research/03-iran-ecosystem.md](01-research/03-iran-ecosystem.md) | تقویم، پول، پیامک، درگاه، تحریم ← پیامد فنی |

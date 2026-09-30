@@ -57,7 +57,8 @@
         "test:rename": [
             "Composer\\Config::disableProcessTimeout",
             "@php tools/test-rename.php"
-        ]
+        ],
+        "build:zip": "@php tools/build-zip.php"
     },
     "scripts-descriptions": {
         "lint": "PHPCS: PSR-12 + WPCS security/i18n (ADR-008), and PHP 7.0 syntax for the bootstrap files.",
@@ -67,7 +68,8 @@
         "test:unit": "PHPUnit unit suite (no WordPress).",
         "test:integration": "PHPUnit integration suite: real WordPress and MySQL. Run it inside wp-env (docs/04-engineering/02-dev-environment.md).",
         "check": "Everything CI runs locally: lint, stan, deptrac, unit tests.",
-        "test:rename": "Rename a copy of the plugin and run composer check on it (ADR-000)."
+        "test:rename": "Rename a copy of the plugin and run composer check on it (ADR-000).",
+        "build:zip": "Build dist/{slug}-{version}.zip (run pnpm build first, T6.6)."
     },
     "config": {
         "platform": {

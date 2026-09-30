@@ -393,6 +393,13 @@
 - **تست ارتقا** (`tests/Integration/Kernel/UpgradeTest.php`): نسخه‌ای قدیمی‌تر از این schema منتشر نشده، پس «نسخه قبل» با برگرداندن آخرین مرحله دو ماژول ساخته می‌شود (ستون و قالب‌های پیامکی notifications، ایندکس `start_at` نوبت‌ها) با یک قالب ایمیل ویرایش‌شده توسط مالک؛ بعد `Migrator` واقعی آن را به‌روز می‌کند. داده مالک نباید عوض شود و اجرای دوباره نباید قالب پیامکی تکراری بسازد. **از اولین انتشار واقعی به بعد، هر migration تازه باید به همین شیوه تست شود.**
 - **E2E طلایی** (`tests/e2e/specs/golden.spec.ts`): ویجت روی یک صفحه خدمت را نشان می‌دهد؛ مهمان بدون login با nonce (`/nonce` ← `/availability` ← `/holds` ← `/book`) نوبت می‌گیرد، Hold دوباره قابل استفاده نیست؛ پذیرش در Admin پیدا و لغو می‌کند و زمان آزاد می‌شود. کلیک‌های خود ویجت را تست کامپوننت پوشش می‌دهد؛ OTP و پنل مشتری در E2E نیستند (نیاز به پیامک).
 
+## 4.25 Build انتشار (T6.6)
+- **`composer build:zip`** (بعد از `pnpm build`) همان کاری است که job `package` در CI می‌کند: `tools/Release/Packager.php` فقط این‌ها را در `dist/{slug}/` می‌چیند: فایل اصلی، `uninstall.php`، `readme.txt`، `license.txt`، `CHANGELOG.md`، `user-guide-fa.md`، و پوشه‌های `src` (فقط `.php`)، `build`، `assets`، `languages`. `vendor/` با `composer install --no-dev` **داخل همان پوشه** نصب می‌شود (نه کپی از vendor توسعه) و پوشه‌های `tests`، `docs`، `.github` وابستگی‌ها حذف می‌شوند. بعد zip با پوشه ریشه‌ای به نام slug ساخته می‌شود (`dist/{slug}-{version}.zip`، حدود 550 فایل و 0.7MB).
+- **فهرست مجاز، نه فهرست ممنوع:** `verify()` هر ورودی زیر پوشه افزونه را که در فهرست مجاز نباشد خطا می‌گیرد؛ پس پوشه تازه‌ی مخزن (مثلاً یک `scripts/`) به zip نمی‌رود مگر عمداً به `Packager` اضافه شود. همچنین بسته dev در vendor، نبودن `build/admin.js` یا `widget.js` و نبودن `vendor/autoload.php` خطاست.
+- **نسخه یکی باشد:** هدر افزونه، ثابت `{CONST_PREFIX}_VERSION`، `Stable tag` در `readme.txt` و یک عنوان `## [x.y.z]` در `CHANGELOG.md`. برای انتشار نسخه تازه هر چهار جا با هم عوض می‌شوند؛ `build:zip` اگر یکی فرق کند متوقف می‌شود.
+- **Plugin Check روی همین پوشه** اجرا می‌شود (`dist/{slug}` با `.wp-env.override.json` به‌جای `.`)، پس آنچه بررسی می‌شود همان چیزی است که مشتری نصب می‌کند و لیست `exclude` جدا لازم نیست. اسم و slug از `identity.json` می‌آید، پس بعد از rename هم کار می‌کند.
+- **قبل از انتشار واقعی، دستی:** مقدار `Tested up to` در `readme.txt` را با آخرین وردپرسی که ماتریس CI روی آن سبز است یکی کن (الان `6.8` است و با این سشن تأیید نشده)؛ `Version` را از `0.1.0` بالا ببر (تصمیم مالک).
+
 ## 5. دیتابیس
 - `$wpdb->get_charset_collate()` در `CREATE TABLE` استفاده شود (`Db::createTable()` این کار را می‌کند).
 - Migrator از `CREATE TABLE IF NOT EXISTS` و `ALTER` صریح استفاده می‌کند، **نه** `dbDelta` (ر.ک. data-model §3).

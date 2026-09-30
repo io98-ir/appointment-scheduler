@@ -262,44 +262,77 @@ jobs:
           path: artifacts/
           retention-days: 7
 
-  # WordPress.org's Plugin Check (T6.4) on the plugin as installed, with the
-  # production build and without dev dependencies. Errors fail the job;
-  # warnings are printed first, for a human to read. Excluded: what a release
-  # zip does not contain, and WordPress.Security.EscapeOutput.ExceptionNotEscaped
-  # (a deliberate policy, implementation-notes §6: exception messages are plain
-  # text and every place that shows one escapes it).
-  plugin-check:
-    name: Plugin Check
+  # The release zip (T6.6): built as a customer gets it, checked for what it
+  # holds and kept as a build artifact. The job fails if the zip holds anything
+  # but the plugin, or if the version differs between the header, the constant,
+  # readme.txt and CHANGELOG.md (tools/Release/Packager.php).
+  package:
+    name: Release zip
     runs-on: ubuntu-latest
-    env:
-      PLUGIN_DIR: wp-content/plugins/${{ github.event.repository.name }}
-      # Not in a release zip (T6.6 keeps this list in step with the build).
-      EXCLUDED_DIRS: node_modules,tests,tools,docs,packages,artifacts,.github,.claude,.git
-      # no_plugin_readme: readme.txt is written in T6.6; remove it from this list then.
-      IGNORED_CODES: WordPress.Security.EscapeOutput.ExceptionNotEscaped,no_plugin_readme
     steps:
       - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
-          extensions: intl, mbstring
+          extensions: intl, mbstring, zip
           coverage: none
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: pnpm
-      - run: composer install --no-interaction --no-progress --no-dev --optimize-autoloader
+      - run: composer install --no-interaction --no-progress
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - run: composer build:zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-zip
+          path: dist/*.zip
+          retention-days: 14
+
+  # WordPress.org's Plugin Check (T6.4) on the folder the release zip is made
+  # from (dist/{slug}, built by composer build:zip), which is what a customer
+  # installs. Errors fail the job; warnings are printed first, for a human to
+  # read. WordPress.Security.EscapeOutput.ExceptionNotEscaped is ignored: a
+  # deliberate policy (implementation-notes §6), exception messages are plain
+  # text and every place that shows one escapes it.
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    env:
+      IGNORED_CODES: WordPress.Security.EscapeOutput.ExceptionNotEscaped
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: intl, mbstring, zip
+          coverage: none
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: composer install --no-interaction --no-progress
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: composer build:zip
+      # The folder is named after the slug in identity.json, so a renamed plugin works unchanged.
+      - name: Name the plugin
+        run: |
+          slug=$(php -r 'echo json_decode(file_get_contents("identity.json"))->slug;')
+          echo "PLUGIN_SLUG=$slug" >> "$GITHUB_ENV"
+          echo "PLUGIN_DIR=wp-content/plugins/$slug" >> "$GITHUB_ENV"
+          # Only the built folder is the plugin here: the repository's own copy would define everything twice.
+          echo "{\"plugins\":[\"./dist/$slug\"]}" > .wp-env.override.json
       - run: npx --yes @wordpress/env@11 start
       - name: Install Plugin Check
         run: npx --yes @wordpress/env@11 run cli wp plugin install plugin-check --activate
       - name: Warnings (for reading)
         run: >-
           npx --yes @wordpress/env@11 run cli --env-cwd=${{ env.PLUGIN_DIR }}
-          wp plugin check ${{ github.event.repository.name }}
-          --exclude-directories=${{ env.EXCLUDED_DIRS }}
+          wp plugin check ${{ env.PLUGIN_SLUG }}
           --ignore-codes=${{ env.IGNORED_CODES }}
           --format=table
         continue-on-error: true
@@ -309,8 +342,7 @@ jobs:
         run: |
           set -o pipefail
           npx --yes @wordpress/env@11 run cli --env-cwd=${{ env.PLUGIN_DIR }} \
-            wp plugin check ${{ github.event.repository.name }} \
-            --exclude-directories=${{ env.EXCLUDED_DIRS }} \
+            wp plugin check ${{ env.PLUGIN_SLUG }} \
             --ignore-codes=${{ env.IGNORED_CODES }} \
             --ignore-warnings \
             --format=table | tee plugin-check.log
