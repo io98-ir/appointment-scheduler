@@ -253,6 +253,24 @@ function Appointments( {
 			setBusy( false );
 		}
 	};
+	// What is left after a deposit is paid at the gateway, like a booking's own payment.
+	const payRest = async ( id: number ) => {
+		setBusy( true );
+		setError( null );
+		try {
+			const { payment_url: url } = await clientFor( nonce, token ).post< {
+				payment_url: string;
+			} >( `/my/appointments/${ id }/pay`, {
+				return_url: window.location.href,
+			} );
+			window.location.assign( url );
+		} catch ( failure ) {
+			setError(
+				failure instanceof Error ? failure.message : String( failure )
+			);
+			setBusy( false );
+		}
+	};
 	const when = ( start: string ) =>
 		`${ formatDate( start.slice( 0, 10 ), calendar, digits ) } ${ formatDigits(
 			start.slice( 11, 16 ),
@@ -298,6 +316,22 @@ function Appointments( {
 								item.code
 							) }
 						</span>
+						{ item.due && (
+							<p className="vqy-panel__due">
+								{ sprintf(
+									/* translators: %s: an amount in rials. */
+									__( 'Left to pay: %s IRR', 'vaqtyar' ),
+									formatAmount( item.due, digits )
+								) }{ ' ' }
+								<button
+									type="button"
+									disabled={ busy }
+									onClick={ () => void payRest( item.id ) }
+								>
+									{ __( 'Pay the rest', 'vaqtyar' ) }
+								</button>
+							</p>
+						) }
 						{ item.cancel && item.reschedule && (
 							<div className="vqy-panel__actions">
 								{ item.status === 'confirmed' && (

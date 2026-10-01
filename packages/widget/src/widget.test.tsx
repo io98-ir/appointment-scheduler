@@ -68,7 +68,12 @@ function fakeServer() {
 	const requests: URLSearchParams[] = [];
 	const json = ( body: unknown ) => new Response( JSON.stringify( body ) );
 
-	const options = { required: false, online: false };
+	const options = {
+		required: false,
+		online: false,
+		/** What GET /payment-options adds for a service and its price. */
+		terms: {} as Record< string, unknown >,
+	};
 	const posts: { path: string; body: Record< string, unknown > }[] = [];
 	const fetch = async ( resource: RequestInfo | URL, init?: RequestInit ) => {
 		const url = new URL( String( resource ) );
@@ -161,7 +166,9 @@ function fakeServer() {
 			);
 		}
 		if ( path === '/payment-options' ) {
-			return json( { online: options.online } );
+			requests.push( url.searchParams );
+
+			return json( { online: options.online, ...options.terms } );
 		}
 		if ( path === '/nonce' ) {
 			return json( { nonce: 'fresh-nonce' } );
@@ -520,6 +527,89 @@ describe( 'the booking widget', () => {
 		expect( booked?.body ).toMatchObject( { pay_online: true } );
 		expect( typeof booked?.body.return_url ).toBe( 'string' );
 		expect( text() ).toContain( 'Taking you to the payment page' );
+	} );
+
+	async function toTheDetails() {
+		await open();
+		await act( () =>
+			days()
+				.find( ( day ) => ! day.disabled )
+				?.click()
+		);
+		await settle();
+		await act( () =>
+			container
+				.querySelector< HTMLButtonElement >(
+					'.vqy-widget__slot-list button'
+				)
+				?.click()
+		);
+		const next = [ ...container.querySelectorAll( 'button' ) ].find(
+			( element ) => element.textContent === 'Continue'
+		);
+		await act( () => next?.click() );
+		await settle();
+	}
+
+	const buttonLabelled = ( label: string ) =>
+		[ ...container.querySelectorAll( 'button' ) ].find(
+			( element ) => element.textContent === label
+		);
+
+	it( 'asks for the deposit, not the whole price, when the service takes one', async () => {
+		server.options.online = true;
+		server.options.terms = {
+			required: false,
+			due: { amount: 270000, currency: 'IRR' },
+			approval: false,
+		};
+
+		await toTheDetails();
+
+		const asked = server.requests.find(
+			( query ) => query.get( 'service' ) === '10'
+		);
+		expect( asked?.get( 'total' ) ).toBe( '900000' );
+		expect( text() ).toContain( 'Pay the deposit (270,000 IRR) and book' );
+		// Paying at the place stays the customer's choice.
+		expect( buttonLabelled( 'Book and pay at the place' ) ).toBeDefined();
+	} );
+
+	it( 'does not offer to pay at the place when the service has to be paid online', async () => {
+		server.options.online = true;
+		server.options.terms = {
+			required: true,
+			due: { amount: 900000, currency: 'IRR' },
+			approval: false,
+		};
+
+		await toTheDetails();
+
+		expect( buttonLabelled( 'Pay online and book' ) ).toBeDefined();
+		expect( buttonLabelled( 'Book and pay at the place' ) ).toBeUndefined();
+		expect( buttonLabelled( 'Confirm booking' ) ).toBeUndefined();
+	} );
+
+	it( 'says a booking that has to be paid online cannot be made when no gateway is available', async () => {
+		server.options.online = false;
+		server.options.terms = {
+			required: true,
+			due: { amount: 900000, currency: 'IRR' },
+			approval: false,
+		};
+
+		await toTheDetails();
+
+		expect( text() ).toContain( 'has to be paid online' );
+		expect( buttonLabelled( 'Confirm booking' ) ).toBeUndefined();
+	} );
+
+	it( 'tells the customer a booking waits for the staff to approve it', async () => {
+		server.options.terms = { required: false, due: null, approval: true };
+
+		await toTheDetails();
+
+		expect( text() ).toContain( 'confirmed once the staff approve it' );
 	} );
 
 	it( 'says what happened when the customer returns from the gateway', async () => {

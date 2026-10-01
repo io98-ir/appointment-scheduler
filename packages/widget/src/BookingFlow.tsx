@@ -8,6 +8,7 @@ import {
 	type Calendar,
 	type Digits,
 	type GuestBooking,
+	type Money,
 	type PlacedHold,
 	type PriceLineCode,
 	type PublicField,
@@ -18,6 +19,16 @@ import { useEffect, useId, useRef, useState } from 'preact/hooks';
 import { PhoneCheck } from './PhoneCheck';
 import type { SlotChoice } from './Widget';
 import { useFetch } from './useFetch';
+
+/** GET /payment-options with a service and its price (docs/api.md). */
+interface PaymentOptions {
+	online: boolean;
+	required?: boolean;
+	/** What is charged online now: the whole price, or a deposit of it. */
+	due?: Money | null;
+	/** Staff approve the booking before it is confirmed. */
+	approval?: boolean;
+}
 
 interface Placed {
 	nonce: string;
@@ -169,9 +180,17 @@ export function BookingFlow( {
 	const otp = useFetch< { required: boolean } >( 'otp-config', () =>
 		clientFor().get< { required: boolean } >( '/otp/config' )
 	);
-	const paymentOptions = useFetch< { online: boolean } >(
-		'payment-options',
-		() => clientFor().get< { online: boolean } >( '/payment-options' )
+	// What the service asks of the booking depends on the price the hold quoted, so this waits for it.
+	const quoted = placed.data?.hold.price.total.amount;
+	const paymentOptions = useFetch< PaymentOptions >(
+		quoted === undefined
+			? null
+			: `payment-options:${ serviceId }:${ quoted }`,
+		() =>
+			clientFor().get< PaymentOptions >( '/payment-options', {
+				service: serviceId,
+				total: quoted,
+			} )
 	);
 	// Which submit button was pressed: pay now, or pay at the place.
 	const payOnline = useRef( false );
@@ -223,7 +242,12 @@ export function BookingFlow( {
 			<div className="vqy-widget__done" role="status">
 				<p>
 					<strong>
-						{ __( 'Your appointment is booked.', 'vaqtyar' ) }
+						{ booking.status === 'pending_approval'
+							? __(
+									'Your request is received. It is confirmed once the staff approve it.',
+									'vaqtyar'
+								)
+							: __( 'Your appointment is booked.', 'vaqtyar' ) }
 					</strong>
 				</p>
 				<p>
@@ -245,22 +269,24 @@ export function BookingFlow( {
 						booking.code
 					) }
 				</p>
-				<button
-					type="button"
-					onClick={ () =>
-						downloadIcs(
-							{
-								uid: booking.code,
-								start: booking.start,
-								end: booking.end,
-								summary: title,
-							},
-							booking.code
-						)
-					}
-				>
-					{ __( 'Add to calendar', 'vaqtyar' ) }
-				</button>
+				{ booking.status === 'confirmed' && (
+					<button
+						type="button"
+						onClick={ () =>
+							downloadIcs(
+								{
+									uid: booking.code,
+									start: booking.start,
+									end: booking.end,
+									summary: title,
+								},
+								booking.code
+							)
+						}
+					>
+						{ __( 'Add to calendar', 'vaqtyar' ) }
+					</button>
+				) }
 			</div>
 		);
 	}
@@ -276,7 +302,7 @@ export function BookingFlow( {
 			</div>
 		);
 	}
-	if ( ! placed.data || otp.loading ) {
+	if ( ! placed.data || otp.loading || paymentOptions.loading ) {
 		return <p>{ __( 'Reserving your time…', 'vaqtyar' ) }</p>;
 	}
 
@@ -290,6 +316,10 @@ export function BookingFlow( {
 	// Free bookings have nothing to pay, whatever the site offers.
 	const payable =
 		paymentOptions.data?.online === true && hold.price.total.amount > 0;
+	// The service wants the booking paid online, and a deposit may be only part of the price.
+	const mustPay = paymentOptions.data?.required === true;
+	const due = paymentOptions.data?.due ?? null;
+	const isDeposit = due !== null && due.amount < hold.price.total.amount;
 	const blocked =
 		busy || expired || ( otp.data?.required === true && session === null );
 	const minutes = String( Math.floor( left / 60 ) );
@@ -452,6 +482,22 @@ export function BookingFlow( {
 					onInput={ ( e ) => setNote( e.currentTarget.value ) }
 				/>
 			</label>
+			{ mustPay && ! payable && (
+				<p role="alert" className="vqy-widget__error">
+					{ __(
+						'This service has to be paid online, and online payment is not available now.',
+						'vaqtyar'
+					) }
+				</p>
+			) }
+			{ paymentOptions.data?.approval === true && (
+				<p className="vqy-widget__hint">
+					{ __(
+						'This booking is confirmed once the staff approve it.',
+						'vaqtyar'
+					) }
+				</p>
+			) }
 			{ error && (
 				<p role="alert" className="vqy-widget__error">
 					{ error.message }
@@ -469,20 +515,31 @@ export function BookingFlow( {
 							payOnline.current = true;
 						} }
 					>
-						{ __( 'Pay online and book', 'vaqtyar' ) }
+						{ isDeposit && due
+							? sprintf(
+									/* translators: %s: the deposit, an amount in rials. */
+									__(
+										'Pay the deposit (%s IRR) and book',
+										'vaqtyar'
+									),
+									formatAmount( due, digits )
+								)
+							: __( 'Pay online and book', 'vaqtyar' ) }
 					</button>
 				) }
-				<button
-					type="submit"
-					disabled={ blocked }
-					onClick={ () => {
-						payOnline.current = false;
-					} }
-				>
-					{ payable
-						? __( 'Book and pay at the place', 'vaqtyar' )
-						: __( 'Confirm booking', 'vaqtyar' ) }
-				</button>
+				{ ! mustPay && (
+					<button
+						type="submit"
+						disabled={ blocked }
+						onClick={ () => {
+							payOnline.current = false;
+						} }
+					>
+						{ payable
+							? __( 'Book and pay at the place', 'vaqtyar' )
+							: __( 'Confirm booking', 'vaqtyar' ) }
+					</button>
+				) }
 			</div>
 		</form>
 	);

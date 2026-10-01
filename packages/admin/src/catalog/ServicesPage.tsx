@@ -25,6 +25,7 @@ import { useApi } from '../api';
 import { Fields } from '../fields/Fields';
 import { NotFound } from '../NotFound';
 import { Policies } from '../policies/Policies';
+import { Terms } from '../policies/Terms';
 import { useRoute } from '../router';
 import { CatalogList, type Column } from './CatalogList';
 import { screenOf, useAll } from './crud';
@@ -104,6 +105,7 @@ export function ServicesPage() {
 				<>
 					<Extras serviceId={ service.id } />
 					<Policies serviceId={ service.id } />
+					<Terms serviceId={ service.id } />
 					<Fields scope="service" serviceId={ service.id } />
 				</>
 			) }

@@ -35,7 +35,7 @@ const ITEM = {
 	},
 };
 
-function fakeServer() {
+function fakeServer( due: { amount: number; currency: 'IRR' } | null = null ) {
 	const calls: {
 		method: string;
 		path: string;
@@ -59,7 +59,10 @@ function fakeServer() {
 			return json( { nonce: 'fresh' } );
 		}
 		if ( path === '/my/appointments' ) {
-			return json( [ ITEM ] );
+			return json( [ { ...ITEM, due } ] );
+		}
+		if ( path.endsWith( '/pay' ) ) {
+			return json( { payment_url: 'https://pay.example.test/rest' } );
 		}
 		if ( path.endsWith( '/cancel' ) ) {
 			return json( { id: 5, status: 'cancelled' } );
@@ -180,6 +183,46 @@ describe( 'the customer panel', () => {
 		expect( file ).toContain( 'BEGIN:VEVENT' );
 		expect( file ).toContain( 'UID:AB12CD34' );
 		expect( file ).toContain( 'DTSTART:20270110T063000Z' );
+	} );
+
+	it( 'lets the customer pay what is left after a deposit, at the gateway', async () => {
+		server = fakeServer( { amount: 700000, currency: 'IRR' } );
+		window.sessionStorage.setItem(
+			'vqy-panel-session',
+			JSON.stringify( { token: 'TOKEN', expiresAt: Date.now() + 60000 } )
+		);
+		const assigned: string[] = [];
+		Object.defineProperty( window, 'location', {
+			value: {
+				...window.location,
+				assign: ( url: string ) => assigned.push( url ),
+			},
+			writable: true,
+			configurable: true,
+		} );
+		await open();
+
+		expect( text() ).toContain( 'Left to pay: 700,000 IRR' );
+		await act( () => button( 'Pay the rest' )?.click() );
+		await settle();
+
+		const paid = server.calls.find(
+			( call ) => call.path === '/my/appointments/5/pay'
+		);
+		expect( paid?.body ).toMatchObject( {
+			return_url: expect.any( String ),
+		} );
+		expect( assigned ).toEqual( [ 'https://pay.example.test/rest' ] );
+	} );
+
+	it( 'shows nothing to pay when nothing is left', async () => {
+		window.sessionStorage.setItem(
+			'vqy-panel-session',
+			JSON.stringify( { token: 'TOKEN', expiresAt: Date.now() + 60000 } )
+		);
+		await open();
+
+		expect( button( 'Pay the rest' ) ).toBeUndefined();
 	} );
 
 	it( 'signs out and forgets the session', async () => {

@@ -21,6 +21,8 @@ use Vaqtyar\Modules\Scheduling\Application\AvailabilityService;
 use Vaqtyar\Modules\Scheduling\Application\DayAvailability;
 use Vaqtyar\Modules\Scheduling\Application\DayStatus;
 use Vaqtyar\Modules\Scheduling\Application\SlotCache;
+use Vaqtyar\Modules\Scheduling\Contracts\BookingWindow;
+use Vaqtyar\Modules\Scheduling\Contracts\BookingWindows;
 use Vaqtyar\Modules\Scheduling\Contracts\BusySpan;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Domain\Availability\StaffChoice;
@@ -289,6 +291,30 @@ final class AvailabilityServiceTest extends TestCase
         self::assertSame(['11:00'], self::starts($this->day()));
     }
 
+    public function testAServicesOwnMinimumNoticeReplacesTheSitesAndLeavesTheCacheAlone(): void
+    {
+        // Saturday 09:30 in Tehran: the site asks for 60 minutes, this service for none.
+        $this->clock = new FixedClock('2026-10-03 06:00:00');
+        $date = LocalDate::fromString(self::SATURDAY);
+        $own = $this->service(null, $this->windowOf(new BookingWindow(0, null)));
+
+        self::assertSame(['10:00', '11:00'], self::starts($own->day(self::query(), $date)->days[0]));
+        // The site's own rules still apply to a service without a window.
+        $site = $this->service(null, $this->windowOf(BookingWindow::site()));
+        self::assertSame(['11:00'], self::starts($site->day(self::query(), $date)->days[0]));
+    }
+
+    public function testAServicesOwnWindowAheadClosesDaysTheSiteWouldOpen(): void
+    {
+        $this->clock = new FixedClock('2026-10-01 06:00:00');
+        $service = $this->service(null, $this->windowOf(new BookingWindow(null, 2 * 1440)));
+
+        $month = $service->month(self::query(), LocalDate::fromString('2026-10-01'), 5);
+
+        self::assertSame('available', self::statuses($month)['2026-10-03']);
+        self::assertSame('closed', self::statuses($month)['2026-10-05'], 'Past two days ahead.');
+    }
+
     public function testAMonthGivesEachDayItsStatus(): void
     {
         $this->busy = [self::busy(false, 3, '09:00', '12:00', '2026-10-10')];
@@ -464,8 +490,24 @@ final class AvailabilityServiceTest extends TestCase
         return $this->service()->day($query ?? self::query(), LocalDate::fromString(self::SATURDAY))->days[0];
     }
 
-    private function service(?AvailabilityDefaults $defaults = null): AvailabilityService
+    private function windowOf(BookingWindow $window): BookingWindows
     {
+        return new class ($window) implements BookingWindows {
+            public function __construct(private readonly BookingWindow $window)
+            {
+            }
+
+            public function forService(int $serviceId): BookingWindow
+            {
+                return $this->window;
+            }
+        };
+    }
+
+    private function service(
+        ?AvailabilityDefaults $defaults = null,
+        ?BookingWindows $windows = null
+    ): AvailabilityService {
         /** @var ScheduleRuleRepository&MockInterface $rules */
         $rules = Mockery::mock(ScheduleRuleRepository::class);
         $rules->shouldReceive('ofOwners')->andReturnUsing(function (array $owners): array {
@@ -532,7 +574,8 @@ final class AvailabilityServiceTest extends TestCase
             $reader,
             $cache,
             $this->clock,
-            $defaults ?? new AvailabilityDefaults(60, 60, 30 * 1440, StaffChoice::LeastBusy)
+            $defaults ?? new AvailabilityDefaults(60, 60, 30 * 1440, StaffChoice::LeastBusy),
+            $windows
         );
     }
 

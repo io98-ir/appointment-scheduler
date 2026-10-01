@@ -17,7 +17,7 @@ msgstr ""
 msgid "%1$s — %2$d min — %3$s IRR"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:232
+#: packages/widget/src/BookingFlow.tsx:256
 msgid "%1$s at %2$s"
 msgstr ""
 
@@ -82,7 +82,7 @@ msgid ""
 msgstr ""
 
 #: packages/admin/src/appointments/AppointmentsPage.tsx:63
-#: packages/widget/src/Panel.tsx:290
+#: packages/widget/src/Panel.tsx:308
 msgid "%s IRR"
 msgstr ""
 
@@ -97,7 +97,7 @@ msgstr ""
 msgid "%s will not run until this is fixed."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:334
+#: packages/admin/src/appointments/AppointmentDetail.tsx:346
 msgid "← All appointments"
 msgstr ""
 
@@ -115,6 +115,14 @@ msgstr ""
 
 #: src/Modules/Customers/Presentation/Rest/OtpRoutes.php:110
 msgid "A code was sent recently. Please wait a moment before asking for another."
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:161
+msgid "A deposit, a fixed amount"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:154
+msgid "A deposit, a percent of the price"
 msgstr ""
 
 #: packages/admin/src/setup/PaymentSettingsForm.tsx:32
@@ -165,7 +173,7 @@ msgstr ""
 msgid "Active: customers can book it"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:643
+#: packages/admin/src/catalog/ServicesPage.tsx:645
 #: packages/admin/src/catalog/TimeOff.tsx:237
 #: packages/admin/src/holidays/HolidaysPage.tsx:166
 msgid "Add"
@@ -175,7 +183,7 @@ msgstr ""
 msgid "Add a location with staff to see its calendar."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:343
+#: packages/admin/src/catalog/ServicesPage.tsx:345
 msgid "Add a staff member first."
 msgstr ""
 
@@ -208,7 +216,7 @@ msgstr ""
 msgid "Add location"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:313
+#: packages/admin/src/catalog/ServicesPage.tsx:315
 msgid "Add option"
 msgstr ""
 
@@ -216,7 +224,7 @@ msgstr ""
 msgid "Add resource"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:77
+#: packages/admin/src/catalog/ServicesPage.tsx:78
 msgid "Add service"
 msgstr ""
 
@@ -232,22 +240,22 @@ msgstr ""
 msgid "Add time-based price"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:262
-#: packages/widget/src/Panel.tsx:325
+#: packages/widget/src/BookingFlow.tsx:287
+#: packages/widget/src/Panel.tsx:359
 msgid "Add to calendar"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:44
-#: packages/admin/src/catalog/ServicesPage.tsx:609
-#: packages/widget/src/BookingFlow.tsx:46
+#: packages/admin/src/appointments/AppointmentDetail.tsx:45
+#: packages/admin/src/catalog/ServicesPage.tsx:611
+#: packages/widget/src/BookingFlow.tsx:57
 msgid "Add-on"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:551
+#: packages/admin/src/catalog/ServicesPage.tsx:553
 msgid "Add-ons"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:565
+#: packages/admin/src/catalog/ServicesPage.tsx:567
 #: packages/admin/src/catalog/TimeOff.tsx:135
 #: packages/admin/src/coupons/Coupons.tsx:115
 #: packages/admin/src/fields/Fields.tsx:119
@@ -278,11 +286,15 @@ msgstr ""
 msgid "Amber"
 msgstr ""
 
+#: packages/admin/src/appointments/Payments.tsx:133
+msgid "Amount"
+msgstr ""
+
 #: assets/blocks.js:42
 msgid "An address on this site to go to after a booking. Empty stays on the page."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:263
+#: packages/admin/src/appointments/AppointmentDetail.tsx:275
 msgid "Answers"
 msgstr ""
 
@@ -317,7 +329,7 @@ msgstr ""
 msgid "Appointment %d"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:314
+#: packages/widget/src/Panel.tsx:348
 msgid "Appointment %s"
 msgstr ""
 
@@ -345,7 +357,7 @@ msgstr ""
 msgid "Appointment rescheduled"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:117
+#: packages/admin/src/appointments/AppointmentDetail.tsx:119
 msgid "Appointment updated."
 msgstr ""
 
@@ -356,11 +368,15 @@ msgstr ""
 msgid "Appointments"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:31
+#: packages/admin/src/policies/Terms.tsx:224
+msgid "Approval"
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentDetail.tsx:32
 msgid "Approve"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:56
+#: packages/admin/src/appointments/AppointmentDetail.tsx:57
 msgid "Approved"
 msgstr ""
 
@@ -391,7 +407,7 @@ msgid "Azar"
 msgstr ""
 
 #: packages/admin/src/setup/SetupWizard.tsx:112
-#: packages/widget/src/BookingFlow.tsx:462
+#: packages/widget/src/BookingFlow.tsx:508
 msgid "Back"
 msgstr ""
 
@@ -426,12 +442,12 @@ msgstr ""
 msgid "Book an appointment"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:483
+#: packages/widget/src/BookingFlow.tsx:539
 msgid "Book and pay at the place"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:55
-#: packages/admin/src/appointments/AppointmentDetail.tsx:227
+#: packages/admin/src/appointments/AppointmentDetail.tsx:56
+#: packages/admin/src/appointments/AppointmentDetail.tsx:229
 msgid "Booked"
 msgstr ""
 
@@ -445,16 +461,20 @@ msgstr ""
 msgid "Booking form"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:58
+#: packages/admin/src/catalog/ServicesPage.tsx:59
 msgid "Booking form for this service"
 msgstr ""
 
-#: packages/admin/src/policies/SettingsPage.tsx:28
+#: packages/admin/src/policies/SettingsPage.tsx:29
 msgid "Booking rules"
 msgstr ""
 
 #: packages/admin/src/status/StatusPage.tsx:23
 msgid "Booking widget, shortcode and block"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:251
+msgid "Booking window"
 msgstr ""
 
 #: src/Modules/Admin/Presentation/HealthText.php:34
@@ -465,7 +485,7 @@ msgstr ""
 msgid "Bookings it holds at the same time."
 msgstr ""
 
-#: packages/admin/src/policies/SettingsPage.tsx:32
+#: packages/admin/src/policies/SettingsPage.tsx:33
 msgid "Brand"
 msgstr ""
 
@@ -477,11 +497,11 @@ msgstr ""
 msgid "Break"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:287
+#: packages/admin/src/catalog/ServicesPage.tsx:289
 msgid "Buffer after"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:278
+#: packages/admin/src/catalog/ServicesPage.tsx:280
 msgid "Buffer before"
 msgstr ""
 
@@ -497,7 +517,7 @@ msgstr ""
 msgid "By staff"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:298
+#: packages/admin/src/appointments/AppointmentDetail.tsx:310
 msgid "by the customer"
 msgstr ""
 
@@ -513,34 +533,34 @@ msgstr ""
 msgid "Calendar color"
 msgstr ""
 
+#: packages/admin/src/appointments/Payments.tsx:289
 #: packages/admin/src/calendar/CalendarPage.tsx:718
 #: packages/admin/src/calendar/CalendarPage.tsx:778
 #: packages/admin/src/calendar/QuickBook.tsx:366
 #: packages/admin/src/catalog/CatalogList.tsx:170
-#: packages/admin/src/notifications/NotificationsPage.tsx:508
 msgid "Cancel"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:447
+#: packages/admin/src/appointments/AppointmentDetail.tsx:459
 msgid "Cancel anyway"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:34
-#: packages/admin/src/appointments/AppointmentDetail.tsx:446
-#: packages/widget/src/Panel.tsx:353
+#: packages/admin/src/appointments/AppointmentDetail.tsx:35
+#: packages/admin/src/appointments/AppointmentDetail.tsx:458
+#: packages/widget/src/Panel.tsx:387
 msgid "Cancel appointment"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:231
+#: packages/admin/src/appointments/AppointmentDetail.tsx:233
 msgid "Cancel reason"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:412
-#: packages/widget/src/Panel.tsx:380
+#: packages/admin/src/appointments/AppointmentDetail.tsx:424
+#: packages/widget/src/Panel.tsx:414
 msgid "Cancel this appointment?"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:374
+#: packages/widget/src/Panel.tsx:408
 msgid "Cancel this appointment? %d%% of what you paid is refunded."
 msgstr ""
 
@@ -560,7 +580,7 @@ msgstr ""
 msgid "Cancellation rate (30 days)"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:61
+#: packages/admin/src/appointments/AppointmentDetail.tsx:62
 #: packages/admin/src/appointments/AppointmentsPage.tsx:38
 #: packages/widget/src/Panel.tsx:72
 msgid "Cancelled"
@@ -571,11 +591,11 @@ msgstr ""
 msgid "Capacity"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:80
+#: packages/admin/src/catalog/ServicesPage.tsx:81
 msgid "Categories"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:191
+#: packages/admin/src/catalog/ServicesPage.tsx:193
 msgid "Category"
 msgstr ""
 
@@ -592,7 +612,7 @@ msgstr ""
 msgid "Choice"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:507
+#: packages/admin/src/catalog/ServicesPage.tsx:509
 msgid "Choose a group"
 msgstr ""
 
@@ -604,7 +624,7 @@ msgstr ""
 msgid "Choose a service"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:274
+#: packages/widget/src/BookingFlow.tsx:300
 msgid "Choose another time"
 msgstr ""
 
@@ -614,6 +634,7 @@ msgstr ""
 
 #: packages/admin/src/policies/Policies.tsx:175
 #: packages/admin/src/policies/Policies.tsx:261
+#: packages/admin/src/policies/Terms.tsx:124
 msgid "Clear"
 msgstr ""
 
@@ -621,7 +642,7 @@ msgstr ""
 msgid "Cleared."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:512
+#: packages/widget/src/Panel.tsx:546
 msgid "Close"
 msgstr ""
 
@@ -651,13 +672,13 @@ msgstr ""
 msgid "Comma-separated."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:59
+#: packages/admin/src/appointments/AppointmentDetail.tsx:60
 #: packages/admin/src/appointments/AppointmentsPage.tsx:36
 #: packages/widget/src/Panel.tsx:70
 msgid "Completed"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:484
+#: packages/widget/src/BookingFlow.tsx:540
 msgid "Confirm booking"
 msgstr ""
 
@@ -674,8 +695,8 @@ msgstr ""
 msgid "Copy to every day"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:46
-#: packages/widget/src/BookingFlow.tsx:48
+#: packages/admin/src/appointments/AppointmentDetail.tsx:47
+#: packages/widget/src/BookingFlow.tsx:59
 msgid "Coupon"
 msgstr ""
 
@@ -703,7 +724,7 @@ msgstr ""
 msgid "Custom fields"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:197
+#: packages/admin/src/appointments/AppointmentDetail.tsx:199
 #: packages/admin/src/appointments/AppointmentsPage.tsx:225
 #: packages/admin/src/calendar/QuickBook.tsx:338
 #: packages/admin/src/notifications/NotificationsPage.tsx:60
@@ -714,7 +735,7 @@ msgstr ""
 msgid "Customer name"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:279
+#: packages/admin/src/appointments/AppointmentDetail.tsx:291
 msgid "Customer note"
 msgstr ""
 
@@ -722,8 +743,12 @@ msgstr ""
 msgid "Customers"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:135
+#: packages/admin/src/catalog/ServicesPage.tsx:137
 msgid "Customers at the same time"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:200
+msgid "Customers must pay online to book"
 msgstr ""
 
 #: packages/admin/src/App.tsx:211
@@ -764,13 +789,13 @@ msgstr ""
 msgid "December"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:231
+#: packages/admin/src/catalog/ServicesPage.tsx:233
 msgid "Default option"
 msgstr ""
 
 #: packages/admin/src/catalog/CatalogList.tsx:131
 #: packages/admin/src/catalog/CatalogList.tsx:181
-#: packages/admin/src/catalog/ServicesPage.tsx:648
+#: packages/admin/src/catalog/ServicesPage.tsx:650
 #: packages/admin/src/catalog/TimeOff.tsx:126
 #: packages/admin/src/coupons/Coupons.tsx:109
 msgid "Delete"
@@ -784,7 +809,7 @@ msgstr ""
 msgid "Delete this item?"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:546
+#: packages/admin/src/catalog/ServicesPage.tsx:548
 #: packages/admin/src/catalog/TimeOff.tsx:90
 #: packages/admin/src/catalog/crud.ts:108
 #: packages/admin/src/coupons/Coupons.tsx:79
@@ -799,11 +824,19 @@ msgid ""
 "finds everything as it was."
 msgstr ""
 
+#: packages/admin/src/policies/Terms.tsx:183
+msgid "Deposit amount (IRR)"
+msgstr ""
+
 #: packages/admin/src/appointments/AppointmentsPage.tsx:48
 msgid "Deposit paid"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:128
+#: packages/admin/src/policies/Terms.tsx:182
+msgid "Deposit percent"
+msgstr ""
+
+#: packages/admin/src/catalog/ServicesPage.tsx:130
 msgid "Description"
 msgstr ""
 
@@ -859,7 +892,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:424
+#: packages/widget/src/BookingFlow.tsx:454
 msgid "Email (optional)"
 msgstr ""
 
@@ -883,7 +916,7 @@ msgstr ""
 msgid "Every location"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:58
+#: packages/admin/src/appointments/AppointmentDetail.tsx:59
 #: packages/admin/src/appointments/AppointmentsPage.tsx:39
 #: packages/widget/src/Panel.tsx:73
 msgid "Expired"
@@ -901,8 +934,12 @@ msgstr ""
 msgid "Extra hours"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:622
+#: packages/admin/src/catalog/ServicesPage.tsx:624
 msgid "Extra minutes"
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:29
+msgid "Failed"
 msgstr ""
 
 #: packages/admin/src/status/StatusPage.tsx:197
@@ -930,7 +967,7 @@ msgid "First available"
 msgstr ""
 
 #: packages/admin/src/customers/CustomersPage.tsx:73
-#: packages/widget/src/BookingFlow.tsx:379
+#: packages/widget/src/BookingFlow.tsx:409
 msgid "First name"
 msgstr ""
 
@@ -965,6 +1002,10 @@ msgstr ""
 msgid "from the shipped calendar"
 msgstr ""
 
+#: packages/admin/src/appointments/Payments.tsx:130
+msgid "Gateway"
+msgstr ""
+
 #: src/Modules/Admin/Presentation/HealthText.php:42
 msgid "Gateway and SMS keys are stored encrypted."
 msgstr ""
@@ -993,11 +1034,11 @@ msgstr ""
 msgid "Group"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:47
+#: packages/widget/src/BookingFlow.tsx:58
 msgid "Guests"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:440
+#: packages/admin/src/catalog/ServicesPage.tsx:442
 msgid "Has terms per option."
 msgstr ""
 
@@ -1005,7 +1046,7 @@ msgstr ""
 msgid "Health"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:291
+#: packages/admin/src/appointments/AppointmentDetail.tsx:303
 msgid "History"
 msgstr ""
 
@@ -1046,11 +1087,11 @@ msgstr ""
 msgid "Indigo"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:367
+#: packages/admin/src/appointments/AppointmentDetail.tsx:379
 msgid "Internal note"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:63
+#: packages/admin/src/appointments/AppointmentDetail.tsx:64
 msgid "Internal note changed"
 msgstr ""
 
@@ -1105,8 +1146,8 @@ msgstr ""
 msgid "Kavenegar"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:450
-#: packages/widget/src/Panel.tsx:401
+#: packages/admin/src/appointments/AppointmentDetail.tsx:462
+#: packages/widget/src/Panel.tsx:435
 msgid "Keep it"
 msgstr ""
 
@@ -1123,7 +1164,7 @@ msgstr ""
 msgid "Kind"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:256
+#: packages/admin/src/catalog/ServicesPage.tsx:258
 #: packages/admin/src/fields/Fields.tsx:192
 msgid "Label"
 msgstr ""
@@ -1132,7 +1173,7 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
-#: packages/admin/src/policies/SettingsPage.tsx:24
+#: packages/admin/src/policies/SettingsPage.tsx:25
 #: packages/admin/src/setup/SetupWizard.tsx:44
 msgid "Language and calendar"
 msgstr ""
@@ -1147,8 +1188,16 @@ msgid "Last 7 days"
 msgstr ""
 
 #: packages/admin/src/customers/CustomersPage.tsx:81
-#: packages/widget/src/BookingFlow.tsx:389
+#: packages/widget/src/BookingFlow.tsx:419
 msgid "Last name"
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:208
+msgid "Left to pay"
+msgstr ""
+
+#: packages/widget/src/Panel.tsx:323
+msgid "Left to pay: %s IRR"
 msgstr ""
 
 #: src/Modules/Widget/Presentation/Embeds.php:68
@@ -1163,8 +1212,8 @@ msgstr ""
 msgid "Light"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:267
-#: packages/widget/src/Panel.tsx:486
+#: packages/widget/src/Panel.tsx:285
+#: packages/widget/src/Panel.tsx:520
 #: packages/widget/src/Widget.tsx:323
 #: packages/widget/src/Widget.tsx:557
 msgid "Loading…"
@@ -1211,11 +1260,11 @@ msgstr ""
 msgid "March"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:32
+#: packages/admin/src/appointments/AppointmentDetail.tsx:33
 msgid "Mark completed"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:33
+#: packages/admin/src/appointments/AppointmentDetail.tsx:34
 msgid "Mark no-show"
 msgstr ""
 
@@ -1244,12 +1293,13 @@ msgstr ""
 msgid "Message"
 msgstr ""
 
+#: packages/admin/src/policies/Terms.tsx:257
 #: packages/admin/src/setup/BookingRulesForm.tsx:80
 msgid "Minimum notice (minutes)"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:51
-#: packages/admin/src/catalog/ServicesPage.tsx:261
+#: packages/admin/src/catalog/ServicesPage.tsx:52
+#: packages/admin/src/catalog/ServicesPage.tsx:263
 msgid "Minutes"
 msgstr ""
 
@@ -1261,7 +1311,7 @@ msgstr ""
 msgid "Missed"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:398
+#: packages/widget/src/BookingFlow.tsx:428
 #: packages/widget/src/Panel.tsx:165
 msgid "Mobile number"
 msgstr ""
@@ -1275,15 +1325,19 @@ msgstr ""
 msgid "Monday"
 msgstr ""
 
+#: packages/admin/src/appointments/Payments.tsx:218
+msgid "Money received (IRR)"
+msgstr ""
+
 #: packages/shared/src/month.ts:99
 msgid "Mordad"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:136
+#: packages/admin/src/catalog/ServicesPage.tsx:138
 msgid "More than 1 for a class or group session."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:629
+#: packages/admin/src/catalog/ServicesPage.tsx:631
 msgid "Most per booking"
 msgstr ""
 
@@ -1292,7 +1346,7 @@ msgid "Most times"
 msgstr ""
 
 #: packages/admin/src/calendar/CalendarPage.tsx:709
-#: packages/widget/src/Panel.tsx:337
+#: packages/widget/src/Panel.tsx:371
 msgid "Move"
 msgstr ""
 
@@ -1300,11 +1354,11 @@ msgstr ""
 msgid "Move anyway"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:187
+#: packages/admin/src/appointments/AppointmentDetail.tsx:189
 msgid "Move in calendar"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:62
+#: packages/admin/src/appointments/AppointmentDetail.tsx:63
 msgid "Moved"
 msgstr ""
 
@@ -1319,7 +1373,7 @@ msgid "My appointments"
 msgstr ""
 
 #: packages/admin/src/catalog/CatalogList.tsx:90
-#: packages/admin/src/catalog/ServicesPage.tsx:115
+#: packages/admin/src/catalog/ServicesPage.tsx:117
 #: packages/admin/src/catalog/screens.tsx:107
 #: packages/admin/src/catalog/screens.tsx:235
 #: packages/admin/src/catalog/screens.tsx:334
@@ -1334,7 +1388,7 @@ msgstr ""
 msgid "Names and numbers can be formatted for every locale."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:504
+#: packages/admin/src/catalog/ServicesPage.tsx:506
 msgid "Needs a resource of"
 msgstr ""
 
@@ -1351,7 +1405,7 @@ msgstr ""
 msgid "New customer"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:477
+#: packages/widget/src/Panel.tsx:511
 msgid "New date"
 msgstr ""
 
@@ -1408,7 +1462,7 @@ msgstr ""
 msgid "No free time in the next two months."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:493
+#: packages/widget/src/Panel.tsx:527
 #: packages/widget/src/Widget.tsx:566
 msgid "No free time on this day."
 msgstr ""
@@ -1437,12 +1491,12 @@ msgstr ""
 msgid "No time-based prices yet."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:60
+#: packages/admin/src/appointments/AppointmentDetail.tsx:61
 #: packages/admin/src/appointments/AppointmentsPage.tsx:37
 msgid "No-show"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:194
+#: packages/admin/src/catalog/ServicesPage.tsx:196
 #: packages/admin/src/catalog/screens.tsx:143
 msgid "None"
 msgstr ""
@@ -1457,7 +1511,12 @@ msgid ""
 "refunded."
 msgstr ""
 
+#: packages/admin/src/policies/Terms.tsx:50
+msgid "Not set: nothing is asked."
+msgstr ""
+
 #: packages/admin/src/policies/Policies.tsx:99
+#: packages/admin/src/policies/Terms.tsx:51
 msgid "Not set: the global policy applies."
 msgstr ""
 
@@ -1466,11 +1525,11 @@ msgstr ""
 msgid "Note"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:447
+#: packages/widget/src/BookingFlow.tsx:477
 msgid "Note (optional)"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:288
+#: packages/admin/src/appointments/AppointmentDetail.tsx:300
 msgid "Note saved."
 msgstr ""
 
@@ -1480,6 +1539,10 @@ msgstr ""
 
 #: packages/widget/src/Widget.tsx:325
 msgid "Nothing can be booked right now."
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:123
+msgid "Nothing has been paid."
 msgstr ""
 
 #: packages/admin/src/catalog/CatalogList.tsx:108
@@ -1522,15 +1585,16 @@ msgstr ""
 msgid "On"
 msgstr ""
 
-#: packages/admin/src/policies/SettingsPage.tsx:40
+#: packages/admin/src/policies/SettingsPage.tsx:41
 #: packages/admin/src/setup/SetupWizard.tsx:50
 msgid "Online payment"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:368
+#: packages/admin/src/appointments/AppointmentDetail.tsx:380
 msgid "Only staff see this."
 msgstr ""
 
+#: packages/admin/src/policies/Terms.tsx:269
 #: packages/admin/src/setup/BookingRulesForm.tsx:91
 msgid "Open for booking up to (days ahead)"
 msgstr ""
@@ -1551,7 +1615,7 @@ msgstr ""
 msgid "Option"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:241
+#: packages/admin/src/catalog/ServicesPage.tsx:243
 msgid "Option %d"
 msgstr ""
 
@@ -1559,7 +1623,7 @@ msgstr ""
 msgid "Optional modules"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:46
+#: packages/admin/src/catalog/ServicesPage.tsx:47
 msgid "Options"
 msgstr ""
 
@@ -1567,11 +1631,11 @@ msgstr ""
 msgid "Options (comma separated)"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:229
+#: packages/admin/src/catalog/ServicesPage.tsx:231
 msgid "Options and prices"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:149
+#: packages/admin/src/catalog/ServicesPage.tsx:151
 #: packages/admin/src/catalog/screens.tsx:163
 #: packages/admin/src/catalog/screens.tsx:283
 #: packages/admin/src/catalog/screens.tsx:382
@@ -1587,11 +1651,11 @@ msgstr ""
 msgid "Overdue"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:408
+#: packages/admin/src/catalog/ServicesPage.tsx:410
 msgid "Own minutes"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:371
+#: packages/admin/src/catalog/ServicesPage.tsx:373
 msgid "Own price (IRR)"
 msgstr ""
 
@@ -1604,8 +1668,9 @@ msgstr ""
 msgid "Page not found"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:57
+#: packages/admin/src/appointments/AppointmentDetail.tsx:58
 #: packages/admin/src/appointments/AppointmentsPage.tsx:49
+#: packages/admin/src/appointments/Payments.tsx:28
 msgid "Paid"
 msgstr ""
 
@@ -1617,7 +1682,7 @@ msgstr ""
 msgid "Partly refunded"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:45
+#: packages/admin/src/appointments/AppointmentDetail.tsx:46
 msgid "Party"
 msgstr ""
 
@@ -1629,19 +1694,47 @@ msgstr ""
 msgid "Pattern code"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:472
+#: packages/widget/src/BookingFlow.tsx:527
 msgid "Pay online and book"
+msgstr ""
+
+#: packages/widget/src/BookingFlow.tsx:521
+msgid "Pay the deposit (%s IRR) and book"
+msgstr ""
+
+#: packages/widget/src/Panel.tsx:331
+msgid "Pay the rest"
 msgstr ""
 
 #: packages/admin/src/setup/PaymentSettingsForm.tsx:134
 msgid "Pay through WooCommerce"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:225
+#: packages/admin/src/appointments/AppointmentDetail.tsx:227
 msgid "Payment"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:223
+#: packages/admin/src/appointments/Payments.tsx:91
+msgid "Payment recorded."
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentDetail.tsx:65
+msgid "Payment status changed"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:138
+msgid "Payment when booking online"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:40
+msgid "Payment, approval and booking window"
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:112
+msgid "Payments"
+msgstr ""
+
+#: packages/admin/src/appointments/AppointmentDetail.tsx:225
 msgid "People"
 msgstr ""
 
@@ -1676,13 +1769,13 @@ msgstr ""
 msgid "Previous month"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:237
-#: packages/widget/src/BookingFlow.tsx:44
+#: packages/admin/src/appointments/AppointmentDetail.tsx:239
+#: packages/widget/src/BookingFlow.tsx:55
 msgid "Price"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:269
-#: packages/admin/src/catalog/ServicesPage.tsx:615
+#: packages/admin/src/catalog/ServicesPage.tsx:271
+#: packages/admin/src/catalog/ServicesPage.tsx:617
 msgid "Price (IRR)"
 msgstr ""
 
@@ -1702,11 +1795,12 @@ msgstr ""
 msgid "Put this shortcode on a page to show the booking form:"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:479
+#: packages/admin/src/catalog/ServicesPage.tsx:481
 msgid "Quantity"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:429
+#: packages/admin/src/appointments/AppointmentDetail.tsx:441
+#: packages/admin/src/appointments/Payments.tsx:276
 #: packages/admin/src/calendar/CalendarPage.tsx:762
 msgid "Reason"
 msgstr ""
@@ -1715,15 +1809,36 @@ msgstr ""
 msgid "Recent errors"
 msgstr ""
 
+#: packages/admin/src/appointments/Payments.tsx:173
+msgid "Record a refund"
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:231
+msgid "Record payment"
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:17
+msgid "Recorded by staff"
+msgstr ""
+
 #: packages/admin/src/policies/Policies.tsx:342
 msgid "Refund"
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:269
+msgid "Refund amount (IRR)"
 msgstr ""
 
 #: packages/admin/src/policies/Policies.tsx:356
 msgid "Refund percent"
 msgstr ""
 
+#: packages/admin/src/appointments/Payments.tsx:102
+msgid "Refund recorded."
+msgstr ""
+
 #: packages/admin/src/appointments/AppointmentsPage.tsx:50
+#: packages/admin/src/appointments/Payments.tsx:139
 msgid "Refunded"
 msgstr ""
 
@@ -1743,8 +1858,8 @@ msgstr ""
 msgid "Reminders and reservation expiry run on time."
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:303
-#: packages/admin/src/catalog/ServicesPage.tsx:497
+#: packages/admin/src/catalog/ServicesPage.tsx:305
+#: packages/admin/src/catalog/ServicesPage.tsx:499
 #: packages/admin/src/catalog/WeeklySchedule.tsx:210
 #: packages/admin/src/policies/Policies.tsx:372
 #: packages/admin/src/setup/PaymentSettingsForm.tsx:126
@@ -1771,12 +1886,12 @@ msgstr ""
 msgid "Rescheduling"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:280
+#: packages/widget/src/BookingFlow.tsx:306
 msgid "Reserving your time…"
 msgstr ""
 
 #: packages/admin/src/App.tsx:91
-#: packages/admin/src/catalog/ServicesPage.tsx:474
+#: packages/admin/src/catalog/ServicesPage.tsx:476
 msgid "Resources"
 msgstr ""
 
@@ -1789,8 +1904,8 @@ msgstr ""
 msgid "Rose"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:47
-#: packages/widget/src/BookingFlow.tsx:49
+#: packages/admin/src/appointments/AppointmentDetail.tsx:48
+#: packages/widget/src/BookingFlow.tsx:60
 msgid "Rounding"
 msgstr ""
 
@@ -1800,6 +1915,14 @@ msgstr ""
 
 #: packages/admin/src/setup/DisplayForm.tsx:63
 msgid "Same as the site"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:258
+msgid "Same minimum notice as the site"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:273
+msgid "Same opening time as the site"
 msgstr ""
 
 #: packages/shared/src/month.ts:129
@@ -1812,9 +1935,10 @@ msgid "Saturday"
 msgstr ""
 
 #: packages/admin/src/catalog/ItemEditor.tsx:128
-#: packages/admin/src/catalog/ServicesPage.tsx:644
+#: packages/admin/src/catalog/ServicesPage.tsx:646
 #: packages/admin/src/policies/Policies.tsx:166
 #: packages/admin/src/policies/Policies.tsx:252
+#: packages/admin/src/policies/Terms.tsx:115
 msgid "Save"
 msgstr ""
 
@@ -1834,12 +1958,16 @@ msgstr ""
 msgid "Save look"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:380
+#: packages/admin/src/appointments/AppointmentDetail.tsx:392
 msgid "Save note"
 msgstr ""
 
 #: packages/admin/src/setup/PaymentSettingsForm.tsx:146
 msgid "Save payment settings"
+msgstr ""
+
+#: packages/admin/src/appointments/Payments.tsx:286
+msgid "Save refund"
 msgstr ""
 
 #: packages/admin/src/setup/SmsSettingsForm.tsx:204
@@ -1850,7 +1978,7 @@ msgstr ""
 msgid "Save template"
 msgstr ""
 
-#: packages/admin/src/catalog/ServicesPage.tsx:557
+#: packages/admin/src/catalog/ServicesPage.tsx:559
 #: packages/admin/src/catalog/crud.ts:92
 #: packages/admin/src/holidays/HolidaysPage.tsx:117
 #: packages/admin/src/notifications/NotificationsPage.tsx:243
@@ -1918,8 +2046,8 @@ msgstr ""
 msgid "September"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:42
-#: packages/admin/src/appointments/AppointmentDetail.tsx:214
+#: packages/admin/src/appointments/AppointmentDetail.tsx:43
+#: packages/admin/src/appointments/AppointmentDetail.tsx:216
 #: packages/admin/src/appointments/AppointmentsPage.tsx:226
 #: packages/admin/src/calendar/QuickBook.tsx:247
 #: packages/admin/src/reports/ReportsPage.tsx:215
@@ -1990,7 +2118,7 @@ msgstr ""
 msgid "shown when"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:265
+#: packages/widget/src/Panel.tsx:283
 msgid "Sign out"
 msgstr ""
 
@@ -2012,7 +2140,7 @@ msgid "Slate"
 msgstr ""
 
 #: packages/admin/src/notifications/NotificationsPage.tsx:70
-#: packages/admin/src/policies/SettingsPage.tsx:36
+#: packages/admin/src/policies/SettingsPage.tsx:37
 #: packages/admin/src/setup/SetupWizard.tsx:49
 msgid "SMS"
 msgstr ""
@@ -2051,11 +2179,15 @@ msgid "Sort"
 msgstr ""
 
 #: packages/admin/src/App.tsx:86
-#: packages/admin/src/appointments/AppointmentDetail.tsx:221
+#: packages/admin/src/appointments/AppointmentDetail.tsx:223
 #: packages/admin/src/appointments/AppointmentsPage.tsx:189
 #: packages/admin/src/appointments/AppointmentsPage.tsx:227
 #: packages/admin/src/calendar/CalendarPage.tsx:237
 msgid "Staff"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:230
+msgid "Staff approve each booking made from the booking form"
 msgstr ""
 
 #: assets/blocks.js:94
@@ -2089,9 +2221,9 @@ msgstr ""
 
 #: packages/admin/src/appointments/AppointmentsPage.tsx:174
 #: packages/admin/src/appointments/AppointmentsPage.tsx:228
+#: packages/admin/src/appointments/Payments.tsx:136
 #: packages/admin/src/catalog/fields.tsx:147
 #: packages/admin/src/customers/CustomerHistory.tsx:52
-#: packages/admin/src/customers/CustomerList.tsx:158
 msgid "Status"
 msgstr ""
 
@@ -2132,7 +2264,7 @@ msgstr ""
 msgid "Tags"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:217
+#: packages/widget/src/BookingFlow.tsx:236
 msgid "Taking you to the payment page…"
 msgstr ""
 
@@ -2165,6 +2297,10 @@ msgstr ""
 
 #: src/Modules/Widget/Presentation/Embeds.php:205
 msgid "The booking widget is not built. Run \"pnpm build\"."
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:145
+msgid "The customer pays online"
 msgstr ""
 
 #: src/Modules/Admin/Presentation/HealthText.php:32
@@ -2257,12 +2393,22 @@ msgstr ""
 msgid "The staff member works 09:00 to 17:00, Saturday to Thursday."
 msgstr ""
 
+#: packages/admin/src/policies/Terms.tsx:234
+msgid ""
+"The time is held at once; the booking is confirmed when you approve it from "
+"the appointment. Bookings you make yourself are never held back."
+msgstr ""
+
 #: src/Modules/Admin/Presentation/HealthText.php:55
 msgid "The time zone data is current for Iran"
 msgstr ""
 
 #: src/Modules/Admin/Presentation/HealthText.php:56
 msgid "The time zone data is out of date for Iran"
+msgstr ""
+
+#: packages/admin/src/policies/Terms.tsx:150
+msgid "The whole price"
 msgstr ""
 
 #: packages/admin/src/App.tsx:218
@@ -2277,6 +2423,10 @@ msgstr ""
 msgid "This appointment has started."
 msgstr ""
 
+#: packages/widget/src/BookingFlow.tsx:495
+msgid "This booking is confirmed once the staff approve it."
+msgstr ""
+
 #: packages/widget/src/Panel.tsx:101
 msgid "This change is not allowed now."
 msgstr ""
@@ -2289,11 +2439,22 @@ msgstr ""
 msgid "This provider is ready."
 msgstr ""
 
+#: packages/admin/src/appointments/Payments.tsx:235
+msgid ""
+"This records money you received yourself (cash, a card machine, a "
+"transfer). A refund is recorded after you have paid it back, in the "
+"gateway’s panel or by transfer: nothing is sent from here."
+msgstr ""
+
 #: src/Modules/Admin/Presentation/HealthText.php:59
 msgid ""
 "This server still applies daylight saving time to Iran, or does not know "
 "the zone. Local times would shift by an hour. Ask your host to update the "
 "tzdata package or PHP."
+msgstr ""
+
+#: packages/widget/src/BookingFlow.tsx:487
+msgid "This service has to be paid online, and online payment is not available now."
 msgstr ""
 
 #: packages/admin/src/calendar/QuickBook.tsx:238
@@ -2309,7 +2470,7 @@ msgstr ""
 msgid "Thursday"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:192
+#: packages/admin/src/appointments/AppointmentDetail.tsx:194
 #: packages/admin/src/appointments/AppointmentsPage.tsx:224
 #: packages/admin/src/customers/CustomerHistory.tsx:51
 msgid "Time"
@@ -2327,7 +2488,7 @@ msgstr ""
 msgid "Time off and extra hours"
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:43
+#: packages/admin/src/appointments/AppointmentDetail.tsx:44
 msgid "Time pricing"
 msgstr ""
 
@@ -2336,7 +2497,7 @@ msgstr ""
 msgid "Time zone"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:45
+#: packages/widget/src/BookingFlow.tsx:56
 msgid "Time-based price"
 msgstr ""
 
@@ -2375,18 +2536,18 @@ msgstr ""
 msgid "Too many requests. Please wait a moment and try again."
 msgstr ""
 
-#: packages/admin/src/appointments/AppointmentDetail.tsx:251
+#: packages/admin/src/appointments/AppointmentDetail.tsx:253
 #: packages/admin/src/appointments/AppointmentsPage.tsx:229
 #: packages/admin/src/customers/CustomerHistory.tsx:53
 msgid "Total"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:372
+#: packages/widget/src/BookingFlow.tsx:402
 msgid "Total: %s IRR"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:244
-#: packages/widget/src/Panel.tsx:297
+#: packages/widget/src/BookingFlow.tsx:268
+#: packages/widget/src/Panel.tsx:315
 msgid "Tracking code: %s"
 msgstr ""
 
@@ -2443,7 +2604,12 @@ msgstr ""
 msgid "Waiting"
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:353
+#: packages/admin/src/appointments/Payments.tsx:30
+#: packages/admin/src/appointments/Payments.tsx:31
+msgid "Waiting for the gateway"
+msgstr ""
+
+#: packages/widget/src/BookingFlow.tsx:383
 msgid "We are holding this time for you: %s"
 msgstr ""
 
@@ -2497,6 +2663,12 @@ msgid ""
 "convert the plugin tables to InnoDB."
 msgstr ""
 
+#: packages/admin/src/policies/Terms.tsx:204
+msgid ""
+"Without it, paying online stays their choice. The rest of a deposit is paid "
+"at the place, or from the customer panel."
+msgstr ""
+
 #: src/Modules/Admin/Presentation/HealthText.php:63
 msgid "WordPress cron runs from the system"
 msgstr ""
@@ -2515,15 +2687,15 @@ msgid ""
 "in the appointment, for example {customer_name}."
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:395
+#: packages/widget/src/Panel.tsx:429
 msgid "Yes, cancel it"
 msgstr ""
 
-#: packages/widget/src/Panel.tsx:279
+#: packages/widget/src/Panel.tsx:297
 msgid "You have no appointments yet."
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:226
+#: packages/widget/src/BookingFlow.tsx:250
 msgid "Your appointment is booked."
 msgstr ""
 
@@ -2543,7 +2715,11 @@ msgstr ""
 msgid "Your phone number is verified."
 msgstr ""
 
-#: packages/widget/src/BookingFlow.tsx:350
+#: packages/widget/src/BookingFlow.tsx:246
+msgid "Your request is received. It is confirmed once the staff approve it."
+msgstr ""
+
+#: packages/widget/src/BookingFlow.tsx:380
 msgid "Your reserved time has expired."
 msgstr ""
 

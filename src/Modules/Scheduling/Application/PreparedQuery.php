@@ -23,6 +23,8 @@ final class PreparedQuery
      * @param SlotRequest $slot without a booking window, which is applied after the cache.
      * @param int $longestMin the longest staff duration, which bounds the occupancies read.
      * @param string $cacheKey the prefix of each day's cache key.
+     * @param int $minNoticeMin booking closes this many minutes before a start: the service's, or the site's.
+     * @param int $maxAdvanceMin booking opens this many minutes ahead: the service's, or the site's.
      */
     public function __construct(
         public readonly LocationInfo $location,
@@ -31,6 +33,8 @@ final class PreparedQuery
         public readonly SlotRequest $slot,
         public readonly int $longestMin,
         public readonly string $cacheKey,
+        public readonly int $minNoticeMin,
+        public readonly int $maxAdvanceMin,
     ) {
     }
 }

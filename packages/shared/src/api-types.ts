@@ -259,6 +259,8 @@ export interface PanelAppointment extends AppointmentListItem {
 	/** Null once the appointment can no longer be changed. */
 	cancel: PolicyDecision | null;
 	reschedule: PolicyDecision | null;
+	/** What is left to pay online after a deposit; null when nothing is. */
+	due?: Money | null;
 }
 
 /** POST /book, 201: what a guest sees of their appointment. */
@@ -360,7 +362,29 @@ export interface AppointmentDetail extends AppointmentListItem {
 	cancel_reason: string | null;
 }
 
-export type PolicyType = 'cancellation' | 'reschedule';
+export type PolicyType =
+	'cancellation' | 'reschedule' | 'deposit' | 'approval' | 'booking_window';
+
+/** GET|PUT /policies/deposit/{service_id}: what is paid online when booking. */
+export interface DepositConfig {
+	/** "none" asks for the whole price. */
+	kind: 'none' | 'percent' | 'fixed';
+	/** 1 to 100 for a percent, rials for a fixed amount. */
+	value: number;
+	/** The booking is refused unless it is paid online. */
+	required: boolean;
+}
+
+/** GET|PUT /policies/approval/{service_id}. */
+export interface ApprovalConfig {
+	required: boolean;
+}
+
+/** GET|PUT /policies/booking_window/{service_id}: null keeps the site's rule. */
+export interface BookingWindowConfig {
+	min_notice_min: number | null;
+	max_advance_days: number | null;
+}
 
 export interface RefundTier {
 	hours: number;
@@ -501,6 +525,25 @@ export interface FieldDefinition {
 	options: string[];
 	show_if: FieldShowIf | null;
 	sort: number;
+}
+
+/** One payment of an appointment, with what has been refunded from it, in rials (GET /payments). */
+export interface PaymentRecord {
+	id: number;
+	appointment_id: number;
+	/** "offline" is money staff recorded themselves. */
+	gateway: string;
+	amount: Money;
+	status: 'pending' | 'awaiting_callback' | 'succeeded' | 'failed';
+	ref_id: string | null;
+	refunded: number;
+}
+
+/** GET /payments?appointment_id=: what was paid and given back, in rials. */
+export interface PaymentLedger {
+	items: PaymentRecord[];
+	paid: number;
+	refunded: number;
 }
 
 /** /brand: the owner's own look; "" means the default (T6.1). */

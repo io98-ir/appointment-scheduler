@@ -10,6 +10,8 @@ use Vaqtyar\Modules\Catalog\Contracts\Offer;
 use Vaqtyar\Modules\Catalog\Contracts\ResourceUnit;
 use Vaqtyar\Modules\Catalog\Contracts\StaffOffer;
 use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
+use Vaqtyar\Modules\Scheduling\Contracts\BookingWindow;
+use Vaqtyar\Modules\Scheduling\Contracts\BookingWindows;
 use Vaqtyar\Modules\Scheduling\Contracts\BusySpan;
 use Vaqtyar\Modules\Scheduling\Contracts\Claim;
 use Vaqtyar\Modules\Scheduling\Contracts\ClaimScope;
@@ -73,6 +75,7 @@ final class AvailabilityService implements SlotClaims
         private readonly SlotCache $cache,
         private readonly Clock $clock,
         private readonly AvailabilityDefaults $defaults,
+        private readonly ?BookingWindows $windows = null,
     ) {
         $this->calculator = new AvailabilityCalculator();
     }
@@ -146,7 +149,7 @@ final class AvailabilityService implements SlotClaims
         $rules = null;
         [$day, $open, $staff, $groups] = $this->inputs($request, [$date], $rules)[$date->toString()];
         $pick = $open ? $this->calculator->pick(
-            $request->slot->withWindow($this->defaults->minNoticeMin, $this->defaults->maxAdvanceMin),
+            $request->slot->withWindow($request->minNoticeMin, $request->maxAdvanceMin),
             $day,
             $this->clock->now(),
             $staff,
@@ -173,8 +176,8 @@ final class AvailabilityService implements SlotClaims
     private function days(PreparedQuery $request, LocalDate $from, int $count, bool $untilFirst): array
     {
         $now = $this->clock->now()->getTimestamp();
-        $earliest = $now + $this->defaults->minNoticeMin * 60;
-        $latest = $now + $this->defaults->maxAdvanceMin * 60;
+        $earliest = $now + $request->minNoticeMin * 60;
+        $latest = $now + $request->maxAdvanceMin * 60;
 
         $rules = null;
         $result = [];
@@ -427,7 +430,19 @@ final class AvailabilityService implements SlotClaims
             '',
         ]);
 
-        return new PreparedQuery($location, $staff, $groups, $slot, $longest, $cacheKey);
+        // The service's own window over the site's; applied after the cache, so it is not in the key.
+        $window = $this->windows?->forService($offer->serviceId) ?? BookingWindow::site();
+
+        return new PreparedQuery(
+            $location,
+            $staff,
+            $groups,
+            $slot,
+            $longest,
+            $cacheKey,
+            $window->minNoticeMin ?? $this->defaults->minNoticeMin,
+            $window->maxAdvanceMin ?? $this->defaults->maxAdvanceMin
+        );
     }
 
     /**

@@ -20,6 +20,7 @@ use Vaqtyar\Shared\Domain\InvalidValue;
  *     GET  /my/appointments                    the customer's newest, with what the policy says
  *     POST /my/appointments/{id}/cancel        cancel; `reason` optional
  *     POST /my/appointments/{id}/reschedule    move to `start`
+ *     POST /my/appointments/{id}/pay           the gateway's page to pay what is left of a deposit-paid one
  */
 final class PanelRoutes
 {
@@ -63,6 +64,20 @@ final class PanelRoutes
             $limit
         );
         $this->router->add(
+            '/my/appointments/(?P<id>\d+)/pay',
+            'POST',
+            fn (\WP_REST_Request $request): array => ['payment_url' => ($this->panel)()->payRemainder(
+                self::session($request),
+                self::id($request),
+                self::returnUrl($request->get_param('return_url'))
+            )],
+            Router::hasRestNonce(...),
+            self::ID + [
+                'return_url' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 2000, 'required' => true],
+            ],
+            $limit
+        );
+        $this->router->add(
             '/my/appointments/(?P<id>\d+)/reschedule',
             'POST',
             fn (\WP_REST_Request $request): array => self::change(($this->panel)()->reschedule(
@@ -84,6 +99,7 @@ final class PanelRoutes
         return AppointmentJson::row($item->row) + [
             'cancel' => $item->cancel?->toArray(),
             'reschedule' => $item->reschedule?->toArray(),
+            'due' => $item->due?->toArray(),
         ];
     }
 
@@ -115,6 +131,11 @@ final class PanelRoutes
         $id = $request->get_url_params()['id'] ?? null;
 
         return \is_numeric($id) ? (int) $id : throw new \LogicException('The route pattern makes the id numeric.');
+    }
+
+    private static function returnUrl(mixed $value): string
+    {
+        return \is_string($value) ? $value : '';
     }
 
     private static function reason(mixed $value): ?string

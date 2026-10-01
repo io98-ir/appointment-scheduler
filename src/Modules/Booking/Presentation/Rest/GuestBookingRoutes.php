@@ -8,9 +8,11 @@ use Vaqtyar\Kernel\Rest\RateLimit;
 use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\FieldReader;
+use Vaqtyar\Modules\Booking\Application\TermsReader;
 use Vaqtyar\Modules\Booking\Domain\Field\Field;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
+use Vaqtyar\Shared\Domain\Money;
 use Vaqtyar\Shared\Domain\NotFound;
 
 /**
@@ -18,7 +20,8 @@ use Vaqtyar\Shared\Domain\NotFound;
  *
  *     GET  /nonce                  a fresh REST nonce, since a cached page's is stale
  *     GET  /service-fields         the custom fields a booking of a service asks for
- *     GET  /payment-options        whether the customer can pay online
+ *     GET  /payment-options        whether the customer can pay online, and with `service` and `total`
+ *                                  what the service asks of the booking (deposit, approval)
  *     POST /book                   a hold and the customer's details become an appointment
  *
  * All are public. POST /book needs the nonce and is rate limited per client;
@@ -51,6 +54,7 @@ final class GuestBookingRoutes
      * @param \Closure(): FieldReader $fields Built when a request needs it.
      * @param \Closure(): CatalogApi $catalog Built when a request needs it.
      * @param \Closure(): bool $online Whether a customer can pay online.
+     * @param \Closure(): TermsReader $terms Built when a request needs it.
      */
     public function __construct(
         private readonly Router $router,
@@ -58,6 +62,7 @@ final class GuestBookingRoutes
         private readonly \Closure $fields,
         private readonly \Closure $catalog,
         private readonly \Closure $online,
+        private readonly \Closure $terms,
     ) {
     }
 
@@ -82,9 +87,12 @@ final class GuestBookingRoutes
         $this->router->add(
             '/payment-options',
             'GET',
-            fn (): array => ['online' => ($this->online)()],
+            fn (\WP_REST_Request $request): array => $this->paymentOptions($request),
             Router::ANYONE,
-            [],
+            [
+                'service' => ['type' => 'integer', 'minimum' => 1],
+                'total' => ['type' => 'integer', 'minimum' => 0],
+            ],
             new RateLimit(self::READ_LIMIT, 60)
         );
         $this->router->add(
@@ -95,6 +103,32 @@ final class GuestBookingRoutes
             self::ARGS,
             new RateLimit(self::BOOK_LIMIT, 60)
         );
+    }
+
+    /**
+     * Whether the customer can pay online and, for a service and the price they were shown, what the
+     * service asks of the booking: whether paying online is required, what is charged then (a deposit
+     * may be only part of the price) and whether staff approve it.
+     *
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     * @return array<string, mixed>
+     */
+    private function paymentOptions(\WP_REST_Request $request): array
+    {
+        $options = ['online' => ($this->online)()];
+        $service = $request->get_param('service');
+        if (!\is_int($service)) {
+            return $options;
+        }
+        $total = $request->get_param('total');
+        $price = Money::ofRial(\is_int($total) ? $total : 0);
+        $terms = ($this->terms)()->termsFor($service);
+
+        return $options + [
+            'required' => $terms->deposit->required && !$price->isZero(),
+            'due' => $price->isZero() ? null : $terms->deposit->dueNow($price)->toArray(),
+            'approval' => $terms->approval->required,
+        ];
     }
 
     /**

@@ -20,6 +20,7 @@ use Vaqtyar\Modules\Booking\Application\TermsReader;
 use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\OnlineCheckout;
+use Vaqtyar\Modules\Booking\Application\PolicyBookingWindows;
 use Vaqtyar\Modules\Booking\Application\UnpaidAppointments;
 use Vaqtyar\Modules\Booking\Application\CouponAdminService;
 use Vaqtyar\Modules\Booking\Application\CustomerPanel;
@@ -67,6 +68,7 @@ use Vaqtyar\Modules\Catalog\Contracts\CatalogNames;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
+use Vaqtyar\Modules\Scheduling\Contracts\BookingWindows;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Shared\Domain\Clock;
@@ -141,6 +143,10 @@ final class BookingModule implements Module
         $container->singleton(
             TermsReader::class,
             static fn (Container $c) => new WpdbPolicyReader($c->get(Db::class))
+        );
+        $container->singleton(
+            BookingWindows::class,
+            static fn (Container $c) => new PolicyBookingWindows($c->get(TermsReader::class))
         );
         $container->singleton(
             UnpaidAppointments::class,
@@ -233,7 +239,8 @@ final class BookingModule implements Module
                 $c->get(CustomerApi::class),
                 new WpdbAppointmentQuery($c->get(Db::class)),
                 $c->get(AppointmentService::class),
-                $c->get(Clock::class)
+                $c->get(Clock::class),
+                $c->get(PaymentsApi::class)
             )
         );
         $container->singleton(
@@ -330,7 +337,8 @@ final class BookingModule implements Module
                 static fn (): BookingService => $container->get(BookingService::class),
                 static fn (): FieldReader => new WpdbFieldReader($container->get(Db::class)),
                 static fn (): CatalogApi => $container->get(CatalogApi::class),
-                static fn (): bool => $container->get(OnlineCheckout::class)->available()
+                static fn (): bool => $container->get(OnlineCheckout::class)->available(),
+                static fn (): TermsReader => $container->get(TermsReader::class)
             ))->register();
             (new TimeRuleRoutes(
                 $container->get(Router::class),

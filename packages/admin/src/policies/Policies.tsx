@@ -46,7 +46,7 @@ export function Policies( { serviceId }: { serviceId: number } ) {
 	);
 }
 
-function usePolicy< Config >( type: PolicyType, serviceId: number ) {
+export function usePolicy< Config >( type: PolicyType, serviceId: number ) {
 	const api = useApi();
 
 	return useQuery( {
@@ -58,7 +58,7 @@ function usePolicy< Config >( type: PolicyType, serviceId: number ) {
 	} );
 }
 
-function usePolicySave< Config >( type: PolicyType, serviceId: number ) {
+export function usePolicySave< Config >( type: PolicyType, serviceId: number ) {
 	const api = useApi();
 	const client = useQueryClient();
 	const { createSuccessNotice } = useDispatch( noticesStore );
@@ -279,7 +279,7 @@ function RescheduleForm( { serviceId }: { serviceId: number } ) {
  * @param props.min
  * @param props.onChange
  */
-function NullableIntField( {
+export function NullableIntField( {
 	label,
 	unlimitedLabel,
 	value,

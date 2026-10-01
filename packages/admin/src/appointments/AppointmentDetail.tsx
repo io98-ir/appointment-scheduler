@@ -25,6 +25,7 @@ import { errorMessage } from '../query';
 import { act, actionsFor, type Action } from './actions';
 import { useDigits, useWhen } from '../display';
 import { paymentLabel, statusLabel, useRial } from './AppointmentsPage';
+import { Payments } from './Payments';
 
 function actionLabel( action: Action ): string {
 	const labels: Record< Action, string > = {
@@ -61,6 +62,7 @@ function historyLabel( action: string ): string {
 		cancel: __( 'Cancelled', 'vaqtyar' ),
 		reschedule: __( 'Moved', 'vaqtyar' ),
 		note: __( 'Internal note changed', 'vaqtyar' ),
+		payment: __( 'Payment status changed', 'vaqtyar' ),
 	};
 
 	return labels[ action ] ?? action;
@@ -257,6 +259,16 @@ export function AppointmentDetailPage( { id }: { id: number } ) {
 					</tr>
 				</tbody>
 			</table>
+
+			<Payments
+				appointmentId={ id }
+				total={ appointment.price.total }
+				onChanged={ () =>
+					void client.invalidateQueries( {
+						queryKey: [ '/appointments' ],
+					} )
+				}
+			/>
 
 			{ Object.keys( appointment.answers ).length > 0 && (
 				<>

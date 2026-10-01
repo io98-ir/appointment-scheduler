@@ -18,6 +18,7 @@ use Vaqtyar\Modules\Scheduling\Application\BookingRulesService;
 use Vaqtyar\Modules\Scheduling\Application\BookingRulesStore;
 use Vaqtyar\Modules\Scheduling\Application\HolidayService;
 use Vaqtyar\Modules\Scheduling\Application\ScheduleService;
+use Vaqtyar\Modules\Scheduling\Contracts\BookingWindows;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Modules\Scheduling\Domain\HolidayRepository;
@@ -101,7 +102,8 @@ final class SchedulingModule implements Module
                 $c->get(OccupancyReader::class),
                 $c->get(WpSlotCache::class),
                 $c->get(Clock::class),
-                $c->get(Settings::class)->get(AvailabilitySettings::class)->defaults()
+                $c->get(Settings::class)->get(AvailabilitySettings::class)->defaults(),
+                $c->get(BookingWindows::class)
             )
         );
     }

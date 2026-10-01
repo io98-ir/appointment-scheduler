@@ -9,6 +9,7 @@ import { PaymentSettingsForm } from '../setup/PaymentSettingsForm';
 import { SmsSettingsForm } from '../setup/SmsSettingsForm';
 import { TimeRules } from '../timeRules/TimeRules';
 import { Policies } from './Policies';
+import { Terms } from './Terms';
 
 /**
  * Global settings: the default cancellation and reschedule policy
@@ -41,6 +42,7 @@ export function SettingsPage() {
 				<PaymentSettingsForm />
 			</section>
 			<Policies serviceId={ 0 } />
+			<Terms serviceId={ 0 } />
 			<Fields scope="global" />
 			<Coupons />
 			<TimeRules />
