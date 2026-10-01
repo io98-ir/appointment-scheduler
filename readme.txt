@@ -3,7 +3,7 @@ Contributors: io98
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: booking, appointments, scheduling, jalali, iran
@@ -64,6 +64,9 @@ The plugin trusts only the connecting address. Return the visitor's real address
 
 == Changelog ==
 
+= 1.2.0 =
+* Deposits and required online payment, manual approval and booking window per service, payments and refunds in the admin, pay the rest from the customer panel, and a waiting list. See CHANGELOG.md.
+
 = 1.1.0 =
 * A light, minimal admin look with a palette you can change, Jalali or Gregorian calendar, Persian or English screens, booking rules, add to calendar. See CHANGELOG.md.
 
@@ -71,6 +74,9 @@ The plugin trusts only the connecting address. Return the visitor's real address
 * First release.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Adds the waiting-list table the first time the plugin loads after updating. Nothing changes for existing services until you set a deposit, approval or booking window on them.
 
 = 1.1.0 =
 The plugin's own screens now follow the language and calendar chosen under Settings, Language and calendar (the site's language and the Jalali calendar until you choose). Check it after updating.

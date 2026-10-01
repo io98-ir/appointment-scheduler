@@ -30,6 +30,7 @@ import { NotFound } from './NotFound';
 import { SetupWizard } from './setup/SetupWizard';
 import { SettingsPage } from './policies/SettingsPage';
 import { StatusPage } from './status/StatusPage';
+import { WaitlistPage } from './waitlist/WaitlistPage';
 import { DashboardPage } from './reports/DashboardPage';
 import { ReportsPage } from './reports/ReportsPage';
 import { errorMessage } from './query';
@@ -64,6 +65,11 @@ const SECTIONS: Section[] = [
 		path: '/appointments',
 		title: () => __( 'Appointments', 'vaqtyar' ),
 		Page: AppointmentsPage,
+	},
+	{
+		path: '/waitlist',
+		title: () => __( 'Waiting list', 'vaqtyar' ),
+		Page: WaitlistPage,
 	},
 	{
 		path: '/customers',

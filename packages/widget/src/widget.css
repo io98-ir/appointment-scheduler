@@ -64,7 +64,12 @@
 	font-weight: 600;
 }
 
-.vqy-widget__day--full,
+.vqy-widget__day--full {
+	background: transparent;
+	opacity: 0.6;
+	text-decoration: line-through;
+}
+
 .vqy-widget__day--closed,
 .vqy-widget__day--unknown {
 	background: transparent;

@@ -225,7 +225,7 @@ for ( const locale of LOCALES ) {
 	}
 	missing += untranslated.length;
 	console.log( `${ locale }: ${ untranslated.length } of ${ entries.length } strings untranslated` );
-	for ( const e of untranslated.slice( 0, 20 ) ) {
+	for ( const e of untranslated.slice( 0, 200 ) ) {
 		console.log( `  - ${ e.msgid }` );
 	}
 	if ( args.has( '--build' ) ) {

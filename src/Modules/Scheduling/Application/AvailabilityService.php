@@ -15,6 +15,7 @@ use Vaqtyar\Modules\Scheduling\Contracts\BookingWindows;
 use Vaqtyar\Modules\Scheduling\Contracts\BusySpan;
 use Vaqtyar\Modules\Scheduling\Contracts\Claim;
 use Vaqtyar\Modules\Scheduling\Contracts\ClaimScope;
+use Vaqtyar\Modules\Scheduling\Contracts\FreeStarts;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Modules\Scheduling\Domain\Availability\AvailabilityCalculator;
@@ -55,7 +56,7 @@ use Vaqtyar\Shared\Domain\Slug;
  * applied on every read. Nothing here decides a booking: the hold re-checks
  * the database under locks (ADR-004) through claim(), which skips the cache.
  */
-final class AvailabilityService implements SlotClaims
+final class AvailabilityService implements SlotClaims, FreeStarts
 {
     public const MAX_DAYS = 62;
 
@@ -78,6 +79,16 @@ final class AvailabilityService implements SlotClaims
         private readonly ?BookingWindows $windows = null,
     ) {
         $this->calculator = new AvailabilityCalculator();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function startsOn(AvailabilityQuery $query, LocalDate $date): array
+    {
+        $day = $this->day($query, $date)->days[0] ?? null;
+
+        return null === $day ? [] : \array_map(static fn (Slot $slot): int => $slot->start, $day->slots);
     }
 
     /**

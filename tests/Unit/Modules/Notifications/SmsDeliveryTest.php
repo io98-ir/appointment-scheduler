@@ -13,6 +13,9 @@ use Vaqtyar\Modules\Notifications\Application\SmsChannel;
 use Vaqtyar\Modules\Notifications\Application\SmsConfig;
 use Vaqtyar\Modules\Notifications\Application\SmsProvider;
 use Vaqtyar\Modules\Notifications\Application\SmsSender;
+use Vaqtyar\Modules\Notifications\Application\WaitlistSms;
+use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
+use Vaqtyar\Modules\Customers\Contracts\CustomerSummary;
 use Vaqtyar\Modules\Notifications\Domain\SmsNumber;
 use Vaqtyar\Modules\Notifications\Domain\SmsPattern;
 use Vaqtyar\Modules\Notifications\Infrastructure\Sms\SmsProviders;
@@ -116,6 +119,94 @@ final class SmsDeliveryTest extends TestCase
         self::assertSame([], $this->calls->getArrayCopy());
     }
 
+    public function testTheWaitingListMessageNamesTheDayAndLinksToTheBookingPage(): void
+    {
+        /** @var \ArrayObject<int, string> $texts */
+        $texts = new \ArrayObject();
+        $provider = new class ($texts) implements SmsProvider {
+            /** @param \ArrayObject<int, string> $texts */
+            public function __construct(private readonly \ArrayObject $texts)
+            {
+            }
+
+            public function id(): string
+            {
+                return 'a';
+            }
+
+            public function send(string $mobile, string $text): string
+            {
+                $this->texts[] = $mobile . ' ' . $text;
+
+                return 'ref';
+            }
+
+            /**
+             * @param array<string, string> $args
+             */
+            public function sendPattern(string $mobile, string $code, array $args): string
+            {
+                return 'ref';
+            }
+        };
+        $sender = new SmsSender([$provider]);
+        $sms = new WaitlistSms(
+            static fn (): SmsSender => $sender,
+            $this->directory(self::PHONE),
+            static fn (int $start): string => 'day-' . $start
+        );
+
+        self::assertTrue($sms->send(5, 1_800_000_000, 'https://site.test/book/'));
+        self::assertSame(
+            ['09121234567 برای روز day-1800000000 وقت خالی شد. برای رزرو: https://site.test/book/'],
+            $texts->getArrayCopy()
+        );
+    }
+
+    public function testNothingIsSentToACustomerWithoutAPhoneOrWithoutAProvider(): void
+    {
+        $sender = new SmsSender([$this->provider('a')]);
+        $none = new SmsSender([]);
+
+        $date = static fn (int $start): string => '';
+        $noPhone = new WaitlistSms(static fn (): SmsSender => $sender, $this->directory(null), $date);
+        $noProvider = new WaitlistSms(static fn (): SmsSender => $none, $this->directory(self::PHONE), $date);
+
+        self::assertFalse($noPhone->send(5, 1, 'https://x.test/'));
+        self::assertFalse($noProvider->send(5, 1, 'https://x.test/'));
+        self::assertSame([], $this->calls->getArrayCopy());
+    }
+
+    private function directory(?string $phone): CustomerDirectory
+    {
+        return new class ($phone) implements CustomerDirectory {
+            public function __construct(private readonly ?string $phone)
+            {
+            }
+
+            /**
+             * @param list<int> $ids
+             * @return array<int, CustomerSummary>
+             */
+            public function summaries(array $ids): array
+            {
+                $found = [];
+                foreach ($ids as $id) {
+                    $found[$id] = new CustomerSummary($id, 'Sara', $this->phone, null === $this->phone);
+                }
+
+                return $found;
+            }
+
+            /**
+             * @return list<int>
+             */
+            public function matching(string $query, int $limit): array
+            {
+                return [];
+            }
+        };
+    }
     public function testOnlyProvidersWithTheirSecretsAndSenderLineAreBuilt(): void
     {
         $secrets = new FakeSecrets(['sms_kavenegar_key' => 'k', 'sms_ippanel_key' => 'i', 'sms_smsir_key' => 's']);

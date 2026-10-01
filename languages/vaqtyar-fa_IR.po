@@ -1805,3 +1805,150 @@ msgstr "کم‌مشغله‌ترین پرسنل آن روز"
 
 msgid "When the customer does not choose staff"
 msgstr "وقتی مشتری پرسنل را انتخاب نکند"
+
+msgid "A deposit, a fixed amount"
+msgstr "بیعانه، مبلغ ثابت"
+
+msgid "A deposit, a percent of the price"
+msgstr "بیعانه، درصدی از قیمت"
+
+msgid "Amount"
+msgstr "مبلغ"
+
+msgid "Approval"
+msgstr "تأیید"
+
+msgid "Asked"
+msgstr "زمان درخواست"
+
+msgid "Booking window"
+msgstr "بازهٔ رزرو"
+
+msgid "Customers must pay online to book"
+msgstr "مشتری باید برای رزرو آنلاین پرداخت کند"
+
+msgid "Customers who found a day full and asked to be told when a time opens. The plugin checks every few minutes and sends one SMS to each (it needs an SMS provider in Notifications). Nothing is reserved for them."
+msgstr "مشتریانی که روز را پر دیدند و خواستند با خالی‌شدن وقت خبر بگیرند. افزونه هر چند دقیقه یک بار بررسی می‌کند و برای هر کدام یک پیامک می‌فرستد (به سرویس پیامک در بخش اعلان‌ها نیاز دارد). چیزی برای آن‌ها رزرو نمی‌شود."
+
+msgid "Deposit amount (IRR)"
+msgstr "مبلغ بیعانه (ریال)"
+
+msgid "Deposit percent"
+msgstr "درصد بیعانه"
+
+msgid "Done. We will message you if a time opens on this day."
+msgstr "ثبت شد. اگر در این روز وقتی خالی شود پیامک می‌فرستیم."
+
+msgid "Failed"
+msgstr "ناموفق"
+
+msgid "Gateway"
+msgstr "درگاه"
+
+msgid "Left to pay"
+msgstr "باقی‌مانده"
+
+msgid "Left to pay: %s IRR"
+msgstr "باقی‌مانده برای پرداخت: %s ریال"
+
+msgid "Money received (IRR)"
+msgstr "مبلغ دریافت‌شده (ریال)"
+
+msgid "Nobody is waiting."
+msgstr "کسی در انتظار نیست."
+
+msgid "Not set: nothing is asked."
+msgstr "تنظیم نشده: چیزی خواسته نمی‌شود."
+
+msgid "Nothing has been paid."
+msgstr "هنوز پرداختی ثبت نشده است."
+
+msgid "Pay the deposit (%s IRR) and book"
+msgstr "پرداخت بیعانه (%s ریال) و رزرو"
+
+msgid "Pay the rest"
+msgstr "پرداخت باقی‌مانده"
+
+msgid "Payment recorded."
+msgstr "پرداخت ثبت شد."
+
+msgid "Payment status changed"
+msgstr "وضعیت پرداخت تغییر کرد"
+
+msgid "Payment when booking online"
+msgstr "پرداخت هنگام رزرو آنلاین"
+
+msgid "Payment, approval and booking window"
+msgstr "پرداخت، تأیید و بازهٔ رزرو"
+
+msgid "Payments"
+msgstr "پرداخت‌ها"
+
+msgid "Record a refund"
+msgstr "ثبت بازپرداخت"
+
+msgid "Record payment"
+msgstr "ثبت پرداخت"
+
+msgid "Recorded by staff"
+msgstr "ثبت‌شده توسط کارکنان"
+
+msgid "Refund amount (IRR)"
+msgstr "مبلغ بازپرداخت (ریال)"
+
+msgid "Refund recorded."
+msgstr "بازپرداخت ثبت شد."
+
+msgid "Removed."
+msgstr "حذف شد."
+
+msgid "Same minimum notice as the site"
+msgstr "حداقل زمان قبل از رزرو مثل تنظیم سایت"
+
+msgid "Same opening time as the site"
+msgstr "بازهٔ رزرو مثل تنظیم سایت"
+
+msgid "Save refund"
+msgstr "ذخیرهٔ بازپرداخت"
+
+msgid "Staff approve each booking made from the booking form"
+msgstr "کارکنان هر رزرو فرم رزرو را تأیید می‌کنند"
+
+msgid "Tell me when a time opens"
+msgstr "وقتی وقتی خالی شد خبرم کن"
+
+msgid "The customer pays online"
+msgstr "مشتری آنلاین پرداخت می‌کند"
+
+msgid "The time is held at once; the booking is confirmed when you approve it from the appointment. Bookings you make yourself are never held back."
+msgstr "وقت همان لحظه نگه داشته می‌شود و رزرو وقتی از صفحهٔ نوبت تأیید کنید قطعی می‌شود. رزروهایی که خودتان ثبت می‌کنید هیچ‌وقت منتظر تأیید نمی‌مانند."
+
+msgid "The whole price"
+msgstr "کل قیمت"
+
+msgid "This booking is confirmed once the staff approve it."
+msgstr "این رزرو پس از تأیید کارکنان قطعی می‌شود."
+
+msgid "This day is full. Leave your number and we will message you if a time opens. Nothing is reserved for you: whoever books it first has it."
+msgstr "این روز پر است. شمارهٔ خود را بگذارید تا اگر وقتی خالی شد پیامک بفرستیم. چیزی برای شما رزرو نمی‌شود: هر کس زودتر رزرو کند، وقت را می‌گیرد."
+
+msgid "This records money you received yourself (cash, a card machine, a transfer). A refund is recorded after you have paid it back, in the gateway’s panel or by transfer: nothing is sent from here."
+msgstr "این بخش پولی را ثبت می‌کند که خودتان دریافت کرده‌اید (نقد، کارتخوان، کارت‌به‌کارت). بازپرداخت را بعد از آنکه پول را برگرداندید، در پنل درگاه یا با واریز، اینجا ثبت کنید: از اینجا چیزی ارسال نمی‌شود."
+
+msgid "This service has to be paid online, and online payment is not available now."
+msgstr "این خدمت باید آنلاین پرداخت شود و پرداخت آنلاین اکنون در دسترس نیست."
+
+msgid "Told"
+msgstr "خبر داده شد"
+
+msgid "Waiting for the gateway"
+msgstr "در انتظار درگاه"
+
+msgid "Waiting list"
+msgstr "لیست انتظار"
+
+msgid "Without it, paying online stays their choice. The rest of a deposit is paid at the place, or from the customer panel."
+msgstr "بدون آن، پرداخت آنلاین به انتخاب مشتری می‌ماند. باقی‌مانده بیعانه در محل یا از پنل مشتری پرداخت می‌شود."
+
+msgid "Your request is received. It is confirmed once the staff approve it."
+msgstr "درخواست شما ثبت شد. پس از تأیید کارکنان قطعی می‌شود."

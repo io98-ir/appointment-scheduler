@@ -13,7 +13,7 @@ msgstr ""
 msgid "%1$d cancelled, %2$d no-shows, cancellation rate %3$s%%."
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:373
+#: packages/widget/src/Widget.tsx:374
 msgid "%1$s — %2$d min — %3$s IRR"
 msgstr ""
 
@@ -154,6 +154,7 @@ msgstr ""
 
 #: packages/admin/src/catalog/CatalogList.tsx:98
 #: packages/admin/src/notifications/NotificationsPage.tsx:265
+#: packages/admin/src/waitlist/WaitlistPage.tsx:119
 msgid "Actions"
 msgstr ""
 
@@ -298,7 +299,7 @@ msgstr ""
 msgid "Answers"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:429
+#: packages/widget/src/Widget.tsx:430
 msgid "Any available"
 msgstr ""
 
@@ -361,7 +362,7 @@ msgstr ""
 msgid "Appointment updated."
 msgstr ""
 
-#: packages/admin/src/App.tsx:65
+#: packages/admin/src/App.tsx:66
 #: packages/admin/src/customers/CustomerHistory.tsx:36
 #: packages/admin/src/reports/ReportsPage.tsx:231
 #: packages/admin/src/reports/ReportsPage.tsx:283
@@ -386,6 +387,10 @@ msgstr ""
 
 #: packages/admin/src/status/StatusPage.tsx:219
 msgid "Area"
+msgstr ""
+
+#: packages/admin/src/waitlist/WaitlistPage.tsx:116
+msgid "Asked"
 msgstr ""
 
 #: packages/shared/src/month.ts:116
@@ -437,8 +442,8 @@ msgstr ""
 msgid "Book"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:284
-#: packages/widget/src/Widget.tsx:287
+#: packages/widget/src/Widget.tsx:285
+#: packages/widget/src/Widget.tsx:288
 msgid "Book an appointment"
 msgstr ""
 
@@ -522,7 +527,7 @@ msgid "by the customer"
 msgstr ""
 
 #: assets/blocks.js:58
-#: packages/admin/src/App.tsx:60
+#: packages/admin/src/App.tsx:61
 #: packages/admin/src/DateField.tsx:170
 #: packages/admin/src/holidays/HolidaysPage.tsx:71
 #: packages/admin/src/setup/DisplayForm.tsx:77
@@ -616,11 +621,11 @@ msgstr ""
 msgid "Choose a group"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:403
+#: packages/widget/src/Widget.tsx:404
 msgid "Choose a location"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:346
+#: packages/widget/src/Widget.tsx:347
 msgid "Choose a service"
 msgstr ""
 
@@ -687,7 +692,7 @@ msgstr ""
 msgid "Confirmed"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:629
+#: packages/widget/src/Widget.tsx:646
 msgid "Continue"
 msgstr ""
 
@@ -704,7 +709,7 @@ msgstr ""
 msgid "Coupon code"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:614
+#: packages/widget/src/Widget.tsx:631
 msgid "Coupon code (optional)"
 msgstr ""
 
@@ -728,6 +733,7 @@ msgstr ""
 #: packages/admin/src/appointments/AppointmentsPage.tsx:225
 #: packages/admin/src/calendar/QuickBook.tsx:338
 #: packages/admin/src/notifications/NotificationsPage.tsx:60
+#: packages/admin/src/waitlist/WaitlistPage.tsx:112
 msgid "Customer"
 msgstr ""
 
@@ -739,7 +745,7 @@ msgstr ""
 msgid "Customer note"
 msgstr ""
 
-#: packages/admin/src/App.tsx:70
+#: packages/admin/src/App.tsx:76
 msgid "Customers"
 msgstr ""
 
@@ -751,11 +757,18 @@ msgstr ""
 msgid "Customers must pay online to book"
 msgstr ""
 
-#: packages/admin/src/App.tsx:211
+#: packages/admin/src/waitlist/WaitlistPage.tsx:97
+msgid ""
+"Customers who found a day full and asked to be told when a time opens. The "
+"plugin checks every few minutes and sends one SMS to each (it needs an SMS "
+"provider in Notifications). Nothing is reserved for them."
+msgstr ""
+
+#: packages/admin/src/App.tsx:217
 msgid "Dark"
 msgstr ""
 
-#: packages/admin/src/App.tsx:55
+#: packages/admin/src/App.tsx:56
 msgid "Dashboard"
 msgstr ""
 
@@ -782,6 +795,7 @@ msgid ""
 msgstr ""
 
 #: packages/admin/src/calendar/CalendarPage.tsx:214
+#: packages/admin/src/waitlist/WaitlistPage.tsx:114
 msgid "Day"
 msgstr ""
 
@@ -861,7 +875,11 @@ msgstr ""
 msgid "Discount value"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:358
+#: packages/widget/src/WaitlistForm.tsx:52
+msgid "Done. We will message you if a time opens on this day."
+msgstr ""
+
+#: packages/widget/src/Widget.tsx:359
 msgid "Duration"
 msgstr ""
 
@@ -918,6 +936,7 @@ msgstr ""
 
 #: packages/admin/src/appointments/AppointmentDetail.tsx:59
 #: packages/admin/src/appointments/AppointmentsPage.tsx:39
+#: packages/admin/src/waitlist/WaitlistPage.tsx:35
 #: packages/widget/src/Panel.tsx:73
 msgid "Expired"
 msgstr ""
@@ -962,7 +981,7 @@ msgstr ""
 msgid "Finish"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:495
+#: packages/widget/src/Widget.tsx:496
 msgid "First available"
 msgstr ""
 
@@ -1054,7 +1073,7 @@ msgstr ""
 msgid "Holiday calendar"
 msgstr ""
 
-#: packages/admin/src/App.tsx:106
+#: packages/admin/src/App.tsx:112
 msgid "Holidays"
 msgstr ""
 
@@ -1208,20 +1227,21 @@ msgstr ""
 msgid "Lets customers book an appointment."
 msgstr ""
 
-#: packages/admin/src/App.tsx:210
+#: packages/admin/src/App.tsx:216
 msgid "Light"
 msgstr ""
 
 #: packages/widget/src/Panel.tsx:285
 #: packages/widget/src/Panel.tsx:520
-#: packages/widget/src/Widget.tsx:323
-#: packages/widget/src/Widget.tsx:557
+#: packages/widget/src/WaitlistForm.tsx:60
+#: packages/widget/src/Widget.tsx:324
+#: packages/widget/src/Widget.tsx:561
 msgid "Loading…"
 msgstr ""
 
 #: packages/admin/src/calendar/CalendarPage.tsx:226
 #: packages/admin/src/catalog/fields.tsx:125
-#: packages/widget/src/Widget.tsx:388
+#: packages/widget/src/Widget.tsx:389
 msgid "Location"
 msgstr ""
 
@@ -1237,7 +1257,7 @@ msgstr ""
 msgid "Location name"
 msgstr ""
 
-#: packages/admin/src/App.tsx:96
+#: packages/admin/src/App.tsx:102
 msgid "Locations"
 msgstr ""
 
@@ -1252,7 +1272,7 @@ msgid ""
 msgstr ""
 
 #: src/Modules/Admin/Presentation/PluginLinks.php:53
-#: packages/admin/src/App.tsx:360
+#: packages/admin/src/App.tsx:366
 msgid "Made by %s"
 msgstr ""
 
@@ -1313,6 +1333,7 @@ msgstr ""
 
 #: packages/widget/src/BookingFlow.tsx:428
 #: packages/widget/src/Panel.tsx:165
+#: packages/widget/src/WaitlistForm.tsx:111
 msgid "Mobile number"
 msgstr ""
 
@@ -1418,7 +1439,7 @@ msgid "Next"
 msgstr ""
 
 #: packages/admin/src/DateField.tsx:199
-#: packages/widget/src/Widget.tsx:487
+#: packages/widget/src/Widget.tsx:488
 msgid "Next month"
 msgstr ""
 
@@ -1458,12 +1479,12 @@ msgstr ""
 msgid "No free start on this day."
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:250
+#: packages/widget/src/Widget.tsx:251
 msgid "No free time in the next two months."
 msgstr ""
 
 #: packages/widget/src/Panel.tsx:527
-#: packages/widget/src/Widget.tsx:566
+#: packages/widget/src/Widget.tsx:570
 msgid "No free time on this day."
 msgstr ""
 
@@ -1494,6 +1515,10 @@ msgstr ""
 #: packages/admin/src/appointments/AppointmentDetail.tsx:61
 #: packages/admin/src/appointments/AppointmentsPage.tsx:37
 msgid "No-show"
+msgstr ""
+
+#: packages/admin/src/waitlist/WaitlistPage.tsx:128
+msgid "Nobody is waiting."
 msgstr ""
 
 #: packages/admin/src/catalog/ServicesPage.tsx:196
@@ -1537,7 +1562,7 @@ msgstr ""
 msgid "Nothing booked in this range."
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:325
+#: packages/widget/src/Widget.tsx:326
 msgid "Nothing can be booked right now."
 msgstr ""
 
@@ -1557,7 +1582,7 @@ msgstr ""
 msgid "Nothing planned."
 msgstr ""
 
-#: packages/admin/src/App.tsx:117
+#: packages/admin/src/App.tsx:123
 msgid "Notifications"
 msgstr ""
 
@@ -1661,6 +1686,7 @@ msgstr ""
 
 #: packages/admin/src/appointments/AppointmentsPage.tsx:282
 #: packages/admin/src/customers/CustomerList.tsx:231
+#: packages/admin/src/waitlist/WaitlistPage.tsx:206
 msgid "Page %1$d of %2$d (%3$d)"
 msgstr ""
 
@@ -1761,11 +1787,12 @@ msgstr ""
 #: packages/admin/src/appointments/AppointmentsPage.tsx:277
 #: packages/admin/src/calendar/CalendarPage.tsx:184
 #: packages/admin/src/customers/CustomerList.tsx:226
+#: packages/admin/src/waitlist/WaitlistPage.tsx:201
 msgid "Previous"
 msgstr ""
 
 #: packages/admin/src/DateField.tsx:187
-#: packages/widget/src/Widget.tsx:477
+#: packages/widget/src/Widget.tsx:478
 msgid "Previous month"
 msgstr ""
 
@@ -1866,7 +1893,11 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: packages/admin/src/App.tsx:101
+#: packages/admin/src/waitlist/WaitlistPage.tsx:67
+msgid "Removed."
+msgstr ""
+
+#: packages/admin/src/App.tsx:107
 msgid "Reports"
 msgstr ""
 
@@ -1890,7 +1921,7 @@ msgstr ""
 msgid "Reserving your time…"
 msgstr ""
 
-#: packages/admin/src/App.tsx:91
+#: packages/admin/src/App.tsx:97
 #: packages/admin/src/catalog/ServicesPage.tsx:476
 msgid "Resources"
 msgstr ""
@@ -2006,11 +2037,11 @@ msgstr ""
 msgid "Search by name, phone or email"
 msgstr ""
 
-#: packages/admin/src/App.tsx:317
+#: packages/admin/src/App.tsx:323
 msgid "Sections"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:601
+#: packages/widget/src/Widget.tsx:618
 msgid "Selected: %1$s at %2$s"
 msgstr ""
 
@@ -2054,7 +2085,7 @@ msgstr ""
 msgid "Service"
 msgstr ""
 
-#: packages/admin/src/App.tsx:80
+#: packages/admin/src/App.tsx:86
 msgid "Service categories"
 msgstr ""
 
@@ -2066,7 +2097,7 @@ msgstr ""
 msgid "Service name"
 msgstr ""
 
-#: packages/admin/src/App.tsx:75
+#: packages/admin/src/App.tsx:81
 #: packages/admin/src/catalog/screens.tsx:396
 msgid "Services"
 msgstr ""
@@ -2082,11 +2113,11 @@ msgstr ""
 
 #: src/Modules/Admin/Presentation/PluginLinks.php:34
 #: assets/blocks.js:108
-#: packages/admin/src/App.tsx:122
+#: packages/admin/src/App.tsx:128
 msgid "Settings"
 msgstr ""
 
-#: packages/admin/src/App.tsx:111
+#: packages/admin/src/App.tsx:117
 msgid "Setup"
 msgstr ""
 
@@ -2178,7 +2209,7 @@ msgstr ""
 msgid "Sort"
 msgstr ""
 
-#: packages/admin/src/App.tsx:86
+#: packages/admin/src/App.tsx:92
 #: packages/admin/src/appointments/AppointmentDetail.tsx:223
 #: packages/admin/src/appointments/AppointmentsPage.tsx:189
 #: packages/admin/src/appointments/AppointmentsPage.tsx:227
@@ -2252,11 +2283,11 @@ msgstr ""
 msgid "Sunday"
 msgstr ""
 
-#: packages/admin/src/App.tsx:209
+#: packages/admin/src/App.tsx:215
 msgid "System"
 msgstr ""
 
-#: packages/admin/src/App.tsx:127
+#: packages/admin/src/App.tsx:133
 msgid "System status"
 msgstr ""
 
@@ -2270,6 +2301,10 @@ msgstr ""
 
 #: packages/admin/src/palette.ts:21
 msgid "Teal"
+msgstr ""
+
+#: packages/widget/src/WaitlistForm.tsx:150
+msgid "Tell me when a time opens"
 msgstr ""
 
 #: packages/admin/src/setup/SmsSettingsForm.tsx:113
@@ -2291,7 +2326,7 @@ msgid ""
 msgstr ""
 
 #: packages/widget/src/Panel.tsx:154
-#: packages/widget/src/Widget.tsx:320
+#: packages/widget/src/Widget.tsx:321
 msgid "The booking form is not configured."
 msgstr ""
 
@@ -2345,7 +2380,7 @@ msgstr ""
 msgid "The location is created."
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:307
+#: packages/widget/src/Widget.tsx:308
 msgid ""
 "The payment was not completed, so the appointment was not booked. You can "
 "try again."
@@ -2411,7 +2446,7 @@ msgstr ""
 msgid "The whole price"
 msgstr ""
 
-#: packages/admin/src/App.tsx:218
+#: packages/admin/src/App.tsx:224
 msgid "Theme"
 msgstr ""
 
@@ -2429,6 +2464,12 @@ msgstr ""
 
 #: packages/widget/src/Panel.tsx:101
 msgid "This change is not allowed now."
+msgstr ""
+
+#: packages/widget/src/WaitlistForm.tsx:96
+msgid ""
+"This day is full. Leave your number and we will message you if a time "
+"opens. Nothing is reserved for you: whoever books it first has it."
 msgstr ""
 
 #: packages/admin/src/calendar/CalendarPage.tsx:250
@@ -2532,6 +2573,10 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
+#: packages/admin/src/waitlist/WaitlistPage.tsx:33
+msgid "Told"
+msgstr ""
+
 #: src/Kernel/Rest/ApiError.php:36
 msgid "Too many requests. Please wait a moment and try again."
 msgstr ""
@@ -2601,6 +2646,7 @@ msgid "Versions"
 msgstr ""
 
 #: packages/admin/src/status/StatusPage.tsx:185
+#: packages/admin/src/waitlist/WaitlistPage.tsx:31
 msgid "Waiting"
 msgstr ""
 
@@ -2609,11 +2655,15 @@ msgstr ""
 msgid "Waiting for the gateway"
 msgstr ""
 
+#: packages/admin/src/App.tsx:71
+msgid "Waiting list"
+msgstr ""
+
 #: packages/widget/src/BookingFlow.tsx:383
 msgid "We are holding this time for you: %s"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:299
+#: packages/widget/src/Widget.tsx:300
 msgid ""
 "We are still confirming your payment. Your appointment will be booked as "
 "soon as it arrives."
@@ -2653,7 +2703,7 @@ msgstr ""
 msgid "When the customer does not choose staff"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:416
+#: packages/widget/src/Widget.tsx:417
 msgid "With"
 msgstr ""
 
@@ -2707,7 +2757,7 @@ msgstr ""
 msgid "Your brand"
 msgstr ""
 
-#: packages/widget/src/Widget.tsx:291
+#: packages/widget/src/Widget.tsx:292
 msgid "Your payment was received and your appointment is booked."
 msgstr ""
 

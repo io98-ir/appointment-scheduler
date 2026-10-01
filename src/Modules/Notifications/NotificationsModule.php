@@ -14,6 +14,7 @@ use Vaqtyar\Kernel\SecretStore;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Kernel\Switchable;
 use Vaqtyar\Modules\Booking\Contracts\AppointmentFactsReader;
+use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
 use Vaqtyar\Modules\Notifications\Application\DeliveryFailed;
 use Vaqtyar\Modules\Notifications\Application\NotificationAdminService;
 use Vaqtyar\Modules\Notifications\Application\NotificationChannel;
@@ -28,6 +29,7 @@ use Vaqtyar\Modules\Notifications\Application\SmsHttp;
 use Vaqtyar\Modules\Notifications\Application\SmsSecrets;
 use Vaqtyar\Modules\Notifications\Application\SmsSender;
 use Vaqtyar\Modules\Notifications\Application\TemplateRepository;
+use Vaqtyar\Modules\Notifications\Application\WaitlistSms;
 use Vaqtyar\Modules\Notifications\Domain\Preferences;
 use Vaqtyar\Modules\Notifications\Domain\QuietHours;
 use Vaqtyar\Modules\Notifications\Domain\TemplateRenderer;
@@ -127,6 +129,14 @@ final class NotificationsModule implements Switchable
             static fn (): SmsSender => self::smsSender($c),
             $c->get(SmsConfigStore::class)
         ));
+        $container->singleton(WaitlistSms::class, static fn (Container $c) => new WaitlistSms(
+            static fn (): SmsSender => self::smsSender($c),
+            $c->get(CustomerDirectory::class),
+            static fn (int $start): string => $c->get(DateFormatter::class)->longDate(
+                new \DateTimeImmutable('@' . $start),
+                \wp_timezone()
+            )
+        ));
     }
 
     /**
@@ -189,6 +199,31 @@ final class NotificationsModule implements Switchable
                 ]);
             }
         }, 10, 2);
+        // A time opened for a customer on the waiting list: the booking module only announces it.
+        \add_action(
+            Hooks::name('waitlist/slot_opened'),
+            static function (
+                mixed $customerId,
+                mixed $day,
+                mixed $start,
+                mixed $variant,
+                mixed $pageUrl
+            ) use ($container): void {
+                if (!\is_int($customerId) || !\is_int($start) || !\is_string($pageUrl)) {
+                    return;
+                }
+                try {
+                    $container->get(WaitlistSms::class)->send($customerId, $start, $pageUrl);
+                } catch (DeliveryFailed $e) {
+                    $container->get(Logger::class)->error('sms', 'The waiting-list message could not be sent.', [
+                        'customer_id' => $customerId,
+                        'reason' => $e->getMessage(),
+                    ]);
+                }
+            },
+            10,
+            5
+        );
         \add_action('rest_api_init', static function () use ($container): void {
             $router = $container->get(Router::class);
             (new NotificationRoutes(

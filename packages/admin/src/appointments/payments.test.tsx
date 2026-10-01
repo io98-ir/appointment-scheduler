@@ -3,7 +3,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiClient, type PaymentLedger } from '@vaqtyar/shared';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+	type Mock,
+} from 'vitest';
 
 import { ApiContext } from '../api';
 import { Payments } from './Payments';
@@ -49,11 +57,11 @@ describe( 'the payments of an appointment', () => {
 	let container: HTMLElement;
 	let root: Root;
 	let posts: Array< { path: string; body: unknown } >;
-	let changed: ReturnType< typeof vi.fn >;
+	let changed: Mock< () => void >;
 
 	beforeEach( async () => {
 		posts = [];
-		changed = vi.fn();
+		changed = vi.fn< () => void >();
 		container = document.createElement( 'div' );
 		document.body.append( container );
 		root = createRoot( container );

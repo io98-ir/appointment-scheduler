@@ -22,6 +22,7 @@ use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\OnlineCheckout;
 use Vaqtyar\Modules\Booking\Application\PolicyBookingWindows;
 use Vaqtyar\Modules\Booking\Application\UnpaidAppointments;
+use Vaqtyar\Modules\Booking\Application\WaitlistService;
 use Vaqtyar\Modules\Booking\Application\CouponAdminService;
 use Vaqtyar\Modules\Booking\Application\CustomerPanel;
 use Vaqtyar\Modules\Booking\Application\FieldAdminService;
@@ -32,11 +33,13 @@ use Vaqtyar\Modules\Booking\Application\PolicyAdminService;
 use Vaqtyar\Modules\Booking\Application\ReportService;
 use Vaqtyar\Modules\Booking\Application\TimeRuleAdminService;
 use Vaqtyar\Modules\Booking\Domain\Field\FieldRepository;
+use Vaqtyar\Modules\Booking\Infrastructure\HookWaitlistNotifier;
 use Vaqtyar\Modules\Booking\Infrastructure\Jobs\ActionSchedulerBookingJobs;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\AddAppointmentStartIndex;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateBookingTables;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateOccupanciesTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateResourceDayLocksTable;
+use Vaqtyar\Modules\Booking\Infrastructure\Migrations\CreateWaitlistTable;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbAppointmentRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbCouponRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbFieldReader;
@@ -47,6 +50,7 @@ use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPolicyReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPolicyRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbPricingReader;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbResourceLocker;
+use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbWaitlistRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\Persistence\WpdbTimeRuleRepository;
 use Vaqtyar\Modules\Booking\Infrastructure\PricingSettings;
 use Vaqtyar\Modules\Booking\Infrastructure\Query\WpdbAppointmentQuery;
@@ -62,6 +66,7 @@ use Vaqtyar\Modules\Booking\Presentation\Rest\PanelRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\PolicyRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\ReportRoutes;
 use Vaqtyar\Modules\Booking\Presentation\Rest\TimeRuleRoutes;
+use Vaqtyar\Modules\Booking\Presentation\Rest\WaitlistRoutes;
 use Vaqtyar\Modules\Booking\Contracts\AppointmentFactsReader;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogNames;
@@ -69,6 +74,7 @@ use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
 use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerDirectory;
 use Vaqtyar\Modules\Scheduling\Contracts\BookingWindows;
+use Vaqtyar\Modules\Scheduling\Contracts\FreeStarts;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Shared\Domain\Clock;
@@ -92,6 +98,9 @@ final class BookingModule implements Module
     private const EXPIRE_UNPAID_AFTER_SECONDS = 1800;
     private const EXPIRE_UNPAID_EVERY_SECONDS = 300;
     private const EXPIRE_UNPAID_BATCH = 50;
+
+    /** A full day is looked at again this often for a time that opened (a cancellation). */
+    private const CHECK_WAITLIST_EVERY_SECONDS = 600;
 
     public function id(): string
     {
@@ -244,6 +253,18 @@ final class BookingModule implements Module
             )
         );
         $container->singleton(
+            WaitlistService::class,
+            static fn (Container $c) => new WaitlistService(
+                new WpAuthorizer(),
+                $c->get(CustomerApi::class),
+                $c->get(CustomerDirectory::class),
+                $c->get(FreeStarts::class),
+                new WpdbWaitlistRepository($c->get(Db::class)),
+                new HookWaitlistNotifier(),
+                $c->get(Clock::class)
+            )
+        );
+        $container->singleton(
             ReportService::class,
             static fn (Container $c) => new ReportService(new WpdbReportQuery($c->get(Db::class)), new WpAuthorizer())
         );
@@ -267,6 +288,7 @@ final class BookingModule implements Module
             new CreateBookingTables(),
             new CreateResourceDayLocksTable(),
             new AddAppointmentStartIndex(),
+            new CreateWaitlistTable(),
         ];
     }
 
@@ -295,6 +317,7 @@ final class BookingModule implements Module
             }
         });
         $this->listenToPayments($container);
+        $this->checkWaitlist($container);
         \add_action('rest_api_init', static function () use ($container): void {
             (new HoldRoutes(
                 $container->get(Router::class),
@@ -339,6 +362,10 @@ final class BookingModule implements Module
                 static fn (): CatalogApi => $container->get(CatalogApi::class),
                 static fn (): bool => $container->get(OnlineCheckout::class)->available(),
                 static fn (): TermsReader => $container->get(TermsReader::class)
+            ))->register();
+            (new WaitlistRoutes(
+                $container->get(Router::class),
+                static fn (): WaitlistService => $container->get(WaitlistService::class)
             ))->register();
             (new TimeRuleRoutes(
                 $container->get(Router::class),
@@ -403,6 +430,23 @@ final class BookingModule implements Module
         \add_action('admin_init', static function () use ($expire): void {
             if (!\as_has_scheduled_action($expire)) {
                 \as_schedule_recurring_action(\time(), self::EXPIRE_UNPAID_EVERY_SECONDS, $expire, [], '', true);
+            }
+        });
+    }
+
+    /**
+     * The waiting list is looked at on a schedule: a time that a cancellation or a change of hours opened
+     * is told to whoever waits for that day. The job only reads availability, so running it twice is harmless.
+     */
+    private function checkWaitlist(Container $container): void
+    {
+        $check = Hooks::name('booking/check_waitlist');
+        \add_action($check, static function () use ($container): void {
+            $container->get(WaitlistService::class)->check();
+        });
+        \add_action('admin_init', static function () use ($check): void {
+            if (!\as_has_scheduled_action($check)) {
+                \as_schedule_recurring_action(\time(), self::CHECK_WAITLIST_EVERY_SECONDS, $check, [], '', true);
             }
         });
     }

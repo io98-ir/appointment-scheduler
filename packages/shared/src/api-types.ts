@@ -655,3 +655,21 @@ export interface NotificationTemplate {
 	/** By SMS provider id; a provider that is not listed gets the plain text. */
 	sms_patterns: Record< string, SmsPatternValue >;
 }
+
+/** /waitlist (docs/api.md): a request to be told when a time opens on a full day. */
+export type WaitlistStatus = 'waiting' | 'notified' | 'expired';
+
+export interface WaitlistItem {
+	id: number;
+	customer_id: number;
+	customer_name: string | null;
+	customer_phone: string | null;
+	variant_id: number;
+	location_id: number;
+	staff_id: number | null;
+	/** "YYYY-MM-DD", Gregorian: the day waited for. */
+	date: string;
+	status: WaitlistStatus;
+	notified_at: string | null;
+	created_at: string;
+}

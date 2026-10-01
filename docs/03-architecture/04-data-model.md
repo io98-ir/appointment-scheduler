@@ -70,6 +70,7 @@
 | `price_rules` | `type, service_id NULL, config JSON, priority, status` | |
 | `policies` | `type, service_id NULL, config JSON` | UNIQUE(type, service_id) |
 | `coupons` | `code, type, value, max_uses, used, valid_from, valid_to, service_ids JSON, status` | UNIQUE(code) |
+| `waitlist` | `customer_id, location_id, variant_id, staff_id NULL, wanted_date, page_url, status (waiting/notified/expired), notified_at, created_at, updated_at` | (status, wanted_date)، (customer_id)، (location_id)، (variant_id) |
 
 > **`occupancies`** یک جدول واحد برای اشغال زمان است، چه Hold باشد و چه نوبت. **Buffer در `start_at` و `end_at` آن لحاظ شده است.** کوئری تداخل فقط روی همین جدول و ایندکس `(lock_key, start_at, end_at)` اجرا می‌شود. تبدیل Hold به نوبت فقط `owner_type` و `owner_id` را عوض می‌کند. با لغو نوبت، ردیف‌هایش حذف می‌شود و سابقه در `appointment_history` می‌ماند.
 >

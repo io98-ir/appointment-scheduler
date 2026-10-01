@@ -30,6 +30,7 @@ const ROUTES = [
 	'/',
 	'/calendar',
 	'/appointments',
+	'/waitlist',
 	'/customers',
 	'/services',
 	'/service-categories',

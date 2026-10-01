@@ -19,6 +19,7 @@ use Vaqtyar\Modules\Scheduling\Application\BookingRulesStore;
 use Vaqtyar\Modules\Scheduling\Application\HolidayService;
 use Vaqtyar\Modules\Scheduling\Application\ScheduleService;
 use Vaqtyar\Modules\Scheduling\Contracts\BookingWindows;
+use Vaqtyar\Modules\Scheduling\Contracts\FreeStarts;
 use Vaqtyar\Modules\Scheduling\Contracts\OccupancyReader;
 use Vaqtyar\Modules\Scheduling\Contracts\SlotClaims;
 use Vaqtyar\Modules\Scheduling\Domain\HolidayRepository;
@@ -92,6 +93,7 @@ final class SchedulingModule implements Module
         );
         $container->singleton(WpSlotCache::class, static fn () => new WpSlotCache());
         $container->singleton(SlotClaims::class, static fn (Container $c) => $c->get(AvailabilityService::class));
+        $container->singleton(FreeStarts::class, static fn (Container $c) => $c->get(AvailabilityService::class));
         $container->singleton(
             AvailabilityService::class,
             static fn (Container $c) => new AvailabilityService(

@@ -3,6 +3,24 @@
 All notable changes to this plugin. The format follows [Keep a Changelog](https://keepachangelog.com/);
 the version in the plugin header, `readme.txt` and here must be the same (`composer build:zip` checks it).
 
+## [1.2.0] - 2026-10-01
+
+### Added
+- **Deposits and required online payment**, per service or for the whole site (`PUT /policies/deposit/{service_id}`): a percent of the price or a fixed amount, optional or required. The gateway is asked only for what is due; a booking made with a deposit shows `deposit_paid` until the rest is paid.
+- **Manual approval per service** (`approval` policy): a booking from the form waits as `pending_approval` (its time is held at once) until staff approve it. Bookings staff make themselves are never held back.
+- **Booking window per service** (`booking_window` policy): minimum notice and how many days ahead, for one service. It applies to availability and to holds.
+- **Payments in the admin:** the payments of an appointment, "Record payment" for money received in person (`POST /payments/offline`) and "Record a refund", in the appointment page.
+- **Pay the rest from the customer panel** (`POST /my/appointments/{id}/pay`).
+- **Waiting list:** a customer who finds a day full leaves a phone number (`POST /waitlist`) and gets one SMS when a time opens (a job runs every 10 minutes). It is a notice, not a reservation. A "Waiting list" screen lists the requests.
+- `GET /payment-options` takes `service` and `total` and also says whether payment is required, what is due and whether staff approve.
+
+### Changed
+- The payment status of an appointment is always worked out from what was paid and refunded, so an offline payment, a late gateway callback and a refund all leave it right.
+- The booking form shows a deposit button ("Pay the deposit … and book") and an approval hint, and a request waiting for approval is no longer shown as a booked appointment.
+
+### Not verified
+- The new Integration tests (SQL for the waiting list and the policies, the REST routes) were written but not run: there is no MySQL here and CI is off. The behaviour on a real WordPress, and a live gateway or SMS call, are untested.
+
 ## [1.1.0] - 2026-10-01
 
 ### Changed

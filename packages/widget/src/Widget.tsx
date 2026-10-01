@@ -24,6 +24,7 @@ import { useId, useMemo, useState } from 'preact/hooks';
 
 import { BookingFlow } from './BookingFlow';
 import { useFetch } from './useFetch';
+import { WaitlistForm } from './WaitlistForm';
 
 /**
  * What the shortcode or block passes in (T4.5). `restUrl` is the plugin's
@@ -535,7 +536,10 @@ export function Widget( {
 									className={ `vqy-widget__day vqy-widget__day--${
 										status ?? 'unknown'
 									}` }
-									disabled={ status !== 'available' }
+									disabled={
+										status !== 'available' &&
+										status !== 'full'
+									}
 									aria-pressed={ isoDate === date }
 									aria-label={ label }
 									onClick={ () => {
@@ -568,6 +572,19 @@ export function Widget( {
 										'vaqtyar'
 									) }
 								</p>
+							) }
+							{ day.data?.status === 'full' && ready && (
+								<WaitlistForm
+									key={ `${ base }&${ date }` }
+									query={ {
+										variant: variant.id,
+										location: location.id,
+										staff: staffPick,
+										date,
+									} }
+									clientFor={ clientFor }
+									digits={ digits }
+								/>
 							) }
 							<ul className="vqy-widget__slot-list">
 								{ day.data?.slots.map( ( slot ) => (

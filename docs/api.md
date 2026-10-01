@@ -111,10 +111,10 @@ Capability `manage_schedules` (پیش‌فرض: administrator)؛ `BookingRulesSe
 |---|---|
 | `GET /nonce` | یک nonce تازه `wp_rest` برای مهمان، چون nonce صفحه cache‌شده کهنه است. rate limit: 120 در دقیقه |
 | `GET /service-fields?service=` | فیلدهای سفارشی یک خدمت (سراسری‌ها و فیلدهای خود خدمت، به ترتیب `sort`) با `field_key`، `type`، `label`، `required`، `options` و `show_if`. خدمت ناموجود: 404 `service_not_found` |
-| `GET /payment-options` | `{online: bool}`: آیا مشتری می‌تواند آنلاین پرداخت کند (درگاهی جز آفلاین فعال است) |
+| `GET /payment-options` | `{online: bool}`: آیا مشتری می‌تواند آنلاین پرداخت کند (درگاهی جز آفلاین فعال است). با `service` و `total` (قیمتی که Hold نشان داد، ریال) این‌ها هم می‌آید: `required` (خدمت پرداخت آنلاین را اجباری کرده و قیمت صفر نیست)، `due` (`{amount, currency}` یا `null` برای رایگان: آنچه همین حالا گرفته می‌شود؛ کمتر از `total` یعنی بیعانه) و `approval` (رزرو تأیید کارکنان می‌خواهد) |
 | `POST /book` | Hold را به نوبت تبدیل می‌کند |
 
-`POST /book` نیاز به هدر `X-WP-Nonce` (از `GET /nonce`) دارد و rate limit آن 10 در دقیقه برای هر کلاینت است. بدنه: `hold_token`، `phone` (الزامی، ارقام فارسی مشکلی ندارد)، `first_name` و `last_name` (حداقل یکی الزامی است)، `email` (اختیاری)، `customer_note`، `answers` (بر اساس `field_key`؛ checkbox فقط به‌صورت bool در بدنه JSON). مشتری با شماره پیدا یا ساخته می‌شود؛ مشتری موجود نام و ایمیلش را حفظ می‌کند و مهمان نمی‌تواند آن را عوض کند. `source` نوبت `widget` و `created_by` خالی است. **شماره هنوز تأیید نمی‌شود** (OTP در T4.3 می‌آید). با `pay_online: true` (و `return_url` از همین سایت؛ پیش‌فرض صفحه اصلی) و قیمت بیشتر از صفر، نوبت `pending_payment` می‌شود و زمانش گرفته می‌ماند، پرداخت در اولین درگاه آنلاین باز می‌شود و پاسخ `payment_url` دارد؛ اگر هیچ درگاهی جواب ندهد نوبت همان لحظه `expired` می‌شود و پاسخ 409 `payment_unavailable` است. پرداخت موفق نوبت را `confirmed` و `payment_status` را `paid` می‌کند؛ اگر تا 30 دقیقه پرداخت نیاید نوبت `expired` و زمانش آزاد می‌شود.
+`POST /book` نیاز به هدر `X-WP-Nonce` (از `GET /nonce`) دارد و rate limit آن 10 در دقیقه برای هر کلاینت است. بدنه: `hold_token`، `phone` (الزامی، ارقام فارسی مشکلی ندارد)، `first_name` و `last_name` (حداقل یکی الزامی است)، `email` (اختیاری)، `customer_note`، `answers` (بر اساس `field_key`؛ checkbox فقط به‌صورت bool در بدنه JSON). مشتری با شماره پیدا یا ساخته می‌شود؛ مشتری موجود نام و ایمیلش را حفظ می‌کند و مهمان نمی‌تواند آن را عوض کند. `source` نوبت `widget` و `created_by` خالی است. **شماره هنوز تأیید نمی‌شود** (OTP در T4.3 می‌آید). با `pay_online: true` (و `return_url` از همین سایت؛ پیش‌فرض صفحه اصلی) و قیمت بیشتر از صفر، نوبت `pending_payment` می‌شود و زمانش گرفته می‌ماند، پرداخت در اولین درگاه آنلاین باز می‌شود و پاسخ `payment_url` دارد؛ اگر هیچ درگاهی جواب ندهد نوبت همان لحظه `expired` می‌شود و پاسخ 409 `payment_unavailable` است. پرداخت موفق نوبت را `confirmed` و `payment_status` را `paid` می‌کند؛ اگر تا 30 دقیقه پرداخت نیاید نوبت `expired` و زمانش آزاد می‌شود. **شرایط خدمت** (Policy `deposit` و `approval`، بخش «شرایط پرداخت و تأیید»): اگر پرداخت آنلاین اجباری باشد و `pay_online` نباشد، 422 `payment_required` و اگر هیچ درگاه آنلاینی نباشد 409 `payment_unavailable`؛ مبلغی که به درگاه می‌رود `due` است (بیعانه یا کل قیمت). با تأیید دستی، نوبت بعد از پرداخت (یا بلافاصله، اگر پرداخت در محل باشد) `pending_approval` می‌شود، نه `confirmed`، و زمانش همان لحظه گرفته می‌ماند. `payment_status` همیشه از جمع پرداخت‌ها و استردادها محاسبه می‌شود: `unpaid`، `deposit_paid`، `paid`، `refunded` یا `partially_refunded`.
 
 پاسخ 201: فقط `code` (کد پیگیری)، `status`، `start`، `end` و `price`. خطاها: 404 `hold_not_found` (توکن ناشناخته، منقضی یا مصرف‌شده)، 409 `service_unavailable`، 422 `customer_unavailable` (مشتری مسدود)، `invalid_phone`، `invalid_email`، `invalid_name`، و برای پاسخ نامعتبر `answer_required` یا `invalid_answer` که **`data.details.field_key`** فیلد خطادار را نشان می‌دهد.
 
@@ -136,6 +136,7 @@ Capability `manage_schedules` (پیش‌فرض: administrator)؛ `BookingRulesSe
 | `GET /my/appointments` | تازه‌ترین 50 نوبت همان مشتری (همان شکل `GET /appointments` بدون نام مشتری)، هر کدام با `cancel` و `reschedule`: `{allowed, reason_code, refund_percent, refund}` (Policy، booking-engine §6). برای نوبتی که شروع شده، لغو یا کامل شده و امثالش هر دو `null` است |
 | `POST /my/appointments/{id}/cancel` | `reason` اختیاری. پاسخ: نوبت و `decision`. نوبت مشتری دیگر: 404 `appointment_not_found`. Policy اجازه ندهد: 409 با کد دلیل (`policy.cancel_window_passed` و امثالش) |
 | `POST /my/appointments/{id}/reschedule` | `start` (ISO با offset، از `GET /availability` همان Variant، شعبه و پرسنل). خطاها: 409 `slot_taken` یا `policy.reschedule_window_passed` و `policy.reschedule_limit_reached` |
+| `POST /my/appointments/{id}/pay` | `return_url` (از همین سایت). مشتری باقی‌مانده نوبتی را که بیعانه‌اش پرداخت شده در درگاه آنلاین می‌دهد؛ پاسخ `{payment_url}`. هر نوبت در `GET /my/appointments` با `due` (`{amount, currency}`) می‌آید که همین باقی‌مانده است؛ فقط برای نوبتی با `payment_status=deposit_paid` که `confirmed` یا `pending_approval` و آینده است، وگرنه `null`. نوبت دیگری یا چیزی که نمانده: 404 `appointment_not_found` یا 409 `nothing_to_pay`؛ بدون درگاه: 409 `payment_unavailable` |
 
 مشتری هرگز Override ندارد و فقط نوبت خودش را می‌بیند. ویجت آن را با `<div data-{slug}-panel>` می‌گیرد (Shortcode در T4.5).
 
@@ -152,10 +153,21 @@ Capability `manage_schedules` (پیش‌فرض: administrator)؛ `BookingRulesSe
 | Route | کار |
 |---|---|
 | `GET /payments/callback/{gateway}` | عمومی؛ جایی که درگاه مشتری را برمی‌گرداند. پارامتر شناسه پرداخت را خود درگاه نام‌گذاری می‌کند (`Authority` در Zarinpal، `trackId` در Zibal، `authority` در آفلاین) و adapter آن را می‌خواند؛ پارامترهای query به‌صورت متن به adapter می‌رسد (هیچ‌کدام باور نمی‌شود؛ درگاه استعلام می‌شود). اگر `return` (آدرسی از همین سایت) باشد، پاسخ 302 به آن آدرس است با پارامتر `{prefix}_payment` برابر `succeeded`، `failed` یا `pending`؛ وگرنه JSON `{id, appointment_id, gateway, amount, status, ref_id}`. تکراری بودن callback بی‌اثر است. درگاه یا پرداخت ناموجود: 404 `payment_not_found`. rate limit: 60 در دقیقه |
+| `GET /payments?appointment_id=` | فقط `manage_bookings`. دفتر پرداخت یک نوبت: `{items: [{id, appointment_id, gateway, amount, status, ref_id, refunded}], paid, refunded}` (جمع‌ها ریال‌اند و فقط پرداخت‌های موفق را می‌شمارند) |
+| `POST /payments/offline` | `appointment_id`، `amount` (ریال)؛ فقط `manage_bookings`. پولی که کارکنان خودشان گرفته‌اند (نقد، کارتخوان، کارت‌به‌کارت) را همان لحظه پرداخت موفق (`gateway=offline`، `ref_id` به‌شکل `recorded-…`) ثبت می‌کند. مبلغ غیرمثبت: 422 `invalid_amount`. سقفی روی مبلغ و وضعیت نوبت گذاشته نشده است (دریافت دستی کار کارکنان است)؛ نوبتی که لغو یا منقضی شده پرداخت را می‌گیرد و فقط گزارش `needs_attention` می‌دهد. پاسخ 201 با پرداخت. `payment_status` نوبت و تاریخچه‌اش به‌روز می‌شود و نوبت `pending_payment` یا `pending_approval` طبق شرایط تأیید می‌شود |
 | `POST /payments/offline/confirm` | `authority`؛ فقط با capability `manage_bookings`. ثبت اینکه پرداخت آفلاین دریافت شد |
 | `POST /payments/refunds` | `payment_id`، `amount` (ریال)، `reason`؛ فقط با capability `manage_bookings`. ثبت استردادی که دستی انجام شده (در پنل درگاه یا کارت‌به‌کارت). فقط برای پرداخت موفق و تا سقف مبلغ پرداخت‌شده (جمع استردادها): وگرنه 409 `payment_not_paid` یا `refund_exceeds_payment`. پاسخ 201 با `{id}` |
 
 جریان: `PaymentService::start()` درگاه‌ها را به ترتیب امتحان می‌کند (Failover) و یک ردیف `awaiting_callback` می‌سازد؛ callback با `settle()` یک‌بار به `succeeded` یا `failed` می‌رود (درگاه بیرون از قفل استعلام می‌شود و انتقال زیر قفل ردیف انجام می‌شود). پس از commit، action `{prefix}/payments/succeeded` با `($appointmentId, $paymentId)` اجرا می‌شود؛ Booking و Payments فقط از راه رویداد به هم می‌رسند. درگاه‌ها با filter `{prefix}/payments/gateways` ثبت می‌شوند؛ فعلاً فقط `offline`.
+
+## لیست انتظار
+مشتری که روز را پر دیده می‌خواهد وقتی وقتی خالی شد خبر بگیرد. این **اطلاع‌رسانی است، نه رزرو**: چیزی نگه داشته یا قفل نمی‌شود و وقتی وقت خالی شد، هر کس زودتر رزرو کند آن را می‌گیرد. هر 10 دقیقه Job `{prefix}/booking/check_waitlist` از availability می‌پرسد که روز حالا شروعی دارد یا نه و به هر درخواست یک‌بار پیامک می‌دهد (Action `{prefix}/waitlist/slot_opened` با `(customerId, day, firstStart, variantId, pageUrl)` که Notifications با پیامک جواب می‌دهد؛ بدون سرویس پیامک فقط لاگ می‌ماند). درخواستِ روز گذشته منقضی می‌شود.
+
+| Route | کار |
+|---|---|
+| `POST /waitlist` | عمومی، مثل `POST /book`: هدر `X-WP-Nonce`، rate limit 10 در دقیقه، و اگر سایت تأیید شماره بخواهد `session_token`. بدنه: `variant`، `location`، `staff` (اختیاری)، `date` (`YYYY-MM-DD`)، `phone`، `first_name`، `last_name`، `session_token`، `page_url` (از همین سایت؛ وگرنه صفحه اصلی؛ پیامک به آن می‌رود). پاسخ 201 با `{id}` (درخواست تکراری همان قبلی را برمی‌گرداند). خطاها: 409 `day_not_full` (روز وقت آزاد دارد)، 409 `waitlist_limit` (هر مشتری حداکثر 5 روز منتظر)، 422 `invalid_waitlist_date` (گذشته یا بیش از 366 روز بعد)، 404 برای خدمت یا شعبه غیرقابل‌رزرو |
+| `GET /waitlist` | فقط `manage_bookings`؛ `page`، `per_page`، تازه‌ترین اول: `{id, customer_id, customer_name, customer_phone, variant_id, location_id, staff_id, date, status (waiting، notified یا expired), notified_at, created_at}` |
+| `DELETE /waitlist/{id}` | فقط `manage_bookings`؛ 204 |
 
 ## اعلان‌ها (Admin)
 همه routeها capability `manage_notifications` لازم دارند (پیش‌فرض: administrator). `NotificationAdminService` آن را دوباره بررسی می‌کند. `trigger` یکی از `booked`، `cancelled`، `rescheduled`، `reminder`؛ `audience` یکی از `customer`، `staff`، `admin`. `offset_min` (دقیقه پیش از شروع) فقط برای `reminder` لازم است و برای بقیه باید `null` باشد.
@@ -272,13 +284,19 @@ Capability `manage_schedules` (پیش‌فرض: administrator)؛ `BookingRulesSe
 - 404 `appointment_not_found`. 409 `appointment_changed` یعنی نوبت همزمان تغییر کرد و باید دوباره تلاش کرد.
 
 ## Policy لغو و جابجایی (Admin)
-همه routeها capability `manage_bookings` لازم دارند (همان `POST /bookings`). `{type}` یکی از `cancellation` یا `reschedule` است و `{service_id}` صفر برای Policy سراسری یا شناسه یک خدمت (باید در کاتالوگ باشد، حذف‌نشده، فعال یا غیرفعال؛ وگرنه 404 `service_not_found`). Policy خدمت بر سراسری مقدم است و نبود هیچ‌کدام یعنی لغو و جابجایی تا شروع آزاد و استرداد 100% (booking-engine §6).
+همه routeها capability `manage_bookings` لازم دارند (همان `POST /bookings`). `{type}` یکی از `cancellation`، `reschedule`، `deposit`، `approval` یا `booking_window` است و `{service_id}` صفر برای Policy سراسری یا شناسه یک خدمت (باید در کاتالوگ باشد، حذف‌نشده، فعال یا غیرفعال؛ وگرنه 404 `service_not_found`). Policy خدمت بر سراسری مقدم است و نبود هیچ‌کدام یعنی لغو و جابجایی تا شروع آزاد و استرداد 100% (booking-engine §6).
 
 | Route | کار |
 |---|---|
 | `GET /policies/{type}/{service_id}` | `{config}`. `config` برابر `null` است وقتی این سطح تنظیم نشده |
 | `PUT /policies/{type}/{service_id}` | Upsert. `cancellation`: `notice_hours` (عدد یا `null`)، `refund` (آرایه `{hours, percent}`، حداکثر 50 پله). `reschedule`: `notice_hours`، `max_times` (عدد یا `null`، یعنی بدون سقف). پاسخ 200 با `{config}` ذخیره‌شده |
+| `PUT /policies/deposit/{service_id}` | `kind` (`none`، `percent` یا `fixed`)، `value` (درصد 1 تا 100 یا مبلغ ثابت به ریال؛ برای `none` صفر)، `required` (پرداخت آنلاین اجباری). مبلغ ثابت از قیمت بیشتر گرفته نمی‌شود و حداقل 1 ریال است؛ درصد با HalfUp گرد می‌شود |
+| `PUT /policies/approval/{service_id}` | `required`: هر رزرو فرم رزرو تأیید کارکنان می‌خواهد. رزرو دستی کارکنان هرگز منتظر تأیید نمی‌ماند |
+| `PUT /policies/booking_window/{service_id}` | `min_notice_min` و `max_advance_days` (عدد یا `null`، یعنی همان قانون سراسری `GET /booking-rules`). روی `GET /availability` و Hold هر دو اعمال می‌شود |
 | `DELETE /policies/{type}/{service_id}` | حذف این سطح؛ سطح پایین‌تر (سراسری، یا در نهایت آزاد) اعمال می‌شود. پاسخ 204 |
+
+### شرایط پرداخت و تأیید
+`deposit`، `approval` و `booking_window` هم از همین routeها می‌گذرند و هم سطح سراسری (`service_id` صفر) دارند و هم سطح خدمت که بر سراسری مقدم است. نبود هر سه یعنی همه چیز مثل قبل: پرداخت اختیاری، تأیید خودکار و قانون سراسری بازه رزرو. مقدار نامعتبر: 422 `invalid_policy`؛ نوع ناشناخته: 422 `unknown_policy_type`.
 
 ردیف خراب در جدول تنها روی مسیر رزرو (`WpdbPolicyReader`) نادیده گرفته می‌شود؛ این API همیشه یک `config` معتبر می‌نویسد یا می‌خواند.
 
