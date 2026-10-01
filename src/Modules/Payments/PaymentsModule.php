@@ -16,6 +16,7 @@ use Vaqtyar\Modules\Payments\Application\GatewayRegistry;
 use Vaqtyar\Modules\Payments\Application\JsonHttp;
 use Vaqtyar\Modules\Payments\Application\OnlinePayments;
 use Vaqtyar\Modules\Payments\Application\PaymentGateway;
+use Vaqtyar\Modules\Payments\Application\PaymentLedger;
 use Vaqtyar\Modules\Payments\Application\PaymentRepository;
 use Vaqtyar\Modules\Payments\Application\PaymentService;
 use Vaqtyar\Modules\Payments\Application\PaymentSettingsService;
@@ -121,9 +122,15 @@ final class PaymentsModule implements Module
                 \do_action(Hooks::name('payments/succeeded'), $payment->appointmentId, $payment->id);
             }
         ));
+        $container->singleton(PaymentLedger::class, static fn (Container $c) => new PaymentLedger(
+            $c->get(PaymentRepository::class),
+            $c->get(RefundRepository::class),
+            new WpAuthorizer()
+        ));
         $container->singleton(PaymentsApi::class, static fn (Container $c) => new OnlinePayments(
             $c->get(PaymentService::class),
             $c->get(GatewayRegistry::class),
+            $c->get(PaymentLedger::class),
             static fn (string $returnUrl): string => PaymentRoutes::callbackUrl($returnUrl)
         ));
         $container->singleton(RefundService::class, static fn (Container $c) => new RefundService(
@@ -178,7 +185,8 @@ final class PaymentsModule implements Module
             (new PaymentRoutes(
                 $container->get(Router::class),
                 static fn (): PaymentService => $container->get(PaymentService::class),
-                static fn (): RefundService => $container->get(RefundService::class)
+                static fn (): RefundService => $container->get(RefundService::class),
+                static fn (): PaymentLedger => $container->get(PaymentLedger::class)
             ))->register();
             (new PaymentSettingsRoutes(
                 $container->get(Router::class),

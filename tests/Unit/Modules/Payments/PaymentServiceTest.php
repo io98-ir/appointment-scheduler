@@ -341,6 +341,25 @@ final class PaymentServiceTest extends TestCase
 
                 return true;
             }
+
+            /**
+             * @return list<Payment>
+             */
+            public function forAppointment(int $appointmentId): array
+            {
+                return \array_values(\array_filter(
+                    $this->stored,
+                    static fn (Payment $p): bool => $p->appointmentId === $appointmentId
+                ));
+            }
+
+            public function paidTotal(int $appointmentId): int
+            {
+                return \array_sum(\array_map(
+                    static fn (Payment $p): int => PaymentStatus::Succeeded === $p->status ? $p->amount->amount : 0,
+                    $this->forAppointment($appointmentId)
+                ));
+            }
         };
     }
 }

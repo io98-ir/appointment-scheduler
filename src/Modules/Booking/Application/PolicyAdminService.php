@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Vaqtyar\Modules\Booking\Application;
 
+use Vaqtyar\Modules\Booking\Domain\Policy\ApprovalPolicy;
+use Vaqtyar\Modules\Booking\Domain\Policy\BookingWindowPolicy;
 use Vaqtyar\Modules\Booking\Domain\Policy\CancellationPolicy;
+use Vaqtyar\Modules\Booking\Domain\Policy\DepositPolicy;
 use Vaqtyar\Modules\Booking\Domain\Policy\PolicyRepository;
 use Vaqtyar\Modules\Booking\Domain\Policy\ReschedulePolicy;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Shared\Domain\Authorizer;
 use Vaqtyar\Shared\Domain\Forbidden;
+use Vaqtyar\Shared\Domain\InvalidValue;
 use Vaqtyar\Shared\Domain\NotFound;
 
 /**
@@ -23,6 +27,9 @@ use Vaqtyar\Shared\Domain\NotFound;
 final class PolicyAdminService
 {
     public const CAPABILITY = BookingService::CAPABILITY;
+
+    /** The policies besides cancellation and rescheduling, kept as plain configs. */
+    public const TERMS_TYPES = ['deposit', 'approval', 'booking_window'];
 
     public function __construct(
         private readonly Authorizer $authorizer,
@@ -71,6 +78,69 @@ final class PolicyAdminService
     {
         $this->authorize($serviceId);
         $this->policies->deleteReschedule($serviceId);
+    }
+
+    /**
+     * The deposit, approval or booking-window policy of a service (or the global one), as its stored
+     * config, or null when this level has none or the row no longer parses.
+     *
+     * @return ?array<string, mixed>
+     * @throws InvalidValue unknown_policy_type
+     */
+    public function terms(string $type, int $serviceId): ?array
+    {
+        $this->authorize($serviceId);
+        $config = $this->policies->findConfig(self::checkedType($type), $serviceId);
+        if (null === $config) {
+            return null;
+        }
+        try {
+            return self::parse($type, $config);
+        } catch (InvalidValue) {
+            return null;
+        }
+    }
+
+    /**
+     * @param array<mixed> $config what the client sent; only what the policy accepts is stored.
+     * @return array<string, mixed> as stored.
+     * @throws InvalidValue invalid_policy, or unknown_policy_type.
+     */
+    public function saveTerms(string $type, int $serviceId, array $config): array
+    {
+        $this->authorize($serviceId);
+        $parsed = self::parse(self::checkedType($type), $config);
+        $this->policies->saveConfig($type, $serviceId, $parsed);
+
+        return $parsed;
+    }
+
+    public function deleteTerms(string $type, int $serviceId): void
+    {
+        $this->authorize($serviceId);
+        $this->policies->deleteConfig(self::checkedType($type), $serviceId);
+    }
+
+    private static function checkedType(string $type): string
+    {
+        if (!\in_array($type, self::TERMS_TYPES, true)) {
+            throw new InvalidValue('unknown_policy_type', 'There is no policy of this type.');
+        }
+
+        return $type;
+    }
+
+    /**
+     * @param array<mixed> $config
+     * @return array<string, mixed> the policy as it is stored.
+     */
+    private static function parse(string $type, array $config): array
+    {
+        return match ($type) {
+            'deposit' => DepositPolicy::fromConfig($config)->toConfig(),
+            'approval' => ApprovalPolicy::fromConfig($config)->toConfig(),
+            default => BookingWindowPolicy::fromConfig($config)->toConfig(),
+        };
     }
 
     /**

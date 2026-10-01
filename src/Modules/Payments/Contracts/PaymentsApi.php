@@ -26,4 +26,9 @@ interface PaymentsApi
      * @throws Conflict no_gateway_available when every online gateway refuses.
      */
     public function startOnline(int $appointmentId, Money $amount, string $returnUrl): string;
+
+    /**
+     * What has been paid for an appointment, and refunded, so far.
+     */
+    public function totals(int $appointmentId): PaymentTotals;
 }

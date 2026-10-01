@@ -15,6 +15,8 @@ use Vaqtyar\Kernel\Rest\Router;
 use Vaqtyar\Kernel\Settings\Settings;
 use Vaqtyar\Modules\Booking\Application\AppointmentBrowser;
 use Vaqtyar\Modules\Booking\Application\AppointmentFactsService;
+use Vaqtyar\Modules\Booking\Application\AppointmentPayments;
+use Vaqtyar\Modules\Booking\Application\TermsReader;
 use Vaqtyar\Modules\Booking\Application\AppointmentService;
 use Vaqtyar\Modules\Booking\Application\BookingService;
 use Vaqtyar\Modules\Booking\Application\OnlineCheckout;
@@ -132,17 +134,32 @@ final class BookingModule implements Module
                 $c->get(Clock::class),
                 new WpAuthorizer(),
                 self::changed(...),
-                $c->get(OnlineCheckout::class)
+                $c->get(OnlineCheckout::class),
+                $c->get(TermsReader::class)
             )
+        );
+        $container->singleton(
+            TermsReader::class,
+            static fn (Container $c) => new WpdbPolicyReader($c->get(Db::class))
         );
         $container->singleton(
             UnpaidAppointments::class,
             static fn (Container $c) => new UnpaidAppointments(
                 new WpdbAppointmentRepository($c->get(Db::class)),
-                new ActionSchedulerBookingJobs(),
                 $c->get(TransactionRunner::class),
                 $c->get(Clock::class),
                 self::changed(...)
+            )
+        );
+        $container->singleton(
+            AppointmentPayments::class,
+            static fn (Container $c) => new AppointmentPayments(
+                new WpdbAppointmentRepository($c->get(Db::class)),
+                $c->get(PaymentsApi::class),
+                $c->get(TermsReader::class),
+                new ActionSchedulerBookingJobs(),
+                $c->get(TransactionRunner::class),
+                $c->get(Clock::class)
             )
         );
         $container->singleton(
@@ -323,10 +340,12 @@ final class BookingModule implements Module
     }
 
     /**
-     * The other half of a payment (booking-engine §7): Payments says a payment went through, and an
-     * appointment that still waits for it is confirmed. One that does not (it expired, or was cancelled,
-     * while the customer paid) is left as it is: the money is taken, so it is reported to staff with the
-     * `{prefix}/booking/needs_attention` action and the log, never decided here.
+     * The other half of a payment (booking-engine §7): Payments says a payment went through, and the
+     * appointment takes it in: one that waits for it is confirmed (or handed to staff to approve), any
+     * other has its payment status brought up to date. One that was cancelled or expired while the
+     * customer paid is left as it is: the money is taken, so it is reported to staff with the
+     * `{prefix}/booking/needs_attention` action and the log, never decided here. A refund recorded in
+     * Payments updates the payment status the same way.
      */
     private function listenToPayments(Container $container): void
     {
@@ -334,7 +353,7 @@ final class BookingModule implements Module
             Hooks::name('payments/succeeded'),
             static function (int $appointmentId, int $paymentId) use ($container): void {
                 try {
-                    if ($container->get(UnpaidAppointments::class)->paid($appointmentId)) {
+                    if ($container->get(AppointmentPayments::class)->received($appointmentId)) {
                         return;
                     }
                     $reason = 'The appointment no longer waited for its payment.';
@@ -346,6 +365,22 @@ final class BookingModule implements Module
                     'payment_id' => $paymentId,
                 ]);
                 \do_action(Hooks::name('booking/needs_attention'), $appointmentId, $paymentId);
+            },
+            10,
+            2
+        );
+        \add_action(
+            Hooks::name('payments/refunded'),
+            static function (int $appointmentId, int $refundId) use ($container): void {
+                try {
+                    $container->get(AppointmentPayments::class)->changed($appointmentId);
+                } catch (\Throwable $e) {
+                    $container->get(Logger::class)->error(
+                        'booking',
+                        'The payment status could not follow a refund: ' . $e::class,
+                        ['appointment_id' => $appointmentId, 'refund_id' => $refundId]
+                    );
+                }
             },
             10,
             2

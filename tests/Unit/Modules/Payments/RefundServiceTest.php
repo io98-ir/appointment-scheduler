@@ -119,6 +119,19 @@ final class RefundServiceTest extends TestCase
                 {
                     return false;
                 }
+
+                /**
+                 * @return list<Payment>
+                 */
+                public function forAppointment(int $appointmentId): array
+                {
+                    return [];
+                }
+
+                public function paidTotal(int $appointmentId): int
+                {
+                    return 0;
+                }
             },
             new class ($this) implements RefundRepository {
                 private int $next = 1;
@@ -141,6 +154,11 @@ final class RefundServiceTest extends TestCase
                 }
 
                 public function refundedTotal(int $paymentId): int
+                {
+                    return $this->test->refunded();
+                }
+
+                public function refundedTotalOfAppointment(int $appointmentId): int
                 {
                     return $this->test->refunded();
                 }

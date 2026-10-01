@@ -46,4 +46,15 @@ final class WpdbRefundRepository implements RefundRepository
 
         return \is_numeric($total) ? (int) $total : 0;
     }
+
+    public function refundedTotalOfAppointment(int $appointmentId): int
+    {
+        $total = $this->db->getVar(
+            'SELECT COALESCE(SUM(amount), 0) FROM %i WHERE appointment_id = %d',
+            Tables::name('refunds'),
+            $appointmentId
+        );
+
+        return \is_numeric($total) ? (int) $total : 0;
+    }
 }

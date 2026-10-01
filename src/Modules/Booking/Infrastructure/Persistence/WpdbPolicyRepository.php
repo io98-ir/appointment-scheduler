@@ -84,6 +84,27 @@ final class WpdbPolicyRepository implements PolicyRepository
     /**
      * @return ?array<mixed>
      */
+    public function findConfig(string $type, int $serviceId): ?array
+    {
+        return $this->find($type, $serviceId);
+    }
+
+    /**
+     * @param array<mixed> $config
+     */
+    public function saveConfig(string $type, int $serviceId, array $config): void
+    {
+        $this->save($type, $serviceId, $config);
+    }
+
+    public function deleteConfig(string $type, int $serviceId): void
+    {
+        $this->delete($type, $serviceId);
+    }
+
+    /**
+     * @return ?array<mixed>
+     */
     private function find(string $type, int $serviceId): ?array
     {
         $rows = $this->db->getResults(

@@ -86,6 +86,40 @@ final class WpdbPaymentRepository implements PaymentRepository
         return [] === $rows ? null : self::hydrate(new Row($rows[0]));
     }
 
+    /**
+     * @return list<Payment>
+     */
+    public function forAppointment(int $appointmentId): array
+    {
+        $payments = [];
+        foreach (
+            $this->db->getResults(
+                'SELECT * FROM %i WHERE appointment_id = %d ORDER BY id ASC',
+                Tables::name('payments'),
+                $appointmentId
+            ) as $row
+        ) {
+            $payment = self::hydrate(new Row($row));
+            if (null !== $payment) {
+                $payments[] = $payment;
+            }
+        }
+
+        return $payments;
+    }
+
+    public function paidTotal(int $appointmentId): int
+    {
+        $total = $this->db->getVar(
+            'SELECT COALESCE(SUM(amount), 0) FROM %i WHERE appointment_id = %d AND status = %s',
+            Tables::name('payments'),
+            $appointmentId,
+            PaymentStatus::Succeeded->value
+        );
+
+        return \is_numeric($total) ? (int) $total : 0;
+    }
+
     private static function hydrate(Row $row): ?Payment
     {
         $status = PaymentStatus::tryFrom($row->string('status'));

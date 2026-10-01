@@ -8,6 +8,8 @@ use Vaqtyar\Kernel\Caps;
 use Vaqtyar\Kernel\Identity;
 use Vaqtyar\Kernel\Rest\RateLimit;
 use Vaqtyar\Kernel\Rest\Router;
+use Vaqtyar\Modules\Payments\Application\LedgerEntry;
+use Vaqtyar\Modules\Payments\Application\PaymentLedger;
 use Vaqtyar\Modules\Payments\Application\PaymentService;
 use Vaqtyar\Modules\Payments\Application\RefundService;
 use Vaqtyar\Modules\Payments\Domain\Payment;
@@ -18,6 +20,8 @@ use Vaqtyar\Shared\Domain\Money;
  * The payment API (docs/api.md):
  *
  *     GET  /payments/callback/{gateway}   public: where a gateway sends the customer back
+ *     GET  /payments?appointment_id=      staff: the payments of an appointment, with what was refunded
+ *     POST /payments/offline              staff: money received outside any gateway, recorded as paid
  *     POST /payments/offline/confirm      staff: an offline payment was received
  *     POST /payments/refunds              staff: a refund made by hand, recorded
  *
@@ -34,11 +38,13 @@ final class PaymentRoutes
     /**
      * @param \Closure(): PaymentService $service Built when a request needs it.
      * @param \Closure(): RefundService $refunds Built when a request needs it.
+     * @param \Closure(): PaymentLedger $ledger Built when a request needs it.
      */
     public function __construct(
         private readonly Router $router,
         private readonly \Closure $service,
         private readonly \Closure $refunds,
+        private readonly \Closure $ledger,
     ) {
     }
 
@@ -51,6 +57,40 @@ final class PaymentRoutes
             Router::ANYONE,
             [],
             new RateLimit(self::LIMIT, 60)
+        );
+        $staff = static fn (): bool => \current_user_can(Caps::name('manage_bookings'));
+        $this->router->add(
+            '/payments',
+            'GET',
+            function (\WP_REST_Request $request): array {
+                $appointmentId = self::int($request->get_param('appointment_id'));
+                $ledger = ($this->ledger)();
+                $totals = $ledger->totals($appointmentId);
+
+                return [
+                    'items' => \array_map(self::entry(...), $ledger->entries($appointmentId)),
+                    'paid' => $totals->paid,
+                    'refunded' => $totals->refunded,
+                ];
+            },
+            $staff,
+            ['appointment_id' => ['type' => 'integer', 'minimum' => 1, 'required' => true]]
+        );
+        $this->router->add(
+            '/payments/offline',
+            'POST',
+            fn (\WP_REST_Request $request): \WP_REST_Response => new \WP_REST_Response(
+                self::json(($this->service)()->recordOffline(
+                    self::int($request->get_param('appointment_id')),
+                    Money::ofRial(self::int($request->get_param('amount')))
+                )),
+                201
+            ),
+            $staff,
+            [
+                'appointment_id' => ['type' => 'integer', 'minimum' => 1, 'required' => true],
+                'amount' => ['type' => 'integer', 'minimum' => 1, 'required' => true],
+            ]
         );
         $this->router->add(
             '/payments/offline/confirm',
@@ -146,6 +186,14 @@ final class PaymentRoutes
             'status' => $payment->status->value,
             'ref_id' => $payment->refId,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function entry(LedgerEntry $entry): array
+    {
+        return self::json($entry->payment) + ['refunded' => $entry->refunded];
     }
 
     /**

@@ -33,6 +33,7 @@ use Vaqtyar\Modules\Customers\Domain\Customer;
 use Vaqtyar\Modules\Customers\Domain\CustomerStatus;
 use Vaqtyar\Modules\Customers\Infrastructure\Persistence\WpdbCustomerRepository;
 use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
+use Vaqtyar\Modules\Payments\Contracts\PaymentTotals;
 use Vaqtyar\Modules\Scheduling\Contracts\AvailabilityQuery;
 use Vaqtyar\Modules\Scheduling\Domain\Owner;
 use Vaqtyar\Modules\Scheduling\Domain\OwnerType;
@@ -962,6 +963,11 @@ final class HoldsTest extends TestCase
             public function startOnline(int $appointmentId, Money $amount, string $returnUrl): string
             {
                 throw new Conflict('no_gateway_available', 'down');
+            }
+
+            public function totals(int $appointmentId): PaymentTotals
+            {
+                return new PaymentTotals(0, 0);
             }
         };
         $container = $this->container();

@@ -20,6 +20,18 @@ interface PaymentRepository
     public function findById(int $id, bool $forUpdate = false): ?Payment;
 
     /**
+     * Every payment of an appointment, oldest first, whatever became of it.
+     *
+     * @return list<Payment>
+     */
+    public function forAppointment(int $appointmentId): array;
+
+    /**
+     * The sum of an appointment's payments that went through, in rials.
+     */
+    public function paidTotal(int $appointmentId): int;
+
+    /**
      * Payments of an online gateway still awaiting their callback since before $cutoff, oldest first.
      *
      * @param int $cutoff UTC seconds.

@@ -8,7 +8,12 @@ use Vaqtyar\Kernel\Database\Db;
 use Vaqtyar\Kernel\Database\Row;
 use Vaqtyar\Kernel\Tables;
 use Vaqtyar\Modules\Booking\Application\PolicyReader;
+use Vaqtyar\Modules\Booking\Application\TermsReader;
+use Vaqtyar\Modules\Booking\Domain\Policy\ApprovalPolicy;
+use Vaqtyar\Modules\Booking\Domain\Policy\BookingTerms;
+use Vaqtyar\Modules\Booking\Domain\Policy\BookingWindowPolicy;
 use Vaqtyar\Modules\Booking\Domain\Policy\CancellationPolicy;
+use Vaqtyar\Modules\Booking\Domain\Policy\DepositPolicy;
 use Vaqtyar\Modules\Booking\Domain\Policy\PolicyEvaluator;
 use Vaqtyar\Modules\Booking\Domain\Policy\ReschedulePolicy;
 use Vaqtyar\Shared\Domain\InvalidValue;
@@ -21,10 +26,13 @@ use Vaqtyar\Shared\Domain\InvalidValue;
  * no longer parses is skipped, like a broken price rule, so the next level
  * (global, then lenient) applies.
  */
-final class WpdbPolicyReader implements PolicyReader
+final class WpdbPolicyReader implements PolicyReader, TermsReader
 {
     private const CANCELLATION = 'cancellation';
     private const RESCHEDULE = 'reschedule';
+    private const DEPOSIT = 'deposit';
+    private const APPROVAL = 'approval';
+    private const WINDOW = 'booking_window';
 
     public function __construct(private readonly Db $db)
     {
@@ -62,6 +70,46 @@ final class WpdbPolicyReader implements PolicyReader
         return new PolicyEvaluator(
             $cancellation ?? CancellationPolicy::lenient(),
             $reschedule ?? ReschedulePolicy::lenient()
+        );
+    }
+
+    public function termsFor(int $serviceId): BookingTerms
+    {
+        // The service's own row sorts first, so it wins over the global one (0).
+        $rows = $this->db->getResults(
+            'SELECT type, config FROM %i WHERE type IN (%s, %s, %s) AND service_id IN (0, %d) '
+            . 'ORDER BY service_id DESC',
+            Tables::name('policies'),
+            self::DEPOSIT,
+            self::APPROVAL,
+            self::WINDOW,
+            $serviceId
+        );
+        $deposit = null;
+        $approval = null;
+        $window = null;
+        foreach ($rows as $values) {
+            $row = new Row($values);
+            $config = \json_decode($row->string('config'), true);
+            if (!\is_array($config)) {
+                continue;
+            }
+            try {
+                match ($row->string('type')) {
+                    self::DEPOSIT => $deposit ??= DepositPolicy::fromConfig($config),
+                    self::APPROVAL => $approval ??= ApprovalPolicy::fromConfig($config),
+                    default => $window ??= BookingWindowPolicy::fromConfig($config),
+                };
+            } catch (InvalidValue) {
+                // A row that no longer parses is skipped: the next level, or nothing, applies.
+                continue;
+            }
+        }
+
+        return new BookingTerms(
+            $deposit ?? DepositPolicy::lenient(),
+            $approval ?? ApprovalPolicy::lenient(),
+            $window ?? BookingWindowPolicy::lenient()
         );
     }
 }

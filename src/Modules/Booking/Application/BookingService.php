@@ -10,6 +10,7 @@ use Vaqtyar\Modules\Booking\Domain\Appointment\AppointmentStatus;
 use Vaqtyar\Modules\Booking\Domain\Appointment\TrackingCode;
 use Vaqtyar\Modules\Booking\Domain\Field\AnswerValidator;
 use Vaqtyar\Modules\Booking\Domain\HoldToken;
+use Vaqtyar\Modules\Booking\Domain\Policy\BookingTerms;
 use Vaqtyar\Modules\Booking\Domain\Pricing\PriceLine;
 use Vaqtyar\Modules\Catalog\Contracts\CatalogApi;
 use Vaqtyar\Modules\Customers\Contracts\CustomerApi;
@@ -49,6 +50,7 @@ final class BookingService
      * @param \Closure(): void $changed Tells availability the occupancies
      *     changed; called after the commit.
      * @param ?OnlineCheckout $checkout Null when the site has no Payments to pay with.
+     * @param ?TermsReader $terms What a service asks of a customer's own booking; null asks nothing.
      */
     public function __construct(
         private readonly CatalogApi $catalog,
@@ -64,6 +66,7 @@ final class BookingService
         private readonly Authorizer $authorizer,
         private readonly \Closure $changed,
         private readonly ?OnlineCheckout $checkout = null,
+        private readonly ?TermsReader $terms = null,
     ) {
     }
 
@@ -127,7 +130,8 @@ final class BookingService
         return new BookedAppointment(
             $booked->id,
             $booked->appointment,
-            $this->checkout->start($booked, (string) $payReturnUrl)
+            $this->checkout->start($booked, (string) $payReturnUrl),
+            $booked->dueNow
         );
     }
 
@@ -179,10 +183,23 @@ final class BookingService
             }
             $this->countCoupon($held, $offer->serviceId, $now->getTimestamp());
             $validAnswers = AnswerValidator::validate($this->fields->forService($offer->serviceId), $answers);
-            // A free booking has nothing to pay: it is confirmed.
-            $status = $online && $held->quote->total()->amount > 0
-                ? AppointmentStatus::PendingPayment
-                : AppointmentStatus::Confirmed;
+            // Only the customer's own booking is held to the service's terms; staff book without paying
+            // and their bookings are not held back for approval.
+            $terms = self::SOURCE_WIDGET === $source
+                ? ($this->terms?->termsFor($offer->serviceId) ?? BookingTerms::lenient())
+                : BookingTerms::lenient();
+            $total = $held->quote->total();
+            if ($terms->deposit->required && $total->amount > 0 && !$online) {
+                throw new InvalidValue('payment_required', 'This service has to be paid online to be booked.');
+            }
+            // A free booking has nothing to pay. One that waits for its payment is confirmed (or
+            // handed to staff to approve) when it is paid; the others at once.
+            $payable = $online && $total->amount > 0;
+            $status = match (true) {
+                $payable => AppointmentStatus::PendingPayment,
+                $terms->approval->required => AppointmentStatus::PendingApproval,
+                default => AppointmentStatus::Confirmed,
+            };
 
             $appointment = Appointment::book(
                 Ulid::fromParts($now, \random_bytes(10)),
@@ -212,12 +229,12 @@ final class BookingService
                 $this->appointments->saveAnswers($id, $validAnswers, $now->getTimestamp());
             }
             $this->holds->handOver($hold->id, $id);
-            if (AppointmentStatus::Confirmed === $status) {
+            if (AppointmentStatus::PendingPayment !== $status) {
                 // A booking that waits for its payment is announced when it is paid.
                 $this->jobs->appointmentBooked($id);
             }
 
-            return new BookedAppointment($id, $appointment);
+            return new BookedAppointment($id, $appointment, null, $payable ? $terms->deposit->dueNow($total) : null);
         };
         $booked = $this->transaction->run($work);
         ($this->changed)();

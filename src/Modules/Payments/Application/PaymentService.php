@@ -169,6 +169,38 @@ final class PaymentService
         return $payment->isFinal() ? $payment : $this->apply($payment, new Verification(true));
     }
 
+    /**
+     * Staff record money received outside any gateway (cash, card machine, a transfer): one payment
+     * that has already gone through, for the appointment, which the success event then reaches
+     * like a gateway's.
+     *
+     * @throws Forbidden without the booking capability.
+     * @throws InvalidValue invalid_amount for an amount that is not positive.
+     */
+    public function recordOffline(int $appointmentId, Money $amount): Payment
+    {
+        if (!$this->authorizer->allows(self::OFFLINE_CAPABILITY)) {
+            throw new Forbidden(self::OFFLINE_CAPABILITY);
+        }
+        if ($amount->isNegative() || $amount->isZero()) {
+            throw new InvalidValue('invalid_amount', 'A payment is a positive amount.');
+        }
+        $payment = $this->payments->add(
+            new Payment(
+                null,
+                $appointmentId,
+                self::OFFLINE,
+                $amount,
+                PaymentStatus::Succeeded,
+                'recorded-' . \bin2hex(\random_bytes(8))
+            ),
+            $this->now()
+        );
+        ($this->onSucceeded)($payment);
+
+        return $payment;
+    }
+
     private function apply(Payment $seen, Verification $verdict): Payment
     {
         $fired = null;

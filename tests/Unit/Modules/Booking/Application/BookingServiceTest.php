@@ -7,8 +7,18 @@ namespace Vaqtyar\Tests\Unit\Modules\Booking\Application;
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Booking\Application\Actor;
 use Vaqtyar\Modules\Booking\Application\AppointmentRepository;
+use Vaqtyar\Modules\Booking\Application\BookedAppointment;
 use Vaqtyar\Modules\Booking\Application\BookingJobs;
 use Vaqtyar\Modules\Booking\Application\BookingService;
+use Vaqtyar\Modules\Booking\Application\OnlineCheckout;
+use Vaqtyar\Modules\Booking\Application\TermsReader;
+use Vaqtyar\Modules\Booking\Application\UnpaidAppointments;
+use Vaqtyar\Modules\Booking\Domain\Policy\ApprovalPolicy;
+use Vaqtyar\Modules\Booking\Domain\Policy\BookingTerms;
+use Vaqtyar\Modules\Booking\Domain\Policy\BookingWindowPolicy;
+use Vaqtyar\Modules\Booking\Domain\Policy\DepositPolicy;
+use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
+use Vaqtyar\Modules\Payments\Contracts\PaymentTotals;
 use Vaqtyar\Modules\Booking\Application\FieldReader;
 use Vaqtyar\Modules\Booking\Application\HeldBooking;
 use Vaqtyar\Modules\Booking\Application\HoldRepository;
@@ -62,6 +72,11 @@ final class BookingServiceTest extends TestCase
     public bool $allowed = true;
 
     public bool $customerCanBook = true;
+
+    /** Whether the site can take a payment online (an OnlineCheckout is built). */
+    public bool $online = false;
+
+    public ?BookingTerms $terms = null;
 
     public ?Appointment $added = null;
 
@@ -254,6 +269,127 @@ final class BookingServiceTest extends TestCase
             self::assertSame('customer_unavailable', $e->errorCode);
         }
         self::assertSame([], $this->log);
+    }
+
+    public function testADepositIsAskedForInsteadOfTheWholePriceAndTheBookingWaitsForIt(): void
+    {
+        $this->terms = new BookingTerms(
+            new DepositPolicy('percent', 30, false),
+            ApprovalPolicy::lenient(),
+            BookingWindowPolicy::lenient()
+        );
+
+        $booked = $this->guest(true);
+
+        self::assertSame(AppointmentStatus::PendingPayment, $booked->appointment->status());
+        self::assertSame(360_000, $booked->dueNow?->amount);
+        self::assertSame('https://pay.test/77', $booked->paymentUrl);
+        self::assertContains('pay 77 360000', $this->log);
+        self::assertNotContains('job 77', $this->log, 'It is announced when it is paid.');
+    }
+
+    public function testWithoutADepositPolicyOnlinePaymentIsTheWholePrice(): void
+    {
+        $booked = $this->guest(true);
+
+        self::assertSame(1_200_000, $booked->dueNow?->amount);
+        self::assertContains('pay 77 1200000', $this->log);
+    }
+
+    public function testPayingAtThePlaceIsRefusedWhenThePolicyRequiresPayingOnlineAndNothingIsBooked(): void
+    {
+        $this->terms = new BookingTerms(
+            new DepositPolicy('fixed', 200_000, true),
+            ApprovalPolicy::lenient(),
+            BookingWindowPolicy::lenient()
+        );
+
+        try {
+            $this->guest(false);
+            self::fail('No exception.');
+        } catch (InvalidValue $e) {
+            self::assertSame('payment_required', $e->errorCode);
+        }
+        self::assertNull($this->added);
+        self::assertContains('rollback', $this->log, 'The coupon count and the hold are given back.');
+        self::assertNotContains('changed', $this->log);
+    }
+
+    public function testARequiredDepositBookedOnlineProceedsAndAFreeBookingNeedsNone(): void
+    {
+        $this->terms = new BookingTerms(
+            new DepositPolicy('fixed', 200_000, true),
+            ApprovalPolicy::lenient(),
+            BookingWindowPolicy::lenient()
+        );
+
+        $paid = $this->guest(true);
+        self::assertSame(200_000, $paid->dueNow?->amount);
+
+        $this->quote = PriceQuote::empty();
+        $free = $this->guest(false);
+        self::assertSame(AppointmentStatus::Confirmed, $free->appointment->status());
+        self::assertNull($free->dueNow);
+    }
+
+    public function testAServiceThatNeedsApprovalHoldsACustomersBookingForStaffAndAnnouncesIt(): void
+    {
+        $this->terms = new BookingTerms(
+            DepositPolicy::lenient(),
+            new ApprovalPolicy(true),
+            BookingWindowPolicy::lenient()
+        );
+
+        $atThePlace = $this->guest(false);
+
+        self::assertSame(AppointmentStatus::PendingApproval, $atThePlace->appointment->status());
+        self::assertContains('job 77', $this->log);
+
+        $this->log = [];
+        $online = $this->guest(true);
+        self::assertSame(AppointmentStatus::PendingPayment, $online->appointment->status());
+        self::assertNotContains('job 77', $this->log, 'Paying comes first; then approval.');
+    }
+
+    public function testStaffBookingsAreNeverHeldToTheTerms(): void
+    {
+        $this->terms = new BookingTerms(
+            new DepositPolicy('percent', 50, true),
+            new ApprovalPolicy(true),
+            BookingWindowPolicy::lenient()
+        );
+
+        $booked = $this->service()->confirm($this->token, 9, '', 2);
+
+        self::assertSame(AppointmentStatus::Confirmed, $booked->appointment->status());
+        self::assertNull($booked->dueNow);
+    }
+
+    private function guest(bool $online): BookedAppointment
+    {
+        $this->log = [];
+        $this->online = true;
+        // The fake hold is handed over by a booking, so each booking gets its own.
+        $this->hold = new StoredHold(
+            12,
+            ['res:21', 'staff:3'],
+            self::START - 600,
+            self::START + 4200,
+            1_799_999_900,
+            1_800_000_500
+        );
+
+        return $this->service()->confirmAsGuest(
+            $this->token,
+            '09121234567',
+            'Ali',
+            'Rezaei',
+            null,
+            '',
+            [],
+            null,
+            $online ? 'https://site.test/book' : null
+        );
     }
 
     public function record(string $entry): void
@@ -565,6 +701,42 @@ final class BookingServiceTest extends TestCase
             $authorizer,
             function (): void {
                 $this->record('changed');
+            },
+            $this->online ? new OnlineCheckout(
+                new class ($test) implements PaymentsApi {
+                    public function __construct(private readonly BookingServiceTest $test)
+                    {
+                    }
+
+                    public function onlineAvailable(): bool
+                    {
+                        return true;
+                    }
+
+                    public function startOnline(int $appointmentId, Money $amount, string $returnUrl): string
+                    {
+                        $this->test->record("pay {$appointmentId} {$amount->amount}");
+
+                        return 'https://pay.test/' . $appointmentId;
+                    }
+
+                    public function totals(int $appointmentId): PaymentTotals
+                    {
+                        return new PaymentTotals(0, 0);
+                    }
+                },
+                new UnpaidAppointments($appointments, $transaction, $this->clock, static function (): void {
+                })
+            ) : null,
+            null === $this->terms ? null : new class ($this->terms) implements TermsReader {
+                public function __construct(private readonly BookingTerms $terms)
+                {
+                }
+
+                public function termsFor(int $serviceId): BookingTerms
+                {
+                    return $this->terms;
+                }
             }
         );
     }

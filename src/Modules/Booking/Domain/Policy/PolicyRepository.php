@@ -23,4 +23,19 @@ interface PolicyRepository
     public function saveReschedule(int $serviceId, ReschedulePolicy $policy): void;
 
     public function deleteReschedule(int $serviceId): void;
+
+    /**
+     * The stored config of a policy of $type (deposit, approval or booking_window), as it was
+     * written; PolicyAdminService parses it. Null when this level has none, or it is not JSON.
+     *
+     * @return ?array<mixed>
+     */
+    public function findConfig(string $type, int $serviceId): ?array;
+
+    /**
+     * @param array<mixed> $config
+     */
+    public function saveConfig(string $type, int $serviceId, array $config): void;
+
+    public function deleteConfig(string $type, int $serviceId): void;
 }

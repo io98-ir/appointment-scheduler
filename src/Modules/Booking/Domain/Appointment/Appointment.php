@@ -227,19 +227,32 @@ final class Appointment
     }
 
     /**
-     * @param bool $needsApproval the site approves bookings by hand, so a
-     *     paid one still waits for it.
+     * @param bool $needsApproval the service is approved by hand, so a paid
+     *     booking still waits for it.
+     * @param PaymentStatus $paymentStatus paid in full, or only a deposit of it.
      */
-    public function paid(bool $needsApproval): StatusChange
+    public function paid(bool $needsApproval, PaymentStatus $paymentStatus = PaymentStatus::Paid): StatusChange
     {
         $change = $this->move(
             'paid',
             [AppointmentStatus::PendingPayment],
             $needsApproval ? AppointmentStatus::PendingApproval : AppointmentStatus::Confirmed
         );
-        $this->paymentStatus = PaymentStatus::Paid;
+        $this->paymentStatus = $paymentStatus;
 
         return $change;
+    }
+
+    /**
+     * What has been paid changed (a payment recorded by staff, a refund, the
+     * rest paid): the status stays, the payment status follows the money.
+     * Allowed in every status, since a refund can come after a cancellation.
+     */
+    public function recordPayment(PaymentStatus $paymentStatus): StatusChange
+    {
+        $this->paymentStatus = $paymentStatus;
+
+        return new StatusChange('payment', $this->status, $this->status);
     }
 
     public function expire(): StatusChange

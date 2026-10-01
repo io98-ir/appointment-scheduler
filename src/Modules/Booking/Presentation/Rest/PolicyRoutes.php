@@ -12,19 +12,20 @@ use Vaqtyar\Modules\Booking\Domain\Policy\RefundTier;
 use Vaqtyar\Modules\Booking\Domain\Policy\ReschedulePolicy;
 
 /**
- * The admin policy API (docs/api.md): the cancellation or reschedule policy
- * of a service, or the global one at service_id 0.
+ * The admin policy API (docs/api.md): the cancellation, reschedule, deposit,
+ * approval or booking-window policy of a service, or the global one at service_id 0.
  *
  *     GET    /policies/{type}/{service_id}   the stored config, or null when not set
  *     PUT    /policies/{type}/{service_id}   upsert: 200 with the saved config
  *     DELETE /policies/{type}/{service_id}   clear it, back to the level below: 204
  *
- * type is "cancellation" or "reschedule". Each needs the booking
- * capability; PolicyAdminService checks it again.
+ * type is one of "cancellation", "reschedule", "deposit", "approval" and
+ * "booking_window". Each needs the booking capability; PolicyAdminService
+ * checks it again.
  */
 final class PolicyRoutes
 {
-    private const TYPES = ['cancellation', 'reschedule'];
+    private const TYPES = ['cancellation', 'reschedule', 'deposit', 'approval', 'booking_window'];
 
     /** A refund ladder of a few tiers, with room to spare. */
     private const MAX_TIERS = 50;
@@ -49,30 +50,56 @@ final class PolicyRoutes
         $this->router->add(
             $path,
             'GET',
-            fn (\WP_REST_Request $request): array => self::json(
-                self::isCancellation($request)
-                    ? ($this->service)()->cancellation(self::serviceId($request))
-                    : ($this->service)()->reschedule(self::serviceId($request))
-            ),
+            function (\WP_REST_Request $request): array {
+                $type = self::type($request);
+                if (\in_array($type, PolicyAdminService::TERMS_TYPES, true)) {
+                    return ['config' => ($this->service)()->terms($type, self::serviceId($request))];
+                }
+
+                return self::json(
+                    'cancellation' === $type
+                        ? ($this->service)()->cancellation(self::serviceId($request))
+                        : ($this->service)()->reschedule(self::serviceId($request))
+                );
+            },
             $allowed,
             $args
         );
         $this->router->add(
             $path,
             'PUT',
-            fn (\WP_REST_Request $request): array => self::json(
-                self::isCancellation($request)
-                    ? ($this->service)()->saveCancellation(
+            function (\WP_REST_Request $request): array {
+                $type = self::type($request);
+                if (\in_array($type, PolicyAdminService::TERMS_TYPES, true)) {
+                    return ['config' => ($this->service)()->saveTerms(
+                        $type,
                         self::serviceId($request),
-                        self::cancellationFromRequest($request)
-                    )
-                    : ($this->service)()->saveReschedule(
-                        self::serviceId($request),
-                        self::rescheduleFromRequest($request)
-                    )
-            ),
+                        self::termsFromRequest($request, $type)
+                    )];
+                }
+
+                return self::json(
+                    'cancellation' === $type
+                        ? ($this->service)()->saveCancellation(
+                            self::serviceId($request),
+                            self::cancellationFromRequest($request)
+                        )
+                        : ($this->service)()->saveReschedule(
+                            self::serviceId($request),
+                            self::rescheduleFromRequest($request)
+                        )
+                );
+            },
             $allowed,
             $args + [
+                // deposit: what is paid online when booking, and whether it must be.
+                'kind' => ['type' => 'string', 'enum' => ['none', 'percent', 'fixed'], 'default' => 'none'],
+                'value' => ['type' => 'integer', 'minimum' => 0, 'default' => 0],
+                // deposit and approval.
+                'required' => ['type' => 'boolean', 'default' => false],
+                // booking_window: null keeps the site's rule.
+                'min_notice_min' => ['type' => ['integer', 'null'], 'minimum' => 0, 'default' => null],
+                'max_advance_days' => ['type' => ['integer', 'null'], 'minimum' => 1, 'default' => null],
                 'notice_hours' => $optionalHours,
                 'refund' => [
                     'type' => 'array',
@@ -94,7 +121,10 @@ final class PolicyRoutes
             $path,
             'DELETE',
             function (\WP_REST_Request $request): \WP_REST_Response {
-                if (self::isCancellation($request)) {
+                $type = self::type($request);
+                if (\in_array($type, PolicyAdminService::TERMS_TYPES, true)) {
+                    ($this->service)()->deleteTerms($type, self::serviceId($request));
+                } elseif ('cancellation' === $type) {
                     ($this->service)()->deleteCancellation(self::serviceId($request));
                 } else {
                     ($this->service)()->deleteReschedule(self::serviceId($request));
@@ -145,9 +175,31 @@ final class PolicyRoutes
     /**
      * @param \WP_REST_Request<array<string, mixed>> $request
      */
-    private static function isCancellation(\WP_REST_Request $request): bool
+    private static function type(\WP_REST_Request $request): string
     {
-        return 'cancellation' === self::string($request->get_url_params()['type'] ?? null);
+        return self::string($request->get_url_params()['type'] ?? null);
+    }
+
+    /**
+     * The config a deposit, approval or booking-window policy is made from; the domain checks it.
+     *
+     * @param \WP_REST_Request<array<string, mixed>> $request
+     * @return array<string, mixed>
+     */
+    private static function termsFromRequest(\WP_REST_Request $request, string $type): array
+    {
+        return match ($type) {
+            'deposit' => [
+                'kind' => self::string($request->get_param('kind')),
+                'value' => self::intValue($request->get_param('value')),
+                'required' => true === $request->get_param('required'),
+            ],
+            'approval' => ['required' => true === $request->get_param('required')],
+            default => [
+                'min_notice_min' => self::optionalInt($request->get_param('min_notice_min')),
+                'max_advance_days' => self::optionalInt($request->get_param('max_advance_days')),
+            ],
+        };
     }
 
     /**

@@ -29,7 +29,11 @@ final class OnlineCheckout
     public function start(BookedAppointment $booked, string $returnUrl): string
     {
         try {
-            return $this->payments->startOnline($booked->id, $booked->appointment->quote->total(), $returnUrl);
+            return $this->payments->startOnline(
+                $booked->id,
+                $booked->dueNow ?? $booked->appointment->quote->total(),
+                $returnUrl
+            );
         } catch (Conflict) {
             $this->unpaid->expire($booked->id);
 

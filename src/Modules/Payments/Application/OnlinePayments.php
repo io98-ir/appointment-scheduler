@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vaqtyar\Modules\Payments\Application;
 
 use Vaqtyar\Modules\Payments\Contracts\PaymentsApi;
+use Vaqtyar\Modules\Payments\Contracts\PaymentTotals;
 use Vaqtyar\Shared\Domain\Conflict;
 use Vaqtyar\Shared\Domain\Money;
 
@@ -20,6 +21,7 @@ final class OnlinePayments implements PaymentsApi
     public function __construct(
         private readonly PaymentService $payments,
         private readonly GatewayRegistry $gateways,
+        private readonly PaymentLedger $ledger,
         private readonly \Closure $callbackFor,
     ) {
     }
@@ -41,5 +43,10 @@ final class OnlinePayments implements PaymentsApi
 
         return $started->redirectUrl
             ?? throw new Conflict('no_gateway_available', 'The gateway gave no page to pay at.');
+    }
+
+    public function totals(int $appointmentId): PaymentTotals
+    {
+        return $this->ledger->totals($appointmentId);
     }
 }

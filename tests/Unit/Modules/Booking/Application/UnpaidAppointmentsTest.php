@@ -7,7 +7,6 @@ namespace Vaqtyar\Tests\Unit\Modules\Booking\Application;
 use PHPUnit\Framework\TestCase;
 use Vaqtyar\Modules\Booking\Application\Actor;
 use Vaqtyar\Modules\Booking\Application\AppointmentRepository;
-use Vaqtyar\Modules\Booking\Application\BookingJobs;
 use Vaqtyar\Modules\Booking\Application\StoredAppointment;
 use Vaqtyar\Modules\Booking\Application\UnpaidAppointments;
 use Vaqtyar\Modules\Booking\Domain\Appointment\Appointment;
@@ -34,30 +33,6 @@ final class UnpaidAppointmentsTest extends TestCase
 
     /** @var list<int> */
     private array $waiting = [];
-
-    public function testAPaymentConfirmsTheAppointmentAndMarksItPaid(): void
-    {
-        $this->stored = self::stored(AppointmentStatus::PendingPayment);
-
-        self::assertTrue($this->service()->paid(12));
-
-        self::assertSame(AppointmentStatus::Confirmed, $this->stored->appointment->status());
-        self::assertSame(PaymentStatus::Paid, $this->stored->appointment->paymentStatus());
-        self::assertSame(['find 12 for update', 'update paid by system', 'job 12'], $this->log);
-    }
-
-    public function testAPaymentForAnAppointmentThatNoLongerWaitsChangesNothing(): void
-    {
-        foreach ([AppointmentStatus::Expired, AppointmentStatus::Cancelled, AppointmentStatus::Confirmed] as $status) {
-            $this->log = [];
-            $this->stored = self::stored($status);
-
-            self::assertFalse($this->service()->paid(12));
-            self::assertSame(['find 12 for update'], $this->log);
-        }
-        $this->stored = null;
-        self::assertFalse($this->service()->paid(12));
-    }
 
     public function testExpiringFreesTheTimeAndTellsAvailability(): void
     {
@@ -209,24 +184,6 @@ final class UnpaidAppointmentsTest extends TestCase
                 public function saveNote(int $id, Appointment $appointment, string $note, Actor $actor, int $now): void
                 {
                     throw new \LogicException('Not used.');
-                }
-            },
-            new class ($this) implements BookingJobs {
-                public function __construct(private readonly UnpaidAppointmentsTest $test)
-                {
-                }
-
-                public function appointmentBooked(int $appointmentId): void
-                {
-                    $this->test->record("job {$appointmentId}");
-                }
-
-                public function appointmentCancelled(int $appointmentId): void
-                {
-                }
-
-                public function appointmentRescheduled(int $appointmentId): void
-                {
                 }
             },
             new class implements TransactionRunner {
